@@ -2,6 +2,7 @@ package com.senior.candleShopProject.common.handler;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopInvalidParamException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
@@ -47,6 +48,15 @@ public class GlobalExceptionHandler {
         GenericResponse response = new GenericResponse();
         response.setStatus(ex.getStatus());
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+
+    @ExceptionHandler(ShopDataNotFoundException.class)
+    public ResponseEntity<GenericResponse> handleShopDataNotFoundException(ShopDataNotFoundException ex) {
+        log.error("Data not found Exception : ",ex.getStatus().getRemark());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ex.getStatus());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
 

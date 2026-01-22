@@ -1,4 +1,9 @@
 
+# Application configuration
+app:
+  storage:
+    public-image-base-url: https://goerhyygukxfkphuyrnw.supabase.co/storage/v1/object/public/
+
 spring:
   application:
     name: candle-shop-project
@@ -15,6 +20,9 @@ spring:
 # Server configuration
 server:
   port: 8080
+  servlet:
+      context-path: /candle-shop-project-api
+#  forward-headers-strategy: 'framework'
 
 # Logging configuration
 logging:
