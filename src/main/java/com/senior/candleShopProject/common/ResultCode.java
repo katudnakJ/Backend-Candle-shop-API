@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Data
-@NoArgsConstructor
 public class ResultCode {
     public static final Status SUCCESS = new Status(HttpStatus.OK,"Success.");
     public static final Status INVALID_PARAMS = new Status(HttpStatus.BAD_REQUEST,"Invalid Parameters.");

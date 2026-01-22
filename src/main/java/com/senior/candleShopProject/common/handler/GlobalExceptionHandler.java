@@ -2,12 +2,14 @@ package com.senior.candleShopProject.common.handler;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopInvalidParamException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -22,6 +24,14 @@ public class GlobalExceptionHandler {
         GenericResponse response = new GenericResponse();
         response.setStatus(ResultCode.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<GenericResponse> handleMissingRequestHeader(MissingRequestHeaderException ex) {
+        log.error("Missing Request Header : {}", ex.getHeaderName());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.UNAUTHORIZED);
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(ShopServiceApiException.class)
@@ -47,6 +57,15 @@ public class GlobalExceptionHandler {
         GenericResponse response = new GenericResponse();
         response.setStatus(ex.getStatus());
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+
+    @ExceptionHandler(ShopDataNotFoundException.class)
+    public ResponseEntity<GenericResponse> handleShopDataNotFoundException(ShopDataNotFoundException ex) {
+        log.error("Data not found Exception : ",ex.getStatus().getRemark());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ex.getStatus());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
 

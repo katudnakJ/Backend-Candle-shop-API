@@ -1,0 +1,39 @@
+
+# Application configuration
+app:
+  storage:
+    public-image-base-url: https://goerhyygukxfkphuyrnw.supabase.co/storage/v1/object/public/
+
+spring:
+  application:
+    name: candle-shop-project
+  profiles:
+    active: dev
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+      naming.physical-strategy: 'org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl'
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
+# Server configuration
+server:
+  port: 8080
+  servlet:
+      context-path: /candle-shop-project-api
+#  forward-headers-strategy: 'framework'
+
+# Logging configuration
+logging:
+  level:
+    app: "DEBUG"
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SXXX}|%level|${spring.application.name}|${PID}|%thread|%logger{40}|%message%n"
+
+#Swagger configuration
+springdoc:
+    swagger-ui:
+      path: /candle-shop-project/swagger-ui.html
+    api-docs:
+      path: /candle-shop-project/api-docs
