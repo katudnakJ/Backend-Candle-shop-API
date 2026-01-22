@@ -1,6 +1,8 @@
 package com.senior.candleShopProject.feature.product.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
+import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.exception.ShopInvalidParamException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.feature.product.service.ShopProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +29,11 @@ public class ProductController {
     public ResponseEntity<GenericResponse> getProductDetailsById(@RequestHeader(name = "x-access-token") String xAccessToken,
                                                                  @PathVariable(name = "productId") String productId) throws ShopServiceApiException {
         log.info("Get product details by product id {}", productId);
+        if(xAccessToken == null || xAccessToken.isEmpty())
+            throw new ShopInvalidParamException(ResultCode.UNAUTHORIZED,"Access token is Invalid or Expired.");
+        if(productId == null || productId.isEmpty() || productId.length() > 36)
+            throw new ShopInvalidParamException(ResultCode.INVALID_PARAMS,"Invalid product ID.");
+
         GenericResponse response = new GenericResponse();
         UUID productUUID = UUID.fromString(productId);
 
