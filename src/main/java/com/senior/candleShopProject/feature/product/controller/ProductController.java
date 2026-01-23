@@ -31,8 +31,8 @@ public class ProductController {
         log.info("Get product details by product id {}", productId);
         if(xAccessToken == null || xAccessToken.isEmpty())
             throw new ShopInvalidParamException(ResultCode.UNAUTHORIZED,"Access token is Invalid or Expired.");
-        if(productId == null || productId.isEmpty() || productId.length() > 36)
-            throw new ShopInvalidParamException(ResultCode.INVALID_PARAMS,"Invalid product ID.");
+        if(productId == null || productId.length() != 36)
+            throw new ShopInvalidParamException(ResultCode.DATA_NOT_FOUND,"product ID not found.");
 
         GenericResponse response = new GenericResponse();
         UUID productUUID = UUID.fromString(productId);
