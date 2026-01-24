@@ -1,8 +1,6 @@
 package com.senior.candleShopProject.feature.product.controller.dto.response;
 
-import com.senior.candleShopProject.feature.product.controller.dto.domain.IProductImagesResp;
-import com.senior.candleShopProject.feature.product.controller.dto.domain.IProductResp;
-import com.senior.candleShopProject.feature.product.controller.dto.domain.ProductImagesResp;
+import com.senior.candleShopProject.datasource.domain.IProductResp;
 import lombok.Getter;
 import lombok.Setter;
 

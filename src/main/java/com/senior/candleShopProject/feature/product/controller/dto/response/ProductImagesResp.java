@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.product.controller.dto.domain;
+package com.senior.candleShopProject.feature.product.controller.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;

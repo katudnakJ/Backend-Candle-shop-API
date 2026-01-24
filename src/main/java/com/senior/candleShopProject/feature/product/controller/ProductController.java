@@ -29,15 +29,17 @@ public class ProductController {
     public ResponseEntity<GenericResponse> getProductDetailsById(@RequestHeader(name = "x-access-token") String xAccessToken,
                                                                  @PathVariable(name = "productId") String productId) throws ShopServiceApiException {
         log.info("Get product details by product id {}", productId);
-        if(xAccessToken == null || xAccessToken.isEmpty())
-            throw new ShopInvalidParamException(ResultCode.UNAUTHORIZED,"Access token is Invalid or Expired.");
-        if(productId == null || productId.length() != 36)
-            throw new ShopInvalidParamException(ResultCode.DATA_NOT_FOUND,"product ID not found.");
-
-        GenericResponse response = new GenericResponse();
         UUID productUUID = UUID.fromString(productId);
 
-        response = shopProductService.getProductsById(productUUID);
+        GenericResponse response = shopProductService.getProductsById(productUUID);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/home-list")
+    @Operation(summary = "Get product home list API.")
+    public ResponseEntity<GenericResponse> getProductHomeList(@RequestHeader(name = "x-access-token") String xAccessToken) throws ShopServiceApiException {
+        log.info("Get product home list");
+        GenericResponse response = shopProductService.getProductHomeListItem();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
