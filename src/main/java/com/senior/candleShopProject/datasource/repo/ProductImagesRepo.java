@@ -1,8 +1,7 @@
 package com.senior.candleShopProject.datasource.repo;
 
 import com.senior.candleShopProject.datasource.entities.ProductImagesEntity;
-import com.senior.candleShopProject.feature.product.controller.dto.domain.IProductImagesResp;
-import com.senior.candleShopProject.feature.product.controller.dto.domain.ProductImagesResp;
+import com.senior.candleShopProject.datasource.domain.IProductImagesResp;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

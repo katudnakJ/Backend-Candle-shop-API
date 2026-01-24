@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.product.controller.dto.domain;
+package com.senior.candleShopProject.datasource.domain;
 
 import java.util.UUID;
 

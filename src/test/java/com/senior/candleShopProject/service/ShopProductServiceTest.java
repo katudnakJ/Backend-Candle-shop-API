@@ -6,32 +6,29 @@ import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
-import com.senior.candleShopProject.feature.product.controller.dto.domain.IProductImagesResp;
-import com.senior.candleShopProject.feature.product.controller.dto.domain.IProductResp;
-import com.senior.candleShopProject.feature.product.controller.dto.response.ProductDetailResp;
+import com.senior.candleShopProject.datasource.domain.IProductImagesResp;
+import com.senior.candleShopProject.datasource.domain.IProductResp;
 import com.senior.candleShopProject.feature.product.service.ShopProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.TestComponent;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 
 @TestComponent
 public class ShopProductServiceTest {
 
-    @Mock
+    @InjectMocks
     private ShopProductService shopProductService;
 
     @Mock
@@ -42,7 +39,6 @@ public class ShopProductServiceTest {
 
     @BeforeEach
     void initTests() {MockitoAnnotations.openMocks(this);
-        shopProductService = new ShopProductService(productsRepo, productImagesRepo);
     }
 
     @Test

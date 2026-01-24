@@ -1,7 +1,7 @@
 package com.senior.candleShopProject.datasource.repo;
 
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
-import com.senior.candleShopProject.feature.product.controller.dto.domain.IProductResp;
+import com.senior.candleShopProject.datasource.domain.IProductResp;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
