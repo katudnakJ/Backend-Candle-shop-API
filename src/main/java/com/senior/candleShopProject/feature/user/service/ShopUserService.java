@@ -31,7 +31,7 @@ public class ShopUserService {
         GenericResponse response = new GenericResponse();
 
         if (userProfile.getIsSeller()){
-            response.setData(getUserSellerProfile(sellerId, userProfile));
+            response.setData(getUserSellerProfile(userProfile));
         }else{
             UserCustomerProfileResp customerProfileResp = new UserCustomerProfileResp();
             customerProfileResp.setUserProfile(userProfile);
@@ -42,7 +42,7 @@ public class ShopUserService {
         return response;
     }
 
-    public UserSellerProfileResp getUserSellerProfile(UUID sellerId, IUsersResp userProfile) {
+    private UserSellerProfileResp getUserSellerProfile(IUsersResp userProfile) {
         Integer orderPdCount = ordersRepo.getCountOrdersWithStatusPD();
 
         UserSellerProfileResp userProfileResp = new UserSellerProfileResp();

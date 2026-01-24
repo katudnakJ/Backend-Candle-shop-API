@@ -4,10 +4,12 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.datasource.domain.IProductHomeListItemResp;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
 import com.senior.candleShopProject.datasource.domain.IProductImagesResp;
 import com.senior.candleShopProject.datasource.domain.IProductResp;
+import com.senior.candleShopProject.datasource.domain.ProductHomeListItemResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductDetailResp;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class ShopProductService {
 
     @Value("${app.storage.public-image-base-url}")
     private String publicImageBaseUrl;
+
     private final ProductsRepo productsRepo;
     private final ProductImagesRepo productImagesRepo;
 
@@ -36,9 +39,6 @@ public class ShopProductService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product not found.");
 
         List<IProductImagesResp> images = productImagesRepo.getProductImagesByProductId(productId);
-
-        if (images.isEmpty())
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product image not found.");
 
         List<ProductImagesResp> productImages = images.stream().map(image -> {
             ProductImagesResp resp = new ProductImagesResp();
@@ -56,5 +56,46 @@ public class ShopProductService {
         response.setData(productDetailResp);
         response.setStatus(ResultCode.SUCCESS);
         return response;
+    }
+
+    public GenericResponse getProductHomeListItem() throws ShopServiceApiException {
+
+//      featured products
+        List<IProductHomeListItemResp> featuredProducts = productsRepo.getProductHomeListItemResp(true);
+        Integer featuredProductsCount = productsRepo.getCountProductHomeListItemResp(true);
+
+//      non-featured products
+        List<IProductHomeListItemResp> nonFeaturedProducts = productsRepo.getProductHomeListItemResp(false);
+        Integer nonFeaturedProductsCount = productsRepo.getCountProductHomeListItemResp(false);
+
+        if (featuredProducts.isEmpty() && nonFeaturedProducts.isEmpty())
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "All Products list are empty.");
+
+        ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
+        productHomeListItemResp.setFeaturedProduct(addPrefixProductImgSlug(featuredProducts));
+        productHomeListItemResp.setFeaturedTotal(featuredProductsCount);
+
+        productHomeListItemResp.setNonFeaturedProduct(addPrefixProductImgSlug(nonFeaturedProducts));
+        productHomeListItemResp.setNonFeaturedTotal(nonFeaturedProductsCount);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(productHomeListItemResp);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
+
+    }
+
+    private List<IProductHomeListItemResp> addPrefixProductImgSlug (List<IProductHomeListItemResp> productHomeListItemResp) {
+       return(
+              productHomeListItemResp.stream().map(item -> new IProductHomeListItemResp(
+                        item.getProductId(),
+                        item.getProductName(),
+                        item.getPrice(),
+                        item.getIsActive(),
+                        item.getProductCreatedDate(),
+                        item.getTotalSelled(),
+                        publicImageBaseUrl + item.getProductImgSlug()
+              )).toList());
+
     }
 }

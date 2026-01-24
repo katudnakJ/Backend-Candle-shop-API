@@ -34,4 +34,12 @@ public class ProductController {
         GenericResponse response = shopProductService.getProductsById(productUUID);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @GetMapping("/home-list")
+    @Operation(summary = "Get product home list API.")
+    public ResponseEntity<GenericResponse> getProductHomeList(@RequestHeader(name = "x-access-token") String xAccessToken) throws ShopServiceApiException {
+        log.info("Get product home list");
+        GenericResponse response = shopProductService.getProductHomeListItem();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

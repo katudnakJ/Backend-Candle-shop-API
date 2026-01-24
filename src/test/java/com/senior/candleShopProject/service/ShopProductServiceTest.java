@@ -4,6 +4,8 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.datasource.domain.IProductHomeListItemResp;
+import com.senior.candleShopProject.datasource.domain.ProductHomeListItemResp;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
 import com.senior.candleShopProject.datasource.domain.IProductImagesResp;
@@ -16,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.TestComponent;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,23 +86,30 @@ public class ShopProductServiceTest {
     }
 
     @Test
-    void testGetProductById_imageNotFound_Throw() throws ShopServiceApiException {
-        UUID productId = UUID.randomUUID();
+    void testGetProductHomeListItem_Success() throws ShopServiceApiException {
 
-        IProductResp productResp = mock(IProductResp.class);
-        when(productsRepo.getProductById(productId)).thenReturn(productResp);
+        IProductHomeListItemResp featuredProductResp = mock(IProductHomeListItemResp.class);
+        when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(List.of(featuredProductResp));
+        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(1);
 
-        IProductImagesResp iProductImagesResp = mock(IProductImagesResp.class);
-        when(iProductImagesResp.getProductImgId()).thenReturn(null);
+        GenericResponse response = shopProductService.getProductHomeListItem();
+
+        assertNotNull(response);
+        assertEquals(ResultCode.SUCCESS, response.getStatus());
+
+        verify(productsRepo, times(2)).getProductHomeListItemResp(anyBoolean());
+        verify(productsRepo, times(2)).getCountProductHomeListItemResp(anyBoolean());
+    }
+
+    @Test
+    void testGetProductHomeListItem_DataNotFound() throws ShopServiceApiException {
+        when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(Collections.emptyList());
+        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(0);
 
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
-            shopProductService.getProductsById(productId);
+            shopProductService.getProductHomeListItem();
         });
-
         assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
-
-        verify(productsRepo, times(1)).getProductById(productId);
-        verify(productImagesRepo, times(1)).getProductImagesByProductId(productId);
     }
 
 }
