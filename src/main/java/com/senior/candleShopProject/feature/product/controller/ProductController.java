@@ -26,8 +26,7 @@ public class ProductController {
 
     @GetMapping("/details/{productId}")
     @Operation(summary = "Get product details API.")
-    public ResponseEntity<GenericResponse> getProductDetailsById(@RequestHeader(name = "x-access-token") String xAccessToken,
-                                                                 @PathVariable(name = "productId") String productId) throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> getProductDetailsById(@PathVariable(name = "productId") String productId) throws ShopServiceApiException {
         log.info("Get product details by product id {}", productId);
         UUID productUUID = UUID.fromString(productId);
 
@@ -37,7 +36,7 @@ public class ProductController {
 
     @GetMapping("/home-list")
     @Operation(summary = "Get product home list API.")
-    public ResponseEntity<GenericResponse> getProductHomeList(@RequestHeader(name = "x-access-token") String xAccessToken) throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> getProductHomeList() throws ShopServiceApiException {
         log.info("Get product home list");
         GenericResponse response = shopProductService.getProductHomeListItem();
         return ResponseEntity.status(HttpStatus.OK).body(response);

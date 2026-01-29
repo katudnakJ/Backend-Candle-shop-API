@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.user.controller.dto;
+package com.senior.candleShopProject.feature.user.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
@@ -24,13 +24,11 @@ public class UserController {
 
     @GetMapping("/profile/{userId}")
     @Operation(summary = "Get user profile API.")
-    public ResponseEntity<GenericResponse> getUserProfile(@RequestHeader("x-access-token") String  xAccessToken,
-                                                          @PathVariable("userId") String userId) throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> getUserProfile(@PathVariable("userId") String userId) throws ShopServiceApiException {
         log.info("Get user profile by user id {}", userId);
         UUID userUUID = UUID.fromString(userId);
 
         GenericResponse response = shopUsersService.getUserProfile(userUUID);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-
     }
 }

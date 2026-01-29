@@ -12,7 +12,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     @Query(value = """
         select count(*) AS OrderPdCount
         from orders
-        where order_status = 'PD';
+        where order_status = :status;
        """, nativeQuery = true)
-    Integer getCountOrdersWithStatusPD();
+    Integer getCountOrdersWithStatus(String status);
 }

@@ -1,11 +1,9 @@
 package com.senior.candleShopProject.datasource.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
@@ -15,6 +13,8 @@ import java.util.UUID;
 @Table(name = "users")
 public class UsersEntity {
     @Id
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "user_id")
     private UUID userId;
 
@@ -26,5 +26,8 @@ public class UsersEntity {
 
     @Column(name="is_seller")
     private Boolean isSeller;
+
+    @Column(name="user_role")
+    private String userRole;
 
 }
