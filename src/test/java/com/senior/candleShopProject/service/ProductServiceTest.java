@@ -43,72 +43,72 @@ public class ProductServiceTest {
     void initTests() {MockitoAnnotations.openMocks(this);
     }
 
-//    @Test
-//    void testGetProductsById_Success() throws ShopServiceApiException {
-//       UUID productId = UUID.randomUUID();
-//       UUID productImgId = UUID.randomUUID();
-//
-//       IProductResp productResp = mock(IProductResp.class);
-//       when(productsRepo.getProductById(productId)).thenReturn(productResp);
-//
-//       IProductImagesResp iProductImagesResp = mock(IProductImagesResp.class);
-//       when(iProductImagesResp.getProductImgId()).thenReturn(productImgId);
-//       when(iProductImagesResp.getProductImgSlug()).thenReturn("image.jpg");
-//       when(iProductImagesResp.getIsPrimary()).thenReturn(true);
-//
-//       when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(iProductImagesResp));
-//
-//
-//       GenericResponse response = productService.getProductsById(productId);
-//
-//       assertNotNull(response);
-//       assertEquals(response.getStatus(), ResultCode.SUCCESS);
-//
-//       verify(productsRepo, times(1)).getProductById(productId);
-//       verify(productImagesRepo, times(1)).getProductImagesByProductId(productId);
-//    }
-//
-//    @Test
-//    void testGetProductsById_productNotFound_Throw() throws ShopServiceApiException {
-//        UUID productId = UUID.randomUUID();
-//
-//        when(productsRepo.getProductById(productId)).thenReturn(null);
-//
-//        ShopDataNotFoundException exception = assertThrows(ShopDataNotFoundException.class, () -> {
-//            productService.getProductsById(productId);
-//        });
-//
-//        assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatus());
-//
-//        verify(productsRepo, times(1)).getProductById(productId);
-//        verify(productImagesRepo, times(0)).getProductImagesByProductId(productId);
-//    }
-//
-//    @Test
-//    void testGetProductHomeListItem_Success() throws ShopServiceApiException {
-//
-//        IProductHomeListItemResp featuredProductResp = mock(IProductHomeListItemResp.class);
-//        when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(List.of(featuredProductResp));
-//        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(1);
-//
-//        GenericResponse response = productService.getProductHomeListItem();
-//
-//        assertNotNull(response);
-//        assertEquals(ResultCode.SUCCESS, response.getStatus());
-//
-//        verify(productsRepo, times(2)).getProductHomeListItemResp(anyBoolean());
-//        verify(productsRepo, times(2)).getCountProductHomeListItemResp(anyBoolean());
-//    }
-//
-//    @Test
-//    void testGetProductHomeListItem_DataNotFound() throws ShopServiceApiException {
-//        when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(Collections.emptyList());
-//        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(0);
-//
-//        ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
-//            productService.getProductHomeListItem();
-//        });
-//        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
-//    }
+    @Test
+    void testGetProductsById_Success() throws ShopServiceApiException {
+       UUID productId = UUID.randomUUID();
+       UUID productImgId = UUID.randomUUID();
+
+       IProductResp productResp = mock(IProductResp.class);
+       when(productsRepo.getProductById(productId)).thenReturn(productResp);
+
+       IProductImagesResp iProductImagesResp = mock(IProductImagesResp.class);
+       when(iProductImagesResp.getProductImgId()).thenReturn(productImgId);
+       when(iProductImagesResp.getProductImgPath()).thenReturn("image.jpg");
+       when(iProductImagesResp.getIsPrimary()).thenReturn(true);
+
+       when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(iProductImagesResp));
+
+
+       GenericResponse response = productService.getProductsById(productId);
+
+       assertNotNull(response);
+       assertEquals(response.getStatus(), ResultCode.SUCCESS);
+
+       verify(productsRepo, times(1)).getProductById(productId);
+       verify(productImagesRepo, times(1)).getProductImagesByProductId(productId);
+    }
+
+    @Test
+    void testGetProductsById_productNotFound_Throw() throws ShopServiceApiException {
+        UUID productId = UUID.randomUUID();
+
+        when(productsRepo.getProductById(productId)).thenReturn(null);
+
+        ShopDataNotFoundException exception = assertThrows(ShopDataNotFoundException.class, () -> {
+            productService.getProductsById(productId);
+        });
+
+        assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatus());
+
+        verify(productsRepo, times(1)).getProductById(productId);
+        verify(productImagesRepo, times(0)).getProductImagesByProductId(productId);
+    }
+
+    @Test
+    void testGetProductHomeListItem_Success() throws ShopServiceApiException {
+
+        IProductHomeListItemResp featuredProductResp = mock(IProductHomeListItemResp.class);
+        when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(List.of(featuredProductResp));
+        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(1);
+
+        GenericResponse response = productService.getProductHomeListItem();
+
+        assertNotNull(response);
+        assertEquals(ResultCode.SUCCESS, response.getStatus());
+
+        verify(productsRepo, times(2)).getProductHomeListItemResp(anyBoolean());
+        verify(productsRepo, times(1)).getCountProductHomeListItemResp(anyBoolean());
+    }
+
+    @Test
+    void testGetProductHomeListItem_DataNotFound() throws ShopServiceApiException {
+        when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(Collections.emptyList());
+        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(0);
+
+        ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
+            productService.getProductHomeListItem();
+        });
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+    }
 
 }
