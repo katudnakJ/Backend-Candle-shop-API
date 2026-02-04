@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface ProductImagesRepo extends JpaRepository<ProductImagesEntity, UUID> {
     @Query(value = """
         select product_img_id AS productImgId,
-                product_img_slug AS productImgSlug,
+                product_img_path AS productImgPath,
                 is_primary AS isPrimary
         from product_images
         where product_id = :productId;

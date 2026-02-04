@@ -7,6 +7,8 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,11 +20,11 @@ public class OrdersEntity {
     @Column(name = "order_id")
     private UUID order_id;
 
-    @Column(name = "customer_id")
-    private UUID customer_id;
+    @Column(name="order_no")
+    private String orderNo;
 
-    @Column(name = "total_quantity_amount")
-    private Integer totalQuantityAmount;
+    @Column(name = "total_quantity")
+    private Integer totalQuantity;
 
     @Column(name = "total_amount")
     private BigDecimal totalAmount;
@@ -39,4 +41,17 @@ public class OrdersEntity {
     @Column(name = "total_amount_purchase")
     private BigDecimal totalAmountPurchase;
 
+//    Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private CustomersEntity customersEntity;
+
+    @OneToMany(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemsEntity> orderItemsEntities = new ArrayList<>();
+
+    @OneToOne(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PaymentsEntity paymentsEntity;
+
+    @OneToMany(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ShipmentEntity> shipmentsEntities = new ArrayList<>();
 }

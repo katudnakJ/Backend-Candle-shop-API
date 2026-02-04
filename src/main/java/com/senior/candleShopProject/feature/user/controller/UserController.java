@@ -2,7 +2,7 @@ package com.senior.candleShopProject.feature.user.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.feature.user.service.ShopUserService;
+import com.senior.candleShopProject.feature.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final ShopUserService shopUsersService;
+    private final UserService shopUsersService;
 
     @GetMapping("/profile/{userId}")
     @Operation(summary = "Get user profile API.")

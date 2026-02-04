@@ -1,6 +1,8 @@
 package com.senior.candleShopProject.common;
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @Getter
 public enum OrderStatus {
     ORDER_PAYMENT_PENDING("PAYMENT PENDING","PD","รอยืนยันชำระเงิน"),
@@ -18,4 +20,10 @@ public enum OrderStatus {
         this.orderStatusCode = orderStatusCode;
         this.message = message;
     }
+
+    public static boolean isValidStatus(String status) {
+        return Arrays.stream(values())
+                .anyMatch(v -> v.getOrderStatus().equalsIgnoreCase(status));
+    }
+
 }

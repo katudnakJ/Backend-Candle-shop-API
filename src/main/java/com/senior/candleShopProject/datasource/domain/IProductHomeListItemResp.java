@@ -20,5 +20,5 @@ public class IProductHomeListItemResp {
     private Boolean isActive;
     private Instant productCreatedDate;
     private Integer totalSelled;
-    private String productImgSlug;
+    private String productImgPath;
 }

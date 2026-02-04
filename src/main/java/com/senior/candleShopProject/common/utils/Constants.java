@@ -1,6 +1,5 @@
 package com.senior.candleShopProject.common.utils;
 
-import com.senior.candleShopProject.common.OrderStatus;
 import lombok.Data;
 
 @Data
@@ -11,4 +10,11 @@ public class Constants {
     public static final String ROLE_ADMIN = "ADMIN";
     public static final String ROLE_SELLER = "SELLER";
     public static final String ROLE_CUSTOMER = "CUST";
+
+//    Database
+    public static final String DB_SEQUENCE_ORDER_NAME = "order_no_seq";
+
+//    Running Number Prefix
+    public static final String PREFIX_ORDER_NO = "ORD";
+    public static final String PREFIX_RECEIPT_NO = "REC";
 }

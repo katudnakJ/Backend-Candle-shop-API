@@ -23,7 +23,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ShopProductService {
+public class ProductService {
 
     @Value("${app.storage.public-image-base-url}")
     private String publicImageBaseUrl;
@@ -43,7 +43,7 @@ public class ShopProductService {
         List<ProductImagesResp> productImages = images.stream().map(image -> {
             ProductImagesResp resp = new ProductImagesResp();
             resp.setProductImgId(image.getProductImgId());
-            resp.setProductImgSlug(publicImageBaseUrl+image.getProductImgSlug());
+            resp.setProductImgPath(publicImageBaseUrl+image.getProductImgPath());
             resp.setIsPrimary(image.getIsPrimary());
             return resp;
         }).toList();
@@ -62,7 +62,6 @@ public class ShopProductService {
 
 //      featured products
         List<IProductHomeListItemResp> featuredProducts = productsRepo.getProductHomeListItemResp(true);
-        Integer featuredProductsCount = productsRepo.getCountProductHomeListItemResp(true);
 
 //      non-featured products
         List<IProductHomeListItemResp> nonFeaturedProducts = productsRepo.getProductHomeListItemResp(false);
@@ -72,10 +71,9 @@ public class ShopProductService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "All Products list are empty.");
 
         ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
-        productHomeListItemResp.setFeaturedProduct(addPrefixProductImgSlug(featuredProducts));
-        productHomeListItemResp.setFeaturedTotal(featuredProductsCount);
+        productHomeListItemResp.setFeaturedProduct(addPrefixProductImgPath(featuredProducts));
 
-        productHomeListItemResp.setNonFeaturedProduct(addPrefixProductImgSlug(nonFeaturedProducts));
+        productHomeListItemResp.setNonFeaturedProduct(addPrefixProductImgPath(nonFeaturedProducts));
         productHomeListItemResp.setNonFeaturedTotal(nonFeaturedProductsCount);
 
         GenericResponse response = new GenericResponse();
@@ -85,7 +83,7 @@ public class ShopProductService {
 
     }
 
-    private List<IProductHomeListItemResp> addPrefixProductImgSlug (List<IProductHomeListItemResp> productHomeListItemResp) {
+    private List<IProductHomeListItemResp> addPrefixProductImgPath (List<IProductHomeListItemResp> productHomeListItemResp) {
        return(
               productHomeListItemResp.stream().map(item -> new IProductHomeListItemResp(
                         item.getProductId(),
@@ -94,7 +92,7 @@ public class ShopProductService {
                         item.getIsActive(),
                         item.getProductCreatedDate(),
                         item.getTotalSelled(),
-                        publicImageBaseUrl + item.getProductImgSlug()
+                        publicImageBaseUrl + item.getProductImgPath()
               )).toList());
 
     }

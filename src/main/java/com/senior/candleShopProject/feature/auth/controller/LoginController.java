@@ -1,8 +1,8 @@
-package com.senior.candleShopProject.common.config;
+package com.senior.candleShopProject.feature.auth.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.feature.user.service.ShopUserService;
+import com.senior.candleShopProject.feature.auth.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,14 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LoginController {
 
-    private final ShopUserService shopUserService;
+    private final LoginService loginService;
 
     @PostMapping()
     @Operation(summary = "User login API.")
-    public ResponseEntity<GenericResponse> userLogin(@RequestParam(value = "lineToken", required = true) String lineToken) throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> login(@RequestParam(value = "lineToken", required = true) String lineToken) throws ShopServiceApiException {
         log.info("User login with line token {}");
 
-        GenericResponse response = shopUserService.userLogin(lineToken);
+        GenericResponse response = loginService.userLogin(lineToken);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

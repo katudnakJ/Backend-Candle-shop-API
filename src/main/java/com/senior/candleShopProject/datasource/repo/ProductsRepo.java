@@ -38,7 +38,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
       p.is_active as isActive,
       p.product_created_date,
       p.total_selled as totalSelled,
-      pi.product_img_slug as productImgSlug
+      pi.product_img_path as productImgPath
     from products p
     left join product_images pi
     on p.product_id = pi.product_id

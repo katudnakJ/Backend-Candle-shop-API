@@ -9,6 +9,6 @@ import java.util.UUID;
 @Setter
 public class ProductImagesResp {
     private UUID productImgId;
-    private String productImgSlug;
+    private String productImgPath;
     private Boolean isPrimary;
 }

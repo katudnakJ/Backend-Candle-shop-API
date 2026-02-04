@@ -25,11 +25,11 @@ public class AuthInterceptor implements HandlerInterceptor {
 
             String token = authHeader.split("Bearer ")[1];
 
+        if(jwtUtils.isTokenExpired(token))
+            throw new ShopUnAuthorizedException(ResultCode.TOKEN_EXPIRED, "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+
             if(!jwtUtils.validateToken(token))
                 throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่");
-
-            if(jwtUtils.isTokenExpired(token))
-                throw new ShopUnAuthorizedException(ResultCode.TOKEN_EXPIRED, "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
 
             String userId = jwtUtils.getUserIdFromToken(token);
 

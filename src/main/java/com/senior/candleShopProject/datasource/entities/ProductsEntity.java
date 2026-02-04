@@ -8,6 +8,8 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -50,4 +52,14 @@ public class ProductsEntity {
 
     @Column(name = "total_selled")
     private Integer totalSelled;
+
+//    Relationships
+    @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImagesEntity> productImagesEntities = new ArrayList<>();
+
+    @OneToOne(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ShoppingCartItemsEntity shoppingCartItemsEntity;
+
+    @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemsEntity> orderItemsEntities = new ArrayList<>();
 }

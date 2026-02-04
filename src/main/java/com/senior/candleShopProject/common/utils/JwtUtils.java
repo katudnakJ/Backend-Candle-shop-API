@@ -51,6 +51,16 @@ public class JwtUtils {
         return claims.getSubject();
     }
 
+//    Extract user Role From Token
+    public String extractUserRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("role", String.class);
+    }
+
 //    Validate Token
     public boolean validateToken(String token) {
         try {
@@ -77,5 +87,9 @@ public class JwtUtils {
 
     public String getUserIdFromToken(String token) {
         return extractUserIdFromToken(token);
+    }
+
+    public String getUserRoleFromToken(String token) {
+        return extractUserRoleFromToken(token);
     }
 }
