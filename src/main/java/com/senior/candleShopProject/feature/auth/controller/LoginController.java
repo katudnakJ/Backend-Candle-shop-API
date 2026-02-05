@@ -7,12 +7,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -25,10 +23,10 @@ public class LoginController {
 
     @PostMapping()
     @Operation(summary = "User login API.")
-    public ResponseEntity<GenericResponse> login(@RequestParam(value = "lineToken", required = true) String lineToken) throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> login(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) throws ShopServiceApiException {
         log.info("User login with line token {}");
 
-        GenericResponse response = loginService.userLogin(lineToken);
+        GenericResponse response = loginService.userLogin(authHeader);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

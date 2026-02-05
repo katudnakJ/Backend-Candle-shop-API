@@ -1,10 +1,16 @@
 package com.senior.candleShopProject.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
+import com.senior.candleShopProject.common.LineService.LineLoginService;
+import com.senior.candleShopProject.common.LineService.dto.LineProfileResp;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopInvalidParamException;
+import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
+import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.JwtUtils;
 import com.senior.candleShopProject.datasource.domain.IUsersResp;
+import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import com.senior.candleShopProject.feature.auth.controller.dto.UserLoginResponse;
 import com.senior.candleShopProject.feature.auth.service.LoginService;
@@ -19,11 +25,15 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 public class LoginServiceTest {
+
+    @InjectMocks
+    private LoginService loginService;
+
     @Mock
     private JwtUtils jwtUtils;
 
@@ -33,8 +43,9 @@ public class LoginServiceTest {
     @Mock
     private IUsersResp userProfile;
 
-    @InjectMocks
-    private LoginService loginService;
+    @Mock
+    private LineLoginService lineLoginService;
+
 
     @BeforeEach
     void setUp() {
@@ -43,81 +54,106 @@ public class LoginServiceTest {
 
     @Test
     void userLogin_Success_ExistingUser() throws Exception {
-        // Given
-        String lineToken = "valid_token";
+        String authHeader = "valid_token";
+        String lineUserId = "line-123";
         UUID userId = UUID.randomUUID();
-        String userRole = "CUSTOMER";
-        String expectedToken = "jwt_token";
+        String role = "CUSTOMER";
+        String rawToken = "jwt_token";
 
+        LineProfileResp lineProfile = new LineProfileResp();
+        lineProfile.setUserId(lineUserId);
+
+        when(lineLoginService.getLineProfile(eq(authHeader))).thenReturn(lineProfile);
+        when(usersRepo.getUserProfileByLineId(eq(lineUserId))).thenReturn(userProfile);
         when(userProfile.getUserId()).thenReturn(userId);
-        when(userProfile.getUserRole()).thenReturn(userRole);
-        when(usersRepo.getUserProfileByLineId(anyString())).thenReturn(userProfile);
-        when(jwtUtils.generateToken(userId, userRole)).thenReturn(expectedToken);
+        when(userProfile.getUserRole()).thenReturn(role);
+        when(jwtUtils.generateToken(userId, role)).thenReturn(rawToken);
 
-        // When
-        GenericResponse response = loginService.userLogin(lineToken);
+        GenericResponse resp = loginService.userLogin(authHeader);
 
-        // Then
-        assertNotNull(response);
-        assertEquals(ResultCode.SUCCESS, response.getStatus());
-
-        UserLoginResponse data = (UserLoginResponse) response.getData();
-        assertEquals(expectedToken, data.getToken());
+        assertNotNull(resp);
+        assertEquals(ResultCode.SUCCESS, resp.getStatus());
+        // token is prefixed in service
+        assertTrue(resp.getData() != null);
+        String actual = ((UserLoginResponse) resp.getData()).getToken();
+        assertEquals(Constants.TOKEN_PREFIX + rawToken, actual);
     }
 
     @Test
     void userLogin_Success_NewUser() throws Exception {
-        // Given
-        String lineToken = "valid_token";
+        String authHeader = "valid_token";
+        String lineUserId = "line-456";
         UUID userId = UUID.randomUUID();
-        String userRole = "CUSTOMER";
-        String expectedToken = "jwt_token";
+        String role = "CUSTOMER";
+        String rawToken = "jwt_token_new";
 
-        when(usersRepo.getUserProfileByLineId(anyString()))
-                .thenReturn(null)
-                .thenReturn(userProfile);
-        when(usersRepo.save(any())).thenReturn(null);
+        LineProfileResp lineProfile = new LineProfileResp();
+        lineProfile.setUserId(lineUserId);
+
+        // first call -> null (new user), second call -> userProfile (after save)
+        when(lineLoginService.getLineProfile(eq(authHeader))).thenReturn(lineProfile);
+        when(usersRepo.getUserProfileByLineId(eq(lineUserId))).thenReturn(null).thenReturn(userProfile);
+        when(usersRepo.save(any(UsersEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userProfile.getUserId()).thenReturn(userId);
-        when(userProfile.getUserRole()).thenReturn(userRole);
-        when(jwtUtils.generateToken(userId, userRole)).thenReturn(expectedToken);
+        when(userProfile.getUserRole()).thenReturn(role);
+        when(jwtUtils.generateToken(userId, role)).thenReturn(rawToken);
 
-        // When
-        GenericResponse response = loginService.userLogin(lineToken);
+        GenericResponse resp = loginService.userLogin(authHeader);
 
-        // Then
-        assertNotNull(response);
-        assertEquals(ResultCode.SUCCESS, response.getStatus());
-
-        UserLoginResponse data = (UserLoginResponse) response.getData();
-        assertEquals(expectedToken, data.getToken());
+        assertNotNull(resp);
+        assertEquals(ResultCode.SUCCESS, resp.getStatus());
+        String actual = ((com.senior.candleShopProject.feature.auth.controller.dto.UserLoginResponse) resp.getData()).getToken();
+        assertEquals(Constants.TOKEN_PREFIX + rawToken, actual);
     }
 
     @Test
-    void userLogin_ThrowsException_EmptyToken() {
-        // Given
-        String emptyToken = "";
+    void userLogin_lineServiceThrows_unauthorized() throws ShopServiceApiException {
+        String authHeader = "Bearer bad_token";
 
-        // When & Then
-        ShopInvalidParamException exception = assertThrows(
-                ShopInvalidParamException.class,
-                () -> loginService.userLogin(emptyToken)
+        when(lineLoginService.getLineProfile(eq(authHeader)))
+                .thenThrow(new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID));
+
+        ShopUnAuthorizedException exception = assertThrows(
+                ShopUnAuthorizedException.class, () ->
+           lineLoginService.getLineProfile(authHeader)
         );
 
-        assertEquals(ResultCode.INVALID_PARAMS, exception.getStatus());
-        assertEquals("Line token is required.", exception.getMessage());
+        assertEquals(ResultCode.TOKEN_INVALID, exception.getStatus());
+
     }
 
     @Test
-    void userLogin_ThrowsException_NullToken() {
+    void userLogin_ThrowsException_InvalidHeaderFormat() throws ShopServiceApiException {
         // Given
-        String nullToken = null;
+        String invalidHeader = "InvalidFormat token123";
+
+        when(lineLoginService.getLineProfile(eq(invalidHeader)))
+                .thenThrow(new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID));
 
         // When & Then
-        ShopInvalidParamException exception = assertThrows(
-                ShopInvalidParamException.class,
-                () -> loginService.userLogin(nullToken)
+        ShopUnAuthorizedException exception = assertThrows(
+                ShopUnAuthorizedException.class,
+                () -> loginService.userLogin(invalidHeader)
         );
 
-        assertEquals(ResultCode.INVALID_PARAMS, exception.getStatus());
+        assertEquals(ResultCode.UNAUTHORIZED, exception.getStatus());
     }
+
+    @Test
+    void userLogin_ThrowsException_MissingBearerPrefix() throws Exception {
+        // Given
+        String tokenWithoutBearer = "sometoken123";
+
+        when(lineLoginService.getLineProfile(eq(tokenWithoutBearer)))
+                .thenThrow(new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID));
+
+        // When & Then
+        ShopUnAuthorizedException exception = assertThrows(
+                ShopUnAuthorizedException.class,
+                () -> loginService.userLogin(tokenWithoutBearer)
+        );
+
+        assertEquals(ResultCode.UNAUTHORIZED, exception.getStatus());
+    }
+
 }

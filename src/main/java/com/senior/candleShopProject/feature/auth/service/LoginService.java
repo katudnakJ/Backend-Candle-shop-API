@@ -1,9 +1,12 @@
 package com.senior.candleShopProject.feature.auth.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
+import com.senior.candleShopProject.common.LineService.LineLoginService;
+import com.senior.candleShopProject.common.LineService.dto.LineProfileResp;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopInvalidParamException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.JwtUtils;
 import com.senior.candleShopProject.datasource.domain.IUsersResp;
@@ -16,20 +19,31 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginService {
 
     private final JwtUtils jwtUtils;
+
+    private final LineLoginService lineLoginService;
+
     private final UsersRepo usersRepo;
 
-    public GenericResponse userLogin(String lineToken) throws ShopServiceApiException {
-//       String lineTokenVerifyUrl = Constants.LINE_TOKEN_VERIFY_URL + "?id_token=" + lineToken;
-        if (StringUtils.isEmpty(lineToken))
-            throw new ShopInvalidParamException(ResultCode.INVALID_PARAMS, "Line token is required.");
+    public GenericResponse userLogin(String authHeader) throws ShopServiceApiException {
+//        LineService
+        LineProfileResp lineProfileResp;
+        try{
+            lineProfileResp = lineLoginService.getLineProfile(authHeader);
+        } catch (Exception exception){
+            log.error("Error get Line Profile (LineLoginService.getLineProfile()): {}", exception.getMessage());
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED);
+        }
 
-        String lineUserId = "lintestid12345"; //test
+        String lineUserId = lineProfileResp.getUserId();
+
         IUsersResp userProfile = usersRepo.getUserProfileByLineId(lineUserId);
 
         if (userProfile == null) {
@@ -46,10 +60,13 @@ public class LoginService {
         }
 
         userProfile = usersRepo.getUserProfileByLineId(lineUserId);
-        String token = jwtUtils.generateToken(userProfile.getUserId(), userProfile.getUserRole());
+        UUID userId = userProfile.getUserId();
+        String token = jwtUtils.generateToken(userId, userProfile.getUserRole());
 
         UserLoginResponse userLoginResponse = new UserLoginResponse();
-        userLoginResponse.setToken(token);
+        userLoginResponse.setToken( Constants.TOKEN_PREFIX + token);
+        lineProfileResp.setUserId(userId.toString());
+        userLoginResponse.setLineProfile(lineProfileResp);
 
         GenericResponse response = new GenericResponse();
         response.setData(userLoginResponse);

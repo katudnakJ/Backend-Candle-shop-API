@@ -4,7 +4,9 @@ import lombok.Data;
 
 @Data
 public class Constants {
-    public static final String LINE_TOKEN_VERIFY_URL = "https://api.line.me/oauth2/v2.1/verify/";
+    public static final String LINE_BASE_URL = "https://api.line.me";
+    public static final String LINE_TOKEN_VERIFY_URL = "/oauth2/v2.1/verify";
+    public static final String LINE_TOKEN_GET_PROFILE_URL = "/v2/profile";
 
 //    Role
     public static final String ROLE_ADMIN = "ADMIN";
@@ -17,4 +19,7 @@ public class Constants {
 //    Running Number Prefix
     public static final String PREFIX_ORDER_NO = "ORD";
     public static final String PREFIX_RECEIPT_NO = "REC";
+
+//    Token Header
+    public static final String TOKEN_PREFIX = "Bearer ";
 }
