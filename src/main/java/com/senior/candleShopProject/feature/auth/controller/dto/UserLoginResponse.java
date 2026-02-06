@@ -8,5 +8,4 @@ import lombok.Setter;
 @Setter
 public class UserLoginResponse {
     LineProfileResp lineProfile = new LineProfileResp();
-    String token;
 }

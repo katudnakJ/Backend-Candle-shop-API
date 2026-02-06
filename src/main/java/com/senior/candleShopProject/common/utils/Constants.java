@@ -20,6 +20,4 @@ public class Constants {
     public static final String PREFIX_ORDER_NO = "ORD";
     public static final String PREFIX_RECEIPT_NO = "REC";
 
-//    Token Header
-    public static final String TOKEN_PREFIX = "Bearer ";
 }
