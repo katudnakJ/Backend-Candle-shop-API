@@ -12,3 +12,15 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Server configuration
+server:
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:ssl/localhost.p12
+    key-store-type: PKCS12
+    key-store-password: ${PKCS12_STORE_PASSWORD}
+    key-alias: localhost
+  servlet:
+    context-path: /candle-shop-project-api

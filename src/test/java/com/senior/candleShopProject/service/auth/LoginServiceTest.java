@@ -11,6 +11,7 @@ import com.senior.candleShopProject.datasource.domain.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import com.senior.candleShopProject.feature.auth.service.LoginService;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -79,6 +80,10 @@ public class LoginServiceTest {
         assertNotNull(resp.getData());
         verify(usersRepo, times(2)).getUserProfileByLineId(lineUserId);
         verify(jwtUtils).generateToken(userId, role);
+
+        Cookie cookie = servResp.getCookie("access_token");
+        assertNotNull(cookie);
+        assertEquals(rawToken, cookie.getValue());
     }
 
     @Test
@@ -107,6 +112,10 @@ public class LoginServiceTest {
         assertEquals(ResultCode.SUCCESS, resp.getStatus());
         assertNotNull(resp.getData());
         verify(usersRepo).save(any(UsersEntity.class));
+
+        Cookie cookie = servResp.getCookie("access_token");
+        assertNotNull(cookie);
+        assertEquals(rawToken, cookie.getValue());
     }
 
     @Test

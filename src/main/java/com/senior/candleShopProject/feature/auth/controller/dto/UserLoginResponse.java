@@ -1,11 +1,13 @@
 package com.senior.candleShopProject.feature.auth.controller.dto;
 
-import com.senior.candleShopProject.common.LineService.dto.LineProfileResp;
+import com.senior.candleShopProject.common.LineService.dto.LineProfileData;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class UserLoginResponse {
-    LineProfileResp lineProfile = new LineProfileResp();
+    String userId;
+    String userRole;
+    LineProfileData lineProfile = new LineProfileData();
 }

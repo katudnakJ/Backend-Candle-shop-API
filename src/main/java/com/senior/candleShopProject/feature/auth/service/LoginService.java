@@ -2,6 +2,7 @@ package com.senior.candleShopProject.feature.auth.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.LineService.LineLoginService;
+import com.senior.candleShopProject.common.LineService.dto.LineProfileData;
 import com.senior.candleShopProject.common.LineService.dto.LineProfileResp;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopInvalidParamException;
@@ -63,15 +64,22 @@ public class LoginService {
 
         userProfile = usersRepo.getUserProfileByLineId(lineUserId);
         UUID userId = userProfile.getUserId();
-        String token = jwtUtils.generateToken(userId, userProfile.getUserRole());
+        String userRole = userProfile.getUserRole();
+        String token = jwtUtils.generateToken(userId, userRole);
 
 //        set cookie
         CookieUtils.addAccessTokenToCookie(servResp, token);
 
 
         UserLoginResponse userLoginResponse = new UserLoginResponse();
-        lineProfileResp.setUserId(userId.toString());
-        userLoginResponse.setLineProfile(lineProfileResp);
+        userLoginResponse.setUserId(userId.toString());
+        userLoginResponse.setUserRole(userRole);
+
+        LineProfileData lineProfileData = new LineProfileData();
+        lineProfileData.setDisplayName(lineProfileResp.getDisplayName());
+        lineProfileData.setPictureUrl(lineProfileResp.getPictureUrl());
+
+        userLoginResponse.setLineProfile(lineProfileData);
 
         GenericResponse response = new GenericResponse();
         response.setData(userLoginResponse);

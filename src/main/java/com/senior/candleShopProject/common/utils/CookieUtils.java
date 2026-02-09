@@ -11,8 +11,12 @@ public class CookieUtils {
 
     private static final String ACCESS_TOKEN_COOKIE_NAME = "access_token";
 
-    @Value("${JWT_ACCESS_EXPIRATION_TIME}")
     private static Integer cookieExpirationTime;
+
+    @Value("${JWT_ACCESS_EXPIRATION_TIME}")
+    public void setCookieExpireTime(Integer expireTime) {
+        CookieUtils.cookieExpirationTime = expireTime;
+    }
 
     public static void addAccessTokenToCookie(HttpServletResponse response, String accessToken) {
         Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken);

@@ -4,6 +4,7 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.common.utils.CookieUtils;
 import com.senior.candleShopProject.common.utils.JwtUtils;
+import io.netty.handler.codec.http.HttpMethod;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -22,7 +23,12 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     @Override
-        public boolean preHandle (HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle (HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+//      CORS Preflight Request Handling
+        if(HttpMethod.OPTIONS.name().equals(request.getMethod())){
+            return true;
+        }
 
         String token = CookieUtils.getAccessTokenByCookie(request);
 

@@ -34,3 +34,8 @@ build/
 
 # env
 .env
+
+# mkcert / local TLS artifacts
+*.pem
+*-key.pem
+*.pfx
