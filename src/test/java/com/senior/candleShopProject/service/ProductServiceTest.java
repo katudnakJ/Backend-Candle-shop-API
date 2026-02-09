@@ -5,12 +5,11 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.datasource.domain.IProductHomeListItemResp;
-import com.senior.candleShopProject.datasource.domain.ProductHomeListItemResp;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
 import com.senior.candleShopProject.datasource.domain.IProductImagesResp;
 import com.senior.candleShopProject.datasource.domain.IProductResp;
-import com.senior.candleShopProject.feature.product.service.ShopProductService;
+import com.senior.candleShopProject.feature.product.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,10 +28,10 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 
 @TestComponent
-public class ShopProductServiceTest {
+public class ProductServiceTest {
 
     @InjectMocks
-    private ShopProductService shopProductService;
+    private ProductService productService;
 
     @Mock
     private ProductsRepo productsRepo;
@@ -54,13 +53,13 @@ public class ShopProductServiceTest {
 
        IProductImagesResp iProductImagesResp = mock(IProductImagesResp.class);
        when(iProductImagesResp.getProductImgId()).thenReturn(productImgId);
-       when(iProductImagesResp.getProductImgSlug()).thenReturn("image.jpg");
+       when(iProductImagesResp.getProductImgPath()).thenReturn("image.jpg");
        when(iProductImagesResp.getIsPrimary()).thenReturn(true);
 
        when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(iProductImagesResp));
 
 
-       GenericResponse response = shopProductService.getProductsById(productId);
+       GenericResponse response = productService.getProductsById(productId);
 
        assertNotNull(response);
        assertEquals(response.getStatus(), ResultCode.SUCCESS);
@@ -76,7 +75,7 @@ public class ShopProductServiceTest {
         when(productsRepo.getProductById(productId)).thenReturn(null);
 
         ShopDataNotFoundException exception = assertThrows(ShopDataNotFoundException.class, () -> {
-            shopProductService.getProductsById(productId);
+            productService.getProductsById(productId);
         });
 
         assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatus());
@@ -92,13 +91,13 @@ public class ShopProductServiceTest {
         when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(List.of(featuredProductResp));
         when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(1);
 
-        GenericResponse response = shopProductService.getProductHomeListItem();
+        GenericResponse response = productService.getProductHomeListItem();
 
         assertNotNull(response);
         assertEquals(ResultCode.SUCCESS, response.getStatus());
 
         verify(productsRepo, times(2)).getProductHomeListItemResp(anyBoolean());
-        verify(productsRepo, times(2)).getCountProductHomeListItemResp(anyBoolean());
+        verify(productsRepo, times(1)).getCountProductHomeListItemResp(anyBoolean());
     }
 
     @Test
@@ -107,7 +106,7 @@ public class ShopProductServiceTest {
         when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(0);
 
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
-            shopProductService.getProductHomeListItem();
+            productService.getProductHomeListItem();
         });
         assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
     }

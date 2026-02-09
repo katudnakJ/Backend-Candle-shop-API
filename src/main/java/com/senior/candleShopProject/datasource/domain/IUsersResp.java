@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public interface IUsersResp {
     UUID getUserId();
-    String getLineDisplayName();
     Boolean getIsSeller();
+    String getUserRole();
+
 }

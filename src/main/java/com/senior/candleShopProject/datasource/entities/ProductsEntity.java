@@ -1,15 +1,15 @@
 package com.senior.candleShopProject.datasource.entities;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,6 +18,8 @@ import java.util.UUID;
 @Table(name="products")
 public class ProductsEntity {
     @Id
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "product_id")
     private UUID productId;
 
@@ -50,4 +52,14 @@ public class ProductsEntity {
 
     @Column(name = "total_selled")
     private Integer totalSelled;
+
+//    Relationships
+    @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductImagesEntity> productImagesEntities = new ArrayList<>();
+
+    @OneToOne(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ShoppingCartItemsEntity shoppingCartItemsEntity;
+
+    @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemsEntity> orderItemsEntities = new ArrayList<>();
 }

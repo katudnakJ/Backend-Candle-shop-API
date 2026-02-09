@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -68,5 +69,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public  ResponseEntity<GenericResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        log.error("Missing Servlet Request Parameter Exception : ",ex.getMessage());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.INVALID_PARAMS);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }

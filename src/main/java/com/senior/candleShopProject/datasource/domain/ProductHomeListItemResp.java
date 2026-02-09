@@ -9,7 +9,6 @@ import java.util.List;
 @Setter
 public class ProductHomeListItemResp {
     private List<IProductHomeListItemResp> featuredProduct;
-    private Integer featuredTotal;
     private List<IProductHomeListItemResp> nonFeaturedProduct;
     private Integer nonFeaturedTotal;
 }

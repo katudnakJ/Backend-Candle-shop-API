@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public interface IProductImagesResp {
     UUID getProductImgId();
-    String getProductImgSlug();
+    String getProductImgPath();
     Boolean getIsPrimary();
 }
