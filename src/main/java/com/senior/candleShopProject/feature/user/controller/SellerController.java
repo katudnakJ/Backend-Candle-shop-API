@@ -2,6 +2,7 @@ package com.senior.candleShopProject.feature.user.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.common.utils.JwtUtils;
 import com.senior.candleShopProject.feature.user.service.SellerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 public class SellerController {
 
     private final SellerService sellerService;
+
+    private final JwtUtils jwtUtils;
 
     @GetMapping("/orders/count/{status}")
     @Operation(summary = "Get order count by status API.")

@@ -53,7 +53,14 @@ public class AuthInterceptor implements HandlerInterceptor {
                 log.info("token: {}", "userId is null");
                 throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
             }
+
+            String userRole = jwtUtils.getUserRoleFromToken(token);
+            if(userRole == null){
+                log.info("token: {}", "userRole is null");
+                throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            }
             request.setAttribute("userId", userId);
+            request.setAttribute("userRole", userRole);
             return true;
         }
 }

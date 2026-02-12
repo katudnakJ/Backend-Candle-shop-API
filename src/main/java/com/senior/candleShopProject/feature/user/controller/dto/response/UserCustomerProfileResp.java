@@ -10,6 +10,6 @@ import java.util.List;
 @Getter
 @Setter
 public class UserCustomerProfileResp {
-    Boolean isSeller;
-    List<IAddressResp> address;
+    private Boolean isSeller;
+    private List<IAddressResp> address;
 }
