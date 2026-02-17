@@ -1,5 +1,6 @@
 package com.senior.candleShopProject.datasource.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +9,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class IShoppingCartResp {
+@AllArgsConstructor
+public class IAllItemsShoppingCartResp {
     UUID shoppingCartId;
     UUID shoppingCartItemId;
     UUID productId;

@@ -13,5 +13,5 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ShoppingCartResp {
     private UUID shoppingCartId;
-    private List<ShoppingCartItemsList> items = new ArrayList<>();
+    private List<ShoppingCartItemsList> cartItems = new ArrayList<>();
 }

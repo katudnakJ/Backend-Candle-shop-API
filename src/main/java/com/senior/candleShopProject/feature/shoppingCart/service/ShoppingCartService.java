@@ -2,20 +2,29 @@ package com.senior.candleShopProject.feature.shoppingCart.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
+import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.common.utils.JwtUtils;
+import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
+import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
-import com.senior.candleShopProject.datasource.domain.IShoppingCartResp;import com.senior.candleShopProject.datasource.repo.ShoppingCartRepo;
+import com.senior.candleShopProject.datasource.domain.IAllItemsShoppingCartResp;
+import com.senior.candleShopProject.datasource.entities.ShoppingCartItemsEntity;
+import com.senior.candleShopProject.datasource.repo.ShoppingCartItemsRepo;
+import com.senior.candleShopProject.datasource.repo.ShoppingCartRepo;
+import com.senior.candleShopProject.feature.shoppingCart.controller.dto.request.AddShoppingCartItemReq;
+import com.senior.candleShopProject.feature.shoppingCart.controller.dto.request.DeleteShoppingCartItemReq;
 import com.senior.candleShopProject.feature.shoppingCart.controller.dto.response.ShoppingCartItemsList;
 import com.senior.candleShopProject.feature.shoppingCart.controller.dto.response.ShoppingCartResp;
-import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -28,9 +37,11 @@ public class ShoppingCartService {
 
     private final ShoppingCartRepo shoppingCartRepo;
 
+    private final ShoppingCartItemsRepo shoppingCartItemsRepo;
+
     public GenericResponse getShoppingCart(UUID userId) throws ShopServiceApiException {
 
-        List<IShoppingCartResp> iShoppingCartResps = shoppingCartRepo.getShoppingCartByUserId(userId);
+        List<IAllItemsShoppingCartResp> iShoppingCartResps = shoppingCartRepo.getAllItemsFromShoppingCartByUserId(userId);
 
         if (iShoppingCartResps.isEmpty()){
             GenericResponse response = new GenericResponse();
@@ -39,12 +50,11 @@ public class ShoppingCartService {
             return response;
         }
 
-        List<ShoppingCartItemsList> shoppingCartItemsList = new ArrayList<>();
-        shoppingCartItemsList.add(getShoppingCartItemsList(iShoppingCartResps));
+        List<ShoppingCartItemsList> shoppingCartItemsList = getShoppingCartItemsList(iShoppingCartResps);
 
         ShoppingCartResp shoppingCartResp = new ShoppingCartResp();
         shoppingCartResp.setShoppingCartId(iShoppingCartResps.get(0).getShoppingCartId());
-        shoppingCartResp.setItems(shoppingCartItemsList);
+        shoppingCartResp.setCartItems(shoppingCartItemsList);
 
         GenericResponse response = new GenericResponse();
         response.setData(shoppingCartResp);
@@ -52,11 +62,62 @@ public class ShoppingCartService {
         return response;
     }
 
-    ShoppingCartItemsList getShoppingCartItemsList(List <IShoppingCartResp> iShoppingCartResp) {
+    @Transactional
+    public GenericResponse addShoppingCartItem(UUID userId, AddShoppingCartItemReq addShoppingCartItemReq) throws ShopServiceApiException {
+        UUID shoppingCartId = shoppingCartRepo.getShoppingCartIdByUserId(userId);
 
-        ShoppingCartItemsList shoppingCartItemsList = new ShoppingCartItemsList();
+        if (shoppingCartId == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart not found.");
 
-        for (IShoppingCartResp cart : iShoppingCartResp) {
+        UUID productId = UUID.fromString(addShoppingCartItemReq.getProductId());
+        Optional<ShoppingCartItemsEntity> existCartItems = shoppingCartItemsRepo
+                .findShoppingCartItemsEntitiesByShoppingCartEntity_ShoppingCartIdAndProductsEntity_ProductId
+                        (shoppingCartId, productId);
+
+//      already have the same product in cart, update quantity
+        if(existCartItems.isPresent()){
+            ShoppingCartItemsEntity shoppingCartItemsEntity = existCartItems.get();
+            shoppingCartItemsEntity.setQuantity(addShoppingCartItemReq.getQuantity());
+            shoppingCartItemsRepo.save(shoppingCartItemsEntity);
+        }else{
+            ShoppingCartItemsEntity shoppingCartItemsEntity = getShoppingCartItemsEntity(addShoppingCartItemReq, shoppingCartId);
+            shoppingCartItemsRepo.save(shoppingCartItemsEntity);
+        }
+
+        GenericResponse response = new GenericResponse();
+        response.setData(null);
+        response.setStatus(ResultCode.SUCCESS);
+
+        return response;
+    }
+
+    @Transactional
+    public GenericResponse deleteShoppingCartItem(UUID userId, DeleteShoppingCartItemReq deleteShoppingCartItemReq) throws ShopServiceApiException {
+        UUID shoppingCartId = shoppingCartRepo.getShoppingCartIdByUserId(userId);
+        UUID shoppingCartItemId = UUID.fromString(deleteShoppingCartItemReq.getShoppingCartItemId());
+
+        if(!shoppingCartItemsRepo.existsByShoppingCartItemId(shoppingCartItemId))
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart item is not exists.");
+
+        if (shoppingCartId == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart not found.");
+
+        if (!shoppingCartId.toString().equalsIgnoreCase(deleteShoppingCartItemReq.getShoppingCartId()))
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to delete this item.");
+
+        shoppingCartItemsRepo.deleteById(shoppingCartItemId);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(null);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
+    }
+
+    private List<ShoppingCartItemsList> getShoppingCartItemsList(List <IAllItemsShoppingCartResp> iShoppingCartResp) {
+
+        List<ShoppingCartItemsList> shoppingCartItemsList = new ArrayList<>();
+
+        for (IAllItemsShoppingCartResp cart : iShoppingCartResp) {
             ShoppingCartItemsList cartItemsList = new ShoppingCartItemsList();
             cartItemsList.setShoppingCartItemId(cart.getShoppingCartItemId());
             cartItemsList.setProductId(cart.getProductId());
@@ -70,8 +131,27 @@ public class ShoppingCartService {
                 cartItemsList.setProductImgPath(null);
             else
                 cartItemsList.setProductImgPath(publicImageBaseUrl + cart.getProductImgPath());
+
+            shoppingCartItemsList.add(cartItemsList);
         }
         return shoppingCartItemsList;
 
     }
+
+    private static ShoppingCartItemsEntity getShoppingCartItemsEntity(AddShoppingCartItemReq shoppingCartItemReq, UUID shoppingCartId) {
+        ShoppingCartEntity shoppingCartEntity = new ShoppingCartEntity();
+        shoppingCartEntity.setShoppingCartId(shoppingCartId);
+
+        UUID productId = UUID.fromString(shoppingCartItemReq.getProductId());
+
+        ProductsEntity productsEntity = new ProductsEntity();
+        productsEntity.setProductId(productId);
+
+        ShoppingCartItemsEntity shoppingCartItemsEntity = new ShoppingCartItemsEntity();
+        shoppingCartItemsEntity.setShoppingCartEntity(shoppingCartEntity);
+        shoppingCartItemsEntity.setProductsEntity(productsEntity);
+        shoppingCartItemsEntity.setQuantity(shoppingCartItemReq.getQuantity());
+        return shoppingCartItemsEntity;
+    }
 }
+

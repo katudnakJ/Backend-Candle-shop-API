@@ -1,6 +1,6 @@
 package com.senior.candleShopProject.datasource.repo;
 
-import com.senior.candleShopProject.datasource.domain.IShoppingCartResp;
+import com.senior.candleShopProject.datasource.domain.IAllItemsShoppingCartResp;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -33,7 +34,16 @@ public interface ShoppingCartRepo extends JpaRepository<ShoppingCartEntity, UUID
             ON p.product_id = pi.product_id AND pi.is_primary = true
             WHERE u.user_id = :userId;
             """, nativeQuery = true)
-    List<IShoppingCartResp> getShoppingCartByUserId(@Param("userId") UUID userId);
+    List<IAllItemsShoppingCartResp> getAllItemsFromShoppingCartByUserId(@Param("userId") UUID userId);
 
-
+    @Query(value = """
+    select shopping_cart_id AS shoppingCartId
+    from shopping_cart
+    where customer_id = (
+      select customer_id
+      from customers
+      where user_id = :userId
+    );
+""", nativeQuery = true)
+    UUID getShoppingCartIdByUserId(@Param("userId") UUID userId);
 }
