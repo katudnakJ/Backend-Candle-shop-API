@@ -4,6 +4,7 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.LineService.LineLoginService;
 import com.senior.candleShopProject.common.LineService.dto.LineProfileResp;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.common.utils.CookieUtils;
 import com.senior.candleShopProject.common.utils.JwtUtils;
@@ -129,5 +130,22 @@ public class LoginServiceTest {
                 () -> loginService.userLogin(authHeader, servResp)
         );
         assertEquals(ResultCode.UNAUTHORIZED, ex.getStatus());
+    }
+
+    @Test
+    void userLogin_Fail_LineUserIdEmpty() throws ShopServiceApiException {
+        String authHeader = "valid_token";
+
+        LineProfileResp lineProfile = new LineProfileResp();
+        lineProfile.setUserId(""); // หรือจะ set เป็น null ก็ได้แล้วแต่เคสที่อยากเช็ก
+
+        when(lineLoginService.getLineProfile(eq(authHeader))).thenReturn(lineProfile);
+
+        ShopServiceApiException ex = assertThrows(
+                ShopServiceApiException.class,
+                () -> loginService.userLogin(authHeader, servResp)
+        );
+
+        assertEquals(ResultCode.INTERNAL_SERVER_ERROR, ex.getStatus());
     }
 }

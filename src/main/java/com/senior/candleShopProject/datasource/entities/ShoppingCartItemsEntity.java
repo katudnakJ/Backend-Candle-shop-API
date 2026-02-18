@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "shopping_cart_items")
+@Table(name = "shopping_cart_items", uniqueConstraints = @UniqueConstraint(columnNames = {"shopping_cart_id", "product_id"}))
 public class ShoppingCartItemsEntity {
     @Id
     @GeneratedValue

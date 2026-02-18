@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserLoginResponse {
-    String userId;
-    String userRole;
-    LineProfileData lineProfile = new LineProfileData();
+    private String userId;
+    private String userRole;
+    private LineProfileData lineProfile = new LineProfileData();
 }

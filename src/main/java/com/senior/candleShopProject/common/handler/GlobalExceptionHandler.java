@@ -2,10 +2,7 @@ package com.senior.candleShopProject.common.handler;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
-import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
-import com.senior.candleShopProject.common.exception.ShopInvalidParamException;
-import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
+import com.senior.candleShopProject.common.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +47,14 @@ public class GlobalExceptionHandler {
         GenericResponse response = new GenericResponse();
         response.setStatus(ex.getStatus());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ShopForbiddenException.class)
+    public ResponseEntity<GenericResponse> handleShopForbiddenException(ShopForbiddenException ex) {
+        log.error("Forbidden Exception : ",ex.getStatus().getRemark());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ex.getStatus());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(ShopUnAuthorizedException.class)

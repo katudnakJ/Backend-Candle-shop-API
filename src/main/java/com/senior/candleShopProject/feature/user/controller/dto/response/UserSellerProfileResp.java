@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class UserSellerProfileResp {
-    Boolean isSeller;
-    String bankQrPaymentImgPath;
-    List<IAddressResp> address;
+    private Boolean isSeller;
+    private String bankQrPaymentImgPath;
+    private List<IAddressResp> address;
 }

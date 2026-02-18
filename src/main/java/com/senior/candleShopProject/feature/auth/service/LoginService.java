@@ -13,6 +13,7 @@ import com.senior.candleShopProject.common.utils.CookieUtils;
 import com.senior.candleShopProject.common.utils.JwtUtils;
 import com.senior.candleShopProject.datasource.domain.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
+import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import com.senior.candleShopProject.feature.auth.controller.dto.UserLoginResponse;
@@ -46,19 +47,13 @@ public class LoginService {
         }
 
         String lineUserId = lineProfileResp.getUserId();
+        if(StringUtils.isEmpty(lineUserId))
+            throw new ShopInvalidParamException(ResultCode.INTERNAL_SERVER_ERROR);
 
         IUsersResp userProfile = usersRepo.getUserProfileByLineId(lineUserId);
 
         if (userProfile == null) {
-            CustomersEntity customersEntity = new CustomersEntity();
-
-            UsersEntity newUser = new UsersEntity();
-            newUser.setLineId(lineUserId);
-            newUser.setIsSeller(false);
-            newUser.setUserRole(Constants.ROLE_CUSTOMER);
-            newUser.setCustomersEntity(customersEntity);
-
-            customersEntity.setUsersEntity(newUser);
+            UsersEntity newUser = getNewUserEntity(lineUserId);
             usersRepo.save(newUser);
         }
 
@@ -93,5 +88,22 @@ public class LoginService {
         GenericResponse response = new GenericResponse();
         response.setStatus(ResultCode.SUCCESS);
         return response;
+    }
+
+    private UsersEntity getNewUserEntity(String lineUserId){
+        CustomersEntity customersEntity = new CustomersEntity();
+        ShoppingCartEntity shoppingCartEntity = new ShoppingCartEntity();
+        customersEntity.setShoppingCartEntity(shoppingCartEntity);
+        shoppingCartEntity.setCustomersEntity(customersEntity);
+
+        UsersEntity newUser = new UsersEntity();
+        newUser.setLineId(lineUserId);
+        newUser.setIsSeller(false);
+        newUser.setUserRole(Constants.ROLE_CUSTOMER);
+        newUser.setCustomersEntity(customersEntity);
+
+        customersEntity.setUsersEntity(newUser);
+
+        return newUser;
     }
 }
