@@ -37,12 +37,12 @@ public class AddressesEntity {
     private String addressLabel;
 
     @Column(name = "is_default")
-    private Boolean isDefault;
+    private boolean isDefault;
 
     @Column(name = "recipient_first_name")
     private String recipientFirstName;
 
-    @Column(name = "recipient_last_name")
+        @Column(name = "recipient_last_name")
     private String recipientLastName;
 
     @Column(name = "recipient_phone")

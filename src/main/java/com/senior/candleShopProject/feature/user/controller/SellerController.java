@@ -23,9 +23,9 @@ public class SellerController {
 
     private final JwtUtils jwtUtils;
 
-    @GetMapping("/orders/count/{status}")
+    @GetMapping("/orders/count")
     @Operation(summary = "Get order count by status API.")
-    public ResponseEntity getSellerOrderCount(@PathVariable(value = "status", required = true) String status) throws ShopServiceApiException {
+    public ResponseEntity getSellerOrderCount(@RequestParam(value = "status", required = true) String status) throws ShopServiceApiException {
         log.info("Get seller order count by status {}", status);
         GenericResponse response = sellerService.getSellerOrderCountByStatus(status);
         return ResponseEntity.status(HttpStatus.OK).body(response);

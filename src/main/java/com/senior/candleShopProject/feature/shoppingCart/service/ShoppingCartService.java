@@ -5,7 +5,7 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
+import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import com.senior.candleShopProject.datasource.domain.IAllItemsShoppingCartResp;
@@ -75,18 +75,18 @@ public class ShoppingCartService {
                         (shoppingCartId, productId);
 
 //      already have the same product in cart, update quantity
+        ShoppingCartItemsEntity shoppingCartItemsEntity;
         if(existCartItems.isPresent()){
-            ShoppingCartItemsEntity shoppingCartItemsEntity = existCartItems.get();
+            shoppingCartItemsEntity = existCartItems.get();
             shoppingCartItemsEntity.setQuantity(addShoppingCartItemReq.getQuantity());
-            shoppingCartItemsRepo.save(shoppingCartItemsEntity);
         }else{
-            ShoppingCartItemsEntity shoppingCartItemsEntity = getShoppingCartItemsEntity(addShoppingCartItemReq, shoppingCartId);
-            shoppingCartItemsRepo.save(shoppingCartItemsEntity);
+            shoppingCartItemsEntity = getShoppingCartItemsEntity(addShoppingCartItemReq, shoppingCartId);
         }
+        ShoppingCartItemsEntity savedData = shoppingCartItemsRepo.save(shoppingCartItemsEntity);
 
         GenericResponse response = new GenericResponse();
-        response.setData(null);
-        response.setStatus(ResultCode.SUCCESS);
+        response.setData(CustomizeResponseUtil.ReturnKeyValueWhenComplete(savedData.getShoppingCartItemId()));
+        response.setStatus(ResultCode.CREATED);
 
         return response;
     }

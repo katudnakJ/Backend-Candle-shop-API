@@ -22,7 +22,7 @@ public class ProductImagesEntity {
     private String productImgPath;
 
     @Column(name = "is_primary")
-    private Boolean isPrimary;
+    private boolean isPrimary;
 
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)
