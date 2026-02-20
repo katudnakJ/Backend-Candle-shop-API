@@ -64,8 +64,8 @@ public class SellerService {
         if(usersResp == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
 
-//        if(!usersResp.getIsSeller())
-//            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "You don't have permission.");
+        if(!usersResp.getIsSeller())
+            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "You don't have permission.");
 
         ISellerResp seller = sellerRepo.getSellerByUserId(userId);
 
