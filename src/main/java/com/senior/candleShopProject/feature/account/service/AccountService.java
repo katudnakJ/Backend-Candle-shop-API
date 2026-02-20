@@ -25,9 +25,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AccountService {
 
-    @Value("${app.storage.public-image-base-url}")
-    private String publicBaseImgUrl;
-
     private final UsersRepo usersRepo;
     private final AddressesRepo addressesRepo;
 

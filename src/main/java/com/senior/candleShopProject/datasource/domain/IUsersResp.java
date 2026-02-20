@@ -7,5 +7,4 @@ public interface IUsersResp {
     UUID getUserId();
     Boolean getIsSeller();
     String getUserRole();
-
 }

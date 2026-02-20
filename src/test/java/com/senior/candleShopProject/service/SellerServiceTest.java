@@ -43,4 +43,5 @@ public class SellerServiceTest {
 
         verify(ordersRepo, never()).getCountOrdersWithStatus(any());
     }
+
 }

@@ -20,4 +20,14 @@ public class Constants {
     public static final String PREFIX_ORDER_NO = "ORD";
     public static final String PREFIX_RECEIPT_NO = "REC";
 
+//    Supabase Storage Name
+    public static final String SUPABASE_QR_PAYMENT_BUCKET_NAME = "qr-payment";
+    public static final String SUPABASE_RECEIPT_BUCKET_URL = "payment-proofs";
+
+//  Date
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final String TIME_ZONE_BANGKOK = "Asia/Bangkok";
+
+//    Content type
+    public static final String CONTENT_TYPE_JPEG = "image/jpeg";
 }

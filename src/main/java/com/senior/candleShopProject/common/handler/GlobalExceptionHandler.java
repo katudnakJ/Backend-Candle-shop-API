@@ -81,4 +81,21 @@ public class GlobalExceptionHandler {
         response.setStatus(ResultCode.INVALID_PARAMS);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ShopBadRequestException.class)
+    public ResponseEntity<GenericResponse> handleShopBadRequestException(ShopBadRequestException ex) {
+        log.error("Bad Request Exception : ",ex.getStatus().getRemark());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ex.getStatus());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ShopConflictException.class)
+    public ResponseEntity<GenericResponse> handleShopConflictException(ShopConflictException ex) {
+        log.error("Conflict Exception : ", ex.getStatus().getRemark());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ex.getStatus());
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
 }
