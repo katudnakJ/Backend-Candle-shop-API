@@ -17,6 +17,6 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
        """, nativeQuery = true)
     Integer getCountOrdersWithStatus(@Param("status") String status);
 
-    @Query(value = "select nextval('" + Constants.DB_SEQUENCE_ORDER_NAME + "')", nativeQuery = true)
+    @Query(value = "select nextval('order_no_seq')", nativeQuery = true)
     Long getNextOrderNo();
 }

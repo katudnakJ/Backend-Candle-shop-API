@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@Tag(name = "Candle Shop User API.")
+@Tag(name = "Candle Shop Seller API.")
 @RequestMapping("v1/seller")
 @RequiredArgsConstructor
 public class SellerController {

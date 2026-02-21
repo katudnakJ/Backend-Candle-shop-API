@@ -16,9 +16,12 @@ import java.util.UUID;
 @Getter
 @Table(name = "orders")
 public class OrdersEntity {
+
     @Id
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "order_id")
-    private UUID order_id;
+    private UUID orderId;
 
     @Column(name="order_no")
     private String orderNo;
@@ -41,6 +44,9 @@ public class OrdersEntity {
     @Column(name = "total_amount_purchase")
     private BigDecimal totalAmountPurchase;
 
+    @Column(name = "total_quantity_amount")
+    private Integer totalQuantityAmount;
+
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
@@ -52,6 +58,6 @@ public class OrdersEntity {
     @OneToOne(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private PaymentsEntity paymentsEntity;
 
-    @OneToMany(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ShipmentEntity> shipmentsEntities = new ArrayList<>();
+    @OneToOne(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ShipmentEntity shipmentEntity;
 }
