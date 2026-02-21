@@ -16,7 +16,6 @@ public class ResultCode {
     public static final Status CONFLICT = new Status(HttpStatus.CONFLICT,"Conflicted.");
     public static final Status BAD_REQUEST = new Status(HttpStatus.BAD_REQUEST,"Bad Request.");
     public static final Status CREATED = new Status(HttpStatus.CREATED,"Created.");
-    public static final Status NO_CONTENT = new Status(HttpStatus.NO_CONTENT,"No Content.");
 
 //    token
     public static final Status TOKEN_INVALID = new Status(HttpStatus.UNAUTHORIZED,"Token is Invalid.");

@@ -41,12 +41,6 @@ public class OrdersEntity {
     @Column(name = "order_created_date")
     private Instant orderCreatedDate;
 
-    @Column(name = "total_amount_purchase")
-    private BigDecimal totalAmountPurchase;
-
-    @Column(name = "total_quantity_amount")
-    private Integer totalQuantityAmount;
-
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)

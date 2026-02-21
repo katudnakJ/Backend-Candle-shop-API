@@ -4,6 +4,8 @@ package com.senior.candleShopProject.feature.orderCheckout.service;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.Status;
+import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
@@ -23,12 +25,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.senior.candleShopProject.common.utils.ProcessImageUtil.processImageData;
 import static com.senior.candleShopProject.common.utils.RunningNumberGenerator.generateOrderRunningNumber;
 
 @Slf4j
@@ -40,21 +44,25 @@ public class OrderCheckoutService {
     private final ShoppingCartItemsRepo shoppingCartItemsRepo;
     private final OrdersRepo ordersRepo;
     private final OrderItemsRepo orderItemsRepo;
+    private final ShoppingCartRepo shoppingCartRepo;
+    private final PaymentsRepo paymentsRepo;
+    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional
-    public GenericResponse checkoutOrder (UUID userId, MultipartFile paymentProof, OrderCheckoutReq orderCheckoutReq) throws ShopServiceApiException {
+    public GenericResponse checkoutOrder (UUID userId, MultipartFile paymentProof, OrderCheckoutReq orderCheckoutReq) throws ShopServiceApiException, IOException {
 
         Optional<CustomersEntity> customerOpt = customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId);
 
         if(customerOpt.isEmpty())
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
 
-        UUID shoppingCartId = UUID.fromString(orderCheckoutReq.getShoppingCartId());
+        UUID shoppingCartId = shoppingCartRepo.getShoppingCartIdByUserId(userId);
 
         if (!shoppingCartItemsRepo.existsByShoppingCartEntity_ShoppingCartId(shoppingCartId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
 
         String genOrderNo = generateOrderRunningNumber(Constants.PREFIX_ORDER_NO);
+        UUID customerId = customerOpt.get().getCustomerId();
 
         List<UUID> shoppingCartItemIds = orderCheckoutReq.getShoppingCartItemIds()
                 .stream()
@@ -63,7 +71,7 @@ public class OrderCheckoutService {
         OrdersReq ordersReq = orderCheckoutReq.getOrdersReq();
 
         CustomersEntity customersEntity = new CustomersEntity();
-        customersEntity.setCustomer_id(customerOpt.get().getCustomer_id());
+        customersEntity.setCustomerId(customerId);
 
 //        find shopping cart items by list of shopping cart item id
         List<ICartItemsForOrderItemsResp> cartItemsForOrderItemsRests = shoppingCartItemsRepo
@@ -85,8 +93,6 @@ public class OrderCheckoutService {
                 .ORDER_PAYMENT_PENDING.getOrderStatusCode()
         );
         ordersEntity.setOrderCreatedDate(Instant.now());
-        ordersEntity.setTotalAmountPurchase(ordersEntity.getTotalAmountPurchase());
-        ordersEntity.setTotalQuantityAmount(ordersEntity.getTotalQuantityAmount());
         ordersEntity.setCustomersEntity(customersEntity);
 
         OrdersEntity newOrderEntity = ordersRepo.save(ordersEntity);
@@ -94,10 +100,34 @@ public class OrderCheckoutService {
         List<OrderItemsEntity> orderItemsEntity = mapListToOrderItemsEntity(newOrderEntity.getOrderId(), cartItemsForOrderItemsRests);
 
         orderItemsRepo.saveAll(orderItemsEntity);
+        shoppingCartItemsRepo.deleteAllById(shoppingCartItemIds);
 
 //        save payment
+        Status resultCode = upsertPaymentEntity(customerId,newOrderEntity.getOrderId(),paymentProof);
 
+        GenericResponse response = new GenericResponse();
+        response.setData(null);
+        response.setStatus(resultCode);
+        return response;
+    }
 
+    public GenericResponse retryPayment (UUID userId, UUID orderId, MultipartFile paymentProof) throws ShopServiceApiException, IOException {
+        Optional<CustomersEntity> customerOpt = customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId);
+
+        if(customerOpt.isEmpty())
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
+
+        UUID customerId = customerOpt.get().getCustomerId();
+
+        if (!ordersRepo.existsById(orderId))
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
+
+        Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(null);
+        response.setStatus(resultCode);
+        return response;
     }
 
     private List<OrderItemsEntity> mapListToOrderItemsEntity(UUID newOrderId,List<ICartItemsForOrderItemsResp> cartItem) {;
@@ -112,8 +142,13 @@ public class OrderCheckoutService {
             productsEntity.setProductId(items.getProductId());
 
             orderItems.setProductNameAtPurchase(items.getProductName());
-            orderItems.setPriceAtPurchase(items.getPrice());
+            orderItems.setPricePerUnitAtPurchase(items.getPricePerUnit());
             orderItems.setQuantity(items.getQuantity());
+            orderItems.setSubtotalAtPurchase(
+                    items.getPricePerUnit().multiply(
+                            new java.math.BigDecimal(items.getQuantity())
+                    )
+            );
             orderItems.setOrdersEntity(ordersEntity);
             orderItems.setProductsEntity(productsEntity);
 
@@ -122,5 +157,58 @@ public class OrderCheckoutService {
         }
 
         return orderItemsEntity;
+    }
+
+    private Status upsertPaymentEntity(UUID customerId,UUID orderId,MultipartFile paymentProof) throws ShopServiceApiException, IOException {
+//        true if new checkout, false if update existing payment proof
+        boolean isNewCheckout = !paymentsRepo.existsByOrdersEntity_OrderId(orderId);
+
+        Status resultCode;
+        String runningNumber;
+        PaymentsEntity paymentsEntity;
+
+        if (isNewCheckout) {
+            runningNumber = generateOrderRunningNumber(Constants.PREFIX_RECEIPT_NO);
+
+            OrdersEntity ordersEntity = new OrdersEntity();
+            ordersEntity.setOrderId(orderId);
+
+            paymentsEntity = new PaymentsEntity();
+
+            paymentsEntity.setReceiptNumber(runningNumber);
+            paymentsEntity.setPaymentProofPath(
+                    runningNumber + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1]
+            );
+            paymentsEntity.setOrdersEntity(ordersEntity);
+
+            resultCode = ResultCode.CREATED;
+
+        }else{
+            paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+            runningNumber = paymentsEntity.getReceiptNumber();
+            resultCode = ResultCode.SUCCESS;
+        }
+
+        paymentsEntity.setPaymentStatus(
+                OrderStatus.ORDER_PAYMENT_PENDING.getOrderStatusCode()
+        );
+        paymentsEntity.setPaymentRequestDate(Instant.now());
+
+        PaymentsEntity newPaymentEntity = paymentsRepo.save(paymentsEntity);
+
+//        image path : /customer_id/payment_id/receipt_number
+        String imagePath = customerId + "/"
+                + newPaymentEntity.getPaymentId() + "/"
+                + runningNumber
+                + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
+
+        supabaseStorageService.uploadImage(
+                Constants.SUPABASE_RECEIPT_BUCKET_URL,
+                imagePath,
+                processImageData(paymentProof),
+                Constants.CONTENT_TYPE_JPEG
+        );
+
+        return resultCode;
     }
 }

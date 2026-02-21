@@ -12,6 +12,4 @@ public class OrdersReq {
     private BigDecimal totalAmount;
     private BigDecimal netAmount;
     private String orderCreatedDate;
-    private BigDecimal totalAmountPurchase;
-    private Integer totalQuantityAmount;
 }

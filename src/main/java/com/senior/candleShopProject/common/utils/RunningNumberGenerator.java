@@ -12,8 +12,8 @@ import java.time.ZonedDateTime;
 @Component
 public class RunningNumberGenerator {
 
-    private OrdersRepo ordersRepo;
-    private PaymentsRepo paymentRepo;
+    private static OrdersRepo ordersRepo;
+    private static PaymentsRepo paymentRepo;
 
 //    format ORD20260217-001 With Thai Date
     public static String generateOrderRunningNumber(String type) throws ShopServiceApiException {

@@ -136,7 +136,7 @@ class AccountServiceTest {
 
         GenericResponse response = accountService.syncUserAddress(userId, req);
 
-        assertEquals(ResultCode.NO_CONTENT, response.getStatus());
+        assertEquals(ResultCode.SUCCESS, response.getStatus());
         verify(addressesRepo).save(entity);
         assertEquals("new addr", entity.getDeliveryAddress());
         assertEquals("20000", entity.getPostcode());

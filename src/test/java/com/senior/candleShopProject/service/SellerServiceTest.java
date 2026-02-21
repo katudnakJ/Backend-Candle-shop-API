@@ -336,6 +336,6 @@ public class SellerServiceTest {
         when(sellerRepo.save(any())).thenReturn(sellerEntity);
 
         GenericResponse resp = sellerService.syncQrCodePayment(userId, multipartFile);
-        assertEquals(ResultCode.NO_CONTENT, resp.getStatus());
+        assertEquals(ResultCode.SUCCESS, resp.getStatus());
     }
 }
