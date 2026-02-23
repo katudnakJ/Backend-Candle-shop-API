@@ -24,3 +24,5 @@ server:
     key-alias: localhost
   servlet:
     context-path: /candle-shop-project-api
+
+supabase:

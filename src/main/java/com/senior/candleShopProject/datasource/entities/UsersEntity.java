@@ -24,7 +24,7 @@ public class UsersEntity {
     private String lineId;
 
     @Column(name="is_seller")
-    private Boolean isSeller;
+    private boolean isSeller;
 
     @Column(name="user_role")
     private String userRole;

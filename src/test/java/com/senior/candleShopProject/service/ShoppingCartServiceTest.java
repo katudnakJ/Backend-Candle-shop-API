@@ -110,29 +110,32 @@ class ShoppingCartServiceTest {
         UUID shoppingCartId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
+        UUID cartItemId = UUID.randomUUID();
 
-        ShoppingCartItemsEntity shoppingCartItemsEntity = new ShoppingCartItemsEntity();
+        ShoppingCartItemsEntity shoppingCartItemsEntity = mock(ShoppingCartItemsEntity.class);
+        when(shoppingCartItemsEntity.getShoppingCartItemId()).thenReturn(cartItemId);
 
         when(shoppingCartRepo.getShoppingCartIdByUserId(userId)).thenReturn(shoppingCartId);
         when(shoppingCartItemsRepo
-                .findShoppingCartItemsEntitiesByShoppingCartEntity_ShoppingCartIdAndProductsEntity_ProductId
-                        (shoppingCartId,productId))
+                .findShoppingCartItemsEntitiesByShoppingCartEntity_ShoppingCartIdAndProductsEntity_ProductId(
+                        shoppingCartId, productId))
                 .thenReturn(Optional.of(shoppingCartItemsEntity));
+        when(shoppingCartItemsRepo.save(shoppingCartItemsEntity)).thenReturn(shoppingCartItemsEntity);
 
         AddShoppingCartItemReq addShoppingCartItemReq = new AddShoppingCartItemReq();
         addShoppingCartItemReq.setProductId(productId.toString());
         addShoppingCartItemReq.setQuantity(5);
 
-        GenericResponse response = shoppingCartService.addShoppingCartItem(userId,addShoppingCartItemReq);
+        GenericResponse response = shoppingCartService.addShoppingCartItem(userId, addShoppingCartItemReq);
 
         assertNotNull(response);
-        assertThat(response.getStatus()).isEqualTo(ResultCode.SUCCESS);
+        assertThat(response.getStatus()).isEqualTo(ResultCode.CREATED);
 
         verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
-        verify(shoppingCartItemsRepo, times(1)).save(shoppingCartItemsEntity);
         verify(shoppingCartItemsRepo, times(1))
-                .findShoppingCartItemsEntitiesByShoppingCartEntity_ShoppingCartIdAndProductsEntity_ProductId
-                        (shoppingCartId, productId);
+                .findShoppingCartItemsEntitiesByShoppingCartEntity_ShoppingCartIdAndProductsEntity_ProductId(
+                        shoppingCartId, productId);
+        verify(shoppingCartItemsRepo, times(1)).save(shoppingCartItemsEntity);
     }
 
     @Test
@@ -141,11 +144,13 @@ class ShoppingCartServiceTest {
         UUID userId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
 
+        ShoppingCartItemsEntity shoppingCartItemsEntity = mock(ShoppingCartItemsEntity.class);
         when(shoppingCartRepo.getShoppingCartIdByUserId(userId)).thenReturn(shoppingCartId);
         when(shoppingCartItemsRepo
                 .findShoppingCartItemsEntitiesByShoppingCartEntity_ShoppingCartIdAndProductsEntity_ProductId
                         (shoppingCartId,productId))
                 .thenReturn(Optional.empty());
+        when(shoppingCartItemsRepo.save(any(ShoppingCartItemsEntity.class))).thenReturn(shoppingCartItemsEntity);
 
         AddShoppingCartItemReq addShoppingCartItemReq = new AddShoppingCartItemReq();
         addShoppingCartItemReq.setProductId(productId.toString());
@@ -154,7 +159,7 @@ class ShoppingCartServiceTest {
         GenericResponse response = shoppingCartService.addShoppingCartItem(userId,addShoppingCartItemReq);
 
         assertNotNull(response);
-        assertThat(response.getStatus()).isEqualTo(ResultCode.SUCCESS);
+        assertThat(response.getStatus()).isEqualTo(ResultCode.CREATED);
 
         verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
         verify(shoppingCartItemsRepo, times(1))

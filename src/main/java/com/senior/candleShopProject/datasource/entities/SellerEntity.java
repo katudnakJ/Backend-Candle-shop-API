@@ -20,8 +20,8 @@ public class SellerEntity {
     @Column(name = "seller_id")
     private UUID sellerId;
 
-    @Column(name = "bank_qrpayment_img_path")
-    private String bankQrPaymentImgPath;
+    @Column(name = "qr_payment_img_path")
+    private String qrPaymentImgPath;
 
 //    Relationships
     @OneToOne(fetch = FetchType.LAZY)

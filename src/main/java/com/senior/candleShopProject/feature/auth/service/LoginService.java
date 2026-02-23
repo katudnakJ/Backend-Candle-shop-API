@@ -98,7 +98,7 @@ public class LoginService {
 
         UsersEntity newUser = new UsersEntity();
         newUser.setLineId(lineUserId);
-        newUser.setIsSeller(false);
+        newUser.setSeller(false);
         newUser.setUserRole(Constants.ROLE_CUSTOMER);
         newUser.setCustomersEntity(customersEntity);
 

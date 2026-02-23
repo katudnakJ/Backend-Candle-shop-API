@@ -8,7 +8,7 @@ public interface IAddressResp {
     String getDistrict();
     String getSubDistrict();
     String getAddressLabel();
-    Boolean getIsDefault();
+    boolean getIsDefault();
     String getRecipientFirstName();
     String getRecipientLastName();
     String getRecipientPhone();

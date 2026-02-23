@@ -1,6 +1,5 @@
 package com.senior.candleShopProject.datasource.entities;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,10 +38,10 @@ public class ProductsEntity {
     private String slug;
 
     @Column(name="isActive")
-    private Boolean isActive;
+    private boolean isActive;
 
     @Column(name = "isFeatured")
-    private Boolean isFeatured;
+    private boolean isFeatured;
 
     @Column(name = "product_created_date")
     private Instant productCreatedDate;

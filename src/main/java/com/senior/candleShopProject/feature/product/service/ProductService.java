@@ -25,7 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductService {
 
-    @Value("${app.storage.public-image-base-url}")
+    @Value("${supabase.storage.public-image-base-url}")
     private String publicImageBaseUrl;
 
     private final ProductsRepo productsRepo;
