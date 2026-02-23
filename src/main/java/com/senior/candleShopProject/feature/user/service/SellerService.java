@@ -15,19 +15,17 @@ import com.senior.candleShopProject.datasource.repo.SellerRepo;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static com.senior.candleShopProject.common.utils.LocalDateTimeUtils.getDateNowWithTimeZone;
 import static com.senior.candleShopProject.common.utils.LocalDateTimeUtils.getExpDateWithTimeZone;
+import static com.senior.candleShopProject.common.utils.ProcessImageUtil.processImageData;
 
 @Service
 @Slf4j
@@ -69,7 +67,9 @@ public class SellerService {
 
         ISellerResp seller = sellerRepo.getSellerByUserId(userId);
 
-        String imgPath = seller.getSellerId().toString() + "/" + seller.getQrPaymentImgPath();
+        String imgPath = seller.getSellerId().toString() + "/"
+                + seller.getQrPaymentImgPath()
+                + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
 
         ZonedDateTime expiresAt = getExpDateWithTimeZone(Constants.TIME_ZONE_BANGKOK, checkQrCodeExpirationInSeconds);
 
@@ -166,19 +166,7 @@ public class SellerService {
 
         GenericResponse response = new GenericResponse();
         response.setData(null);
-        response.setStatus(ResultCode.NO_CONTENT);
+        response.setStatus(ResultCode.SUCCESS);
         return response;
-    }
-
-    private byte[] processImageData(MultipartFile imageData) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        Thumbnails.of(imageData.getInputStream())
-                .size(800, 800)
-                .outputFormat("jpeg")
-                .outputQuality(1.0)
-                .toOutputStream(outputStream);
-
-        return outputStream.toByteArray();
     }
 }

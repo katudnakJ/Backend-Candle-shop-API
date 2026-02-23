@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -19,11 +20,20 @@ public class PaymentsEntity {
     @Column(name = "payment_id")
     private UUID paymentId;
 
-    @Column(name = "slip_img_path")
-    private String slipImgPath;
-
     @Column(name = "payment_status")
     private String paymentStatus;
+
+    @Column(name = "payment_request_date")
+    private Instant paymentRequestDate;
+
+    @Column(name = "approve_date")
+    private String approveDate;
+
+    @Column(name= "receipt_number")
+    private String receiptNumber;
+
+    @Column(name = "payment_proof_path")
+    private String paymentProofPath;
 
     @Column(name = "rejection_reason")
     private String rejectionReason;

@@ -14,7 +14,6 @@ import com.senior.candleShopProject.feature.account.controller.dto.request.AddUs
 import com.senior.candleShopProject.feature.account.controller.dto.request.SyncUserAddressReq;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,7 +107,7 @@ public class AccountService {
 
         GenericResponse response = new GenericResponse();
         response.setData(null);
-        response.setStatus(ResultCode.NO_CONTENT);
+        response.setStatus(ResultCode.SUCCESS);
         return response;
     }
 

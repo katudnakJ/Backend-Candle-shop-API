@@ -33,7 +33,11 @@ public class ShipmentEntity {
     private String trackingNumber;
 
 //    Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private OrdersEntity ordersEntity;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "carrier_id", nullable = false)
+    private CarriersEntity carriersEntity;
 }

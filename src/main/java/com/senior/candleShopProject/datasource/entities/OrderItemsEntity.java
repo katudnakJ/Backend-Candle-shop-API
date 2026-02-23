@@ -1,5 +1,6 @@
 package com.senior.candleShopProject.datasource.entities;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,11 +24,15 @@ public class OrderItemsEntity {
     @Column(name = "product_name_at_purchase")
     private String productNameAtPurchase;
 
-    @Column(name = "price_at_purchase")
-    private BigDecimal priceAtPurchase;
+    @Column(name = "price_per_unit_at_purchase")
+    private BigDecimal pricePerUnitAtPurchase;
 
     @Column(name = "quantity")
     private Integer quantity;
+
+    @Column(name = "subtotal_at_purchase")
+    @Schema(description = "price per unit * quantity", example = "199.99")
+    private BigDecimal subtotalAtPurchase;
 
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)

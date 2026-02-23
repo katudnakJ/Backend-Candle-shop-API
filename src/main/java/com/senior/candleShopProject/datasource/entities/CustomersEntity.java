@@ -18,7 +18,7 @@ public class CustomersEntity {
     @GeneratedValue
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "customer_id")
-    private UUID customer_id;
+    private UUID customerId;
 
 //    Relationships
     @OneToOne(fetch = FetchType.LAZY)
