@@ -10,5 +10,4 @@ import java.util.List;
 @Setter
 public class OrderCheckoutReq {
     private List<String> shoppingCartItemIds = new ArrayList<>();
-    private OrdersReq ordersReq;
 }

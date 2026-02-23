@@ -5,18 +5,21 @@ import com.senior.candleShopProject.common.exception.ShopBadRequestException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.datasource.repo.OrdersRepo;
 import com.senior.candleShopProject.datasource.repo.PaymentsRepo;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 
 @Component
+@RequiredArgsConstructor
 public class RunningNumberGenerator {
 
-    private static OrdersRepo ordersRepo;
-    private static PaymentsRepo paymentRepo;
+    private final OrdersRepo ordersRepo;
+    private final PaymentsRepo paymentRepo;
+
 
 //    format ORD20260217-001 With Thai Date
-    public static String generateOrderRunningNumber(String type) throws ShopServiceApiException {
+    public String generateOrderRunningNumber(String type) throws ShopServiceApiException {
         String prefix;
         Long orderNoSeq;
         if (type.equalsIgnoreCase(Constants.PREFIX_ORDER_NO)){
@@ -31,12 +34,11 @@ public class RunningNumberGenerator {
         ZonedDateTime thaiDateTime = LocalDateTimeUtils.getDateNowWithTimeZone(Constants.TIME_ZONE_BANGKOK);
 
 
-        return String.format("%s%d%02d%02d-%03d", prefix
-                        + thaiDateTime.getYear()
-                        + thaiDateTime.getMonthValue()
-                        + thaiDateTime.getDayOfMonth()
-                        + "-"
-                        + orderNoSeq
+        return String.format("%s%d%02d%02d-%04d", prefix
+                        ,thaiDateTime.getYear()
+                        ,thaiDateTime.getMonthValue()
+                        ,thaiDateTime.getDayOfMonth()
+                        ,orderNoSeq
         );
     }
 }

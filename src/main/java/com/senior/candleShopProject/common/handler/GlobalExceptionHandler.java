@@ -10,6 +10,7 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Slf4j
 @RestControllerAdvice
@@ -98,4 +99,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<GenericResponse> handleShopUploadSizeExceededException(MaxUploadSizeExceededException ex) {
+        log.error("Max Upload Size Exceeded Exception : ", ex.getMessage());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.FILE_TOO_LARGE);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Data
 public class ResultCode {
+//    HTTP status code
     public static final Status SUCCESS = new Status(HttpStatus.OK,"Success.");
     public static final Status INVALID_PARAMS = new Status(HttpStatus.BAD_REQUEST,"Invalid Parameters.");
     public static final Status UNAUTHORIZED = new Status(HttpStatus.UNAUTHORIZED,"Unauthorized.");
@@ -16,10 +17,10 @@ public class ResultCode {
     public static final Status CONFLICT = new Status(HttpStatus.CONFLICT,"Conflicted.");
     public static final Status BAD_REQUEST = new Status(HttpStatus.BAD_REQUEST,"Bad Request.");
     public static final Status CREATED = new Status(HttpStatus.CREATED,"Created.");
+    public static final Status FILE_TOO_LARGE = new Status(HttpStatus.CONTENT_TOO_LARGE,"File Too Large.");
 
 //    token
     public static final Status TOKEN_INVALID = new Status(HttpStatus.UNAUTHORIZED,"Token is Invalid.");
 
-//
 
 }

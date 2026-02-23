@@ -6,6 +6,7 @@ import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.Status;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
+import com.senior.candleShopProject.common.exception.ShopConflictException;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +35,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.senior.candleShopProject.common.utils.ProcessImageUtil.processImageData;
-import static com.senior.candleShopProject.common.utils.RunningNumberGenerator.generateOrderRunningNumber;
+import static com.senior.candleShopProject.common.utils.ShippingUtils.calculateShippingCost;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderCheckoutService {
+
+    private final SupabaseStorageService supabaseStorageService;
+
+    private final RunningNumberGenerator runningNumberGenerator;
 
     private final CustomersRepo customersRepo;
     private final ShoppingCartItemsRepo shoppingCartItemsRepo;
@@ -46,10 +52,9 @@ public class OrderCheckoutService {
     private final OrderItemsRepo orderItemsRepo;
     private final ShoppingCartRepo shoppingCartRepo;
     private final PaymentsRepo paymentsRepo;
-    private final SupabaseStorageService supabaseStorageService;
 
     @Transactional
-    public GenericResponse checkoutOrder (UUID userId, MultipartFile paymentProof, OrderCheckoutReq orderCheckoutReq) throws ShopServiceApiException, IOException {
+    public GenericResponse checkoutOrder (UUID userId,MultipartFile paymentProof, List<String> cartItemIds) throws ShopServiceApiException, IOException {
 
         Optional<CustomersEntity> customerOpt = customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId);
 
@@ -61,17 +66,13 @@ public class OrderCheckoutService {
         if (!shoppingCartItemsRepo.existsByShoppingCartEntity_ShoppingCartId(shoppingCartId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
 
-        String genOrderNo = generateOrderRunningNumber(Constants.PREFIX_ORDER_NO);
-        UUID customerId = customerOpt.get().getCustomerId();
 
-        List<UUID> shoppingCartItemIds = orderCheckoutReq.getShoppingCartItemIds()
+
+//        abstract OrderCheckoutReq
+        List<UUID> shoppingCartItemIds = cartItemIds
                 .stream()
                 .map(UUID::fromString)
                 .toList();
-        OrdersReq ordersReq = orderCheckoutReq.getOrdersReq();
-
-        CustomersEntity customersEntity = new CustomersEntity();
-        customersEntity.setCustomerId(customerId);
 
 //        find shopping cart items by list of shopping cart item id
         List<ICartItemsForOrderItemsResp> cartItemsForOrderItemsRests = shoppingCartItemsRepo
@@ -83,12 +84,19 @@ public class OrderCheckoutService {
         if (shoppingCartItemIds.size() != cartItemsForOrderItemsRests.size())
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Some shopping cart items is missing.");
 
+        int totalQuantity = getTotalQuantityFromCartItems(cartItemsForOrderItemsRests);
+        BigDecimal totalAmount = getTotalAmountFromCartItems(cartItemsForOrderItemsRests);
+        UUID customerId = customerOpt.get().getCustomerId();
+
+        CustomersEntity customersEntity = new CustomersEntity();
+        customersEntity.setCustomerId(customerId);
+
 //      Save order & order items
         OrdersEntity ordersEntity = new OrdersEntity();
-        ordersEntity.setOrderNo(genOrderNo);
-        ordersEntity.setTotalQuantity(ordersReq.getTotalQuantity());
-        ordersEntity.setTotalAmount(ordersReq.getTotalAmount());
-        ordersEntity.setNetAmount(ordersReq.getNetAmount());
+        ordersEntity.setOrderNo(runningNumberGenerator.generateOrderRunningNumber(Constants.PREFIX_ORDER_NO));
+        ordersEntity.setTotalQuantity(totalQuantity);
+        ordersEntity.setTotalAmount(totalAmount);
+        ordersEntity.setNetAmount(totalAmount.add(calculateShippingCost(totalQuantity)));
         ordersEntity.setOrderStatus(OrderStatus
                 .ORDER_PAYMENT_PENDING.getOrderStatusCode()
         );
@@ -100,6 +108,7 @@ public class OrderCheckoutService {
         List<OrderItemsEntity> orderItemsEntity = mapListToOrderItemsEntity(newOrderEntity.getOrderId(), cartItemsForOrderItemsRests);
 
         orderItemsRepo.saveAll(orderItemsEntity);
+
         shoppingCartItemsRepo.deleteAllById(shoppingCartItemIds);
 
 //        save payment
@@ -121,6 +130,8 @@ public class OrderCheckoutService {
 
         if (!ordersRepo.existsById(orderId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
+
+
 
         Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof);
 
@@ -168,7 +179,7 @@ public class OrderCheckoutService {
         PaymentsEntity paymentsEntity;
 
         if (isNewCheckout) {
-            runningNumber = generateOrderRunningNumber(Constants.PREFIX_RECEIPT_NO);
+            runningNumber = runningNumberGenerator.generateOrderRunningNumber(Constants.PREFIX_RECEIPT_NO);
 
             OrdersEntity ordersEntity = new OrdersEntity();
             ordersEntity.setOrderId(orderId);
@@ -185,6 +196,10 @@ public class OrderCheckoutService {
 
         }else{
             paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+
+            if(!paymentsEntity.getPaymentStatus().equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_REJECTED.getOrderStatusCode()))
+                throw new ShopConflictException(ResultCode.CONFLICT);
+
             runningNumber = paymentsEntity.getReceiptNumber();
             resultCode = ResultCode.SUCCESS;
         }
@@ -210,5 +225,25 @@ public class OrderCheckoutService {
         );
 
         return resultCode;
+    }
+
+    private int getTotalQuantityFromCartItems(List<ICartItemsForOrderItemsResp> cartItemsForOrderItemsRests){
+        int totalQuantity = 0;
+        for (ICartItemsForOrderItemsResp item : cartItemsForOrderItemsRests) {
+            totalQuantity += item.getQuantity();
+        }
+        return totalQuantity;
+    }
+
+    private BigDecimal getTotalAmountFromCartItems(List<ICartItemsForOrderItemsResp> cartItemsForOrderItemsRests){
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (ICartItemsForOrderItemsResp item : cartItemsForOrderItemsRests) {
+            totalAmount = totalAmount.add(
+                    item.getPricePerUnit().multiply(
+                            new BigDecimal(item.getQuantity())
+                    )
+            );
+        }
+        return totalAmount;
     }
 }

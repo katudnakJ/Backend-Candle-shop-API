@@ -23,7 +23,7 @@ public class PaymentsEntity {
     @Column(name = "payment_status")
     private String paymentStatus;
 
-    @Column(name = "payment_request_Date")
+    @Column(name = "payment_request_date")
     private Instant paymentRequestDate;
 
     @Column(name = "approve_date")

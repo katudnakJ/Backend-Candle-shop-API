@@ -22,7 +22,7 @@ public interface ShoppingCartItemsRepo extends JpaRepository<ShoppingCartItemsEn
         select sci.quantity as quantity,
             p.product_id as productId,
             p.product_name as productName,
-            p.price as pricePerUnit,
+            p.price as pricePerUnit
         from shopping_cart_items sci
         join products p
         on sci.product_id = p.product_id
