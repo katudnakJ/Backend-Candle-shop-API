@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.order.controller.dto;
+package com.senior.candleShopProject.feature.order.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.feature.order.service.OrderService;

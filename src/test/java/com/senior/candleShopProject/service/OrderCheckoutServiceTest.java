@@ -90,7 +90,7 @@ public class OrderCheckoutServiceTest {
 
         OrdersEntity savedOrder = new OrdersEntity();
         savedOrder.setOrderId(orderId);
-        savedOrder.setOrderCreatedDate(Instant.now());
+        savedOrder.setOrderCreatedAt(Instant.now());
         when(ordersRepo.save(any(OrdersEntity.class))).thenReturn(savedOrder);
 
         when(runningNumberGenerator.generateOrderRunningNumber(eq(Constants.PREFIX_ORDER_NO)))
