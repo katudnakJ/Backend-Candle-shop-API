@@ -14,8 +14,6 @@ public class ShoppingCartItemsList {
     private Integer quantity;
     private String productName;
     private BigDecimal price;
-    private Integer weight;
-    private String description;
     private String productSlug;
     private String productImgPath;
 }

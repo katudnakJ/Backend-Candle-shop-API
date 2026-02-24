@@ -57,4 +57,7 @@ public class OrdersEntity {
 
     @OneToOne(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private ShipmentEntity shipmentEntity;
+
+    @OneToOne(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private OrderShippingAddressEntity orderShippingAddressEntity;
 }

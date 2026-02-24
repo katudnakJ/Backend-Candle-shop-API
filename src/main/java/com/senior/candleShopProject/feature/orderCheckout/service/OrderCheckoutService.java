@@ -47,9 +47,14 @@ public class OrderCheckoutService {
     private final OrderItemsRepo orderItemsRepo;
     private final ShoppingCartRepo shoppingCartRepo;
     private final PaymentsRepo paymentsRepo;
+    private final OrderShippingAddressRepo orderShippingAddressRepo;
+    private final AddressesRepo addressesRepo;
 
     @Transactional
-    public GenericResponse checkoutOrder (UUID userId,MultipartFile paymentProof, List<String> cartItemIds) throws ShopServiceApiException, IOException {
+    public GenericResponse checkoutOrder (UUID userId,
+                                          MultipartFile paymentProof,
+                                          List<String> cartItem,
+                                          UUID addressId) throws ShopServiceApiException, IOException {
 
         Optional<CustomersEntity> customerOpt = customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId);
 
@@ -64,7 +69,7 @@ public class OrderCheckoutService {
 
 
 //        abstract OrderCheckoutReq
-        List<UUID> shoppingCartItemIds = cartItemIds
+        List<UUID> shoppingCartItemIds = cartItem
                 .stream()
                 .map(UUID::fromString)
                 .toList();
@@ -88,6 +93,12 @@ public class OrderCheckoutService {
 
 //      Save order & order items
         OrdersEntity ordersEntity = new OrdersEntity();
+
+        AddressesEntity addressesEntity = addressesRepo.findById(addressId)
+                .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Address not found."));
+        OrderShippingAddressEntity orderShippingAddressEntity = getOrderShippingAddressEntity(addressesEntity);
+        orderShippingAddressEntity.setOrdersEntity(ordersEntity);
+
         ordersEntity.setOrderNo(runningNumberGenerator.generateOrderRunningNumber(Constants.PREFIX_ORDER_NO));
         ordersEntity.setTotalQuantity(totalQuantity);
         ordersEntity.setTotalAmount(totalAmount);
@@ -97,6 +108,7 @@ public class OrderCheckoutService {
         );
         ordersEntity.setOrderCreatedAt(Instant.now());
         ordersEntity.setCustomersEntity(customersEntity);
+        ordersEntity.setOrderShippingAddressEntity(orderShippingAddressEntity);
 
         OrdersEntity newOrderEntity = ordersRepo.save(ordersEntity);
 
@@ -243,5 +255,22 @@ public class OrderCheckoutService {
             );
         }
         return totalAmount;
+    }
+
+    private OrderShippingAddressEntity getOrderShippingAddressEntity(AddressesEntity addressesEntity) {
+        OrderShippingAddressEntity orderShippingAddressEntity = new OrderShippingAddressEntity();
+        OrdersEntity ordersEntity = new OrdersEntity();
+        orderShippingAddressEntity.setOrdersEntity(ordersEntity);
+        orderShippingAddressEntity.setDeliveryAddress(addressesEntity.getDeliveryAddress());
+        orderShippingAddressEntity.setPostcode(addressesEntity.getPostcode());
+        orderShippingAddressEntity.setProvince(addressesEntity.getProvince());
+        orderShippingAddressEntity.setDistrict(addressesEntity.getDistrict());
+        orderShippingAddressEntity.setSubDistrict(addressesEntity.getSubDistrict());
+        orderShippingAddressEntity.setAddressLabel(addressesEntity.getAddressLabel());
+        orderShippingAddressEntity.setRecipientFirstName(addressesEntity.getRecipientFirstName());
+        orderShippingAddressEntity.setRecipientLastName(addressesEntity.getRecipientLastName());
+        orderShippingAddressEntity.setRecipientPhone(addressesEntity.getRecipientPhone());
+
+        return orderShippingAddressEntity;
     }
 }

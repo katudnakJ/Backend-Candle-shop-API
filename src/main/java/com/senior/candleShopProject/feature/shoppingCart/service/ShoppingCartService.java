@@ -124,8 +124,6 @@ public class ShoppingCartService {
             cartItemsList.setQuantity(cart.getQuantity());
             cartItemsList.setProductName(cart.getProductName());
             cartItemsList.setPrice(cart.getPrice());
-            cartItemsList.setWeight(cart.getWeight());
-            cartItemsList.setDescription(cart.getDescription());
             cartItemsList.setProductSlug(cart.getProductSlug());
             if(cart.getProductImgPath() == null)
                 cartItemsList.setProductImgPath(null);

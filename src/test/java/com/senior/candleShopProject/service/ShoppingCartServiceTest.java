@@ -77,8 +77,6 @@ class ShoppingCartServiceTest {
         when(iShoppingCartResp.getQuantity()).thenReturn(2);
         when(iShoppingCartResp.getProductName()).thenReturn("Candle A");
         when(iShoppingCartResp.getPrice()).thenReturn(new BigDecimal("199.00"));
-        when(iShoppingCartResp.getWeight()).thenReturn(300);
-        when(iShoppingCartResp.getDescription()).thenReturn("Nice candle");
         when(iShoppingCartResp.getProductSlug()).thenReturn("candle-a");
         when(iShoppingCartResp.getProductImgPath()).thenReturn("images/a.png");
 
@@ -99,8 +97,6 @@ class ShoppingCartServiceTest {
         assertThat(item.getQuantity()).isEqualTo(2);
         assertThat(item.getProductName()).isEqualTo("Candle A");
         assertThat(item.getPrice()).isEqualByComparingTo("199.00");
-        assertThat(item.getWeight()).isEqualTo(300);
-        assertThat(item.getDescription()).isEqualTo("Nice candle");
         assertThat(item.getProductSlug()).isEqualTo("candle-a");
         assertThat(item.getProductImgPath()).isEqualTo("https://cdn.test/images/a.png");
     }

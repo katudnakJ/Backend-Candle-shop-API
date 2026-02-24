@@ -11,6 +11,7 @@ import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.ProcessImageUtil;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
 import com.senior.candleShopProject.datasource.domain.ICartItemsForOrderItemsResp;
+import com.senior.candleShopProject.datasource.entities.AddressesEntity;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
@@ -52,6 +53,7 @@ public class OrderCheckoutServiceTest {
     @Mock private OrderItemsRepo orderItemsRepo;
     @Mock private ShoppingCartRepo shoppingCartRepo;
     @Mock private PaymentsRepo paymentsRepo;
+    @Mock private AddressesRepo addressesRepo;
 
     @Mock private MultipartFile paymentProof;
 
@@ -67,11 +69,15 @@ public class OrderCheckoutServiceTest {
         UUID shoppingCartId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
         UUID paymentId = UUID.randomUUID();
+        UUID addressId = UUID.randomUUID();
 
         CustomersEntity customer = new CustomersEntity();
         customer.setCustomerId(customerId);
         when(customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId))
                 .thenReturn(Optional.of(customer));
+
+        AddressesEntity addresses = mock(AddressesEntity.class);
+        when(addressesRepo.findById(addressId)).thenReturn(Optional.of(addresses));
 
         when(shoppingCartRepo.getShoppingCartIdByUserId(userId)).thenReturn(shoppingCartId);
         when(shoppingCartItemsRepo.existsByShoppingCartEntity_ShoppingCartId(shoppingCartId)).thenReturn(true);
@@ -113,7 +119,7 @@ public class OrderCheckoutServiceTest {
 
             doNothing().when(supabaseStorageService).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
 
-            GenericResponse resp = orderCheckoutService.checkoutOrder(userId, paymentProof, cartItemIds);
+            GenericResponse resp = orderCheckoutService.checkoutOrder(userId, paymentProof, cartItemIds,addressId);
 
             assertNotNull(resp);
             assertEquals(ResultCode.CREATED, resp.getStatus());
@@ -132,13 +138,14 @@ public class OrderCheckoutServiceTest {
     @Test
     void checkoutOrder_UserNotFound_Throws() {
         UUID userId = UUID.randomUUID();
+        UUID addressId = UUID.randomUUID();
         List<String> cartItemIds = List.of(UUID.randomUUID().toString());
 
         when(customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId))
                 .thenReturn(Optional.empty());
 
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () ->
-                orderCheckoutService.checkoutOrder(userId, paymentProof, cartItemIds)
+                orderCheckoutService.checkoutOrder(userId, paymentProof, cartItemIds,addressId)
         );
 
         assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());

@@ -1,12 +1,18 @@
 package com.senior.candleShopProject.feature.order.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
+import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.exception.ShopBadRequestException;
+import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.datasource.repo.CarriersRepo;
 import com.senior.candleShopProject.datasource.repo.OrdersRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -21,4 +27,14 @@ public class OrderService {
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }
+
+//    public GenericResponse getOrderByStatus(UUID userId, String status) throws ShopServiceApiException {
+//        boolean validStatus = OrderStatus.isValidStatus(status);
+//
+//        if (!validStatus)
+//            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Invalid order status.");
+//
+//
+//
+//    }
 }
