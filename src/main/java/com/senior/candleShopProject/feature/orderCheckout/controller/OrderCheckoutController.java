@@ -2,7 +2,6 @@ package com.senior.candleShopProject.feature.orderCheckout.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.feature.orderCheckout.controller.dto.request.OrderCheckoutReq;
 import com.senior.candleShopProject.feature.orderCheckout.service.OrderCheckoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

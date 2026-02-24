@@ -23,11 +23,17 @@ public class PaymentsEntity {
     @Column(name = "payment_status")
     private String paymentStatus;
 
-    @Column(name = "payment_request_date")
-    private Instant paymentRequestDate;
+    @Column(name = "create_at")
+    private Instant createAt;
 
-    @Column(name = "approve_date")
-    private String approveDate;
+    @Column(name = "resubmit_at")
+    private Instant resubmitAt;
+
+    @Column(name = "status_changed_at")
+    private Instant statusChangedAt;
+
+    @Column(name = "approve_at")
+    private Instant approveAt;
 
     @Column(name= "receipt_number")
     private String receiptNumber;

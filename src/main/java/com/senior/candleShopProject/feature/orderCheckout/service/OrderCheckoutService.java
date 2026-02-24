@@ -11,15 +11,10 @@ import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.Constants;
-import com.senior.candleShopProject.common.utils.MultipartFileConverter;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
-import com.senior.candleShopProject.datasource.domain.IAllItemsShoppingCartResp;
 import com.senior.candleShopProject.datasource.domain.ICartItemsForOrderItemsResp;
-import com.senior.candleShopProject.datasource.domain.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.*;
 import com.senior.candleShopProject.datasource.repo.*;
-import com.senior.candleShopProject.feature.orderCheckout.controller.dto.request.OrderCheckoutReq;
-import com.senior.candleShopProject.feature.orderCheckout.controller.dto.request.OrdersReq;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -100,7 +95,7 @@ public class OrderCheckoutService {
         ordersEntity.setOrderStatus(OrderStatus
                 .ORDER_PAYMENT_PENDING.getOrderStatusCode()
         );
-        ordersEntity.setOrderCreatedDate(Instant.now());
+        ordersEntity.setOrderCreatedAt(Instant.now());
         ordersEntity.setCustomersEntity(customersEntity);
 
         OrdersEntity newOrderEntity = ordersRepo.save(ordersEntity);
@@ -191,6 +186,7 @@ public class OrderCheckoutService {
                     runningNumber + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1]
             );
             paymentsEntity.setOrdersEntity(ordersEntity);
+            paymentsEntity.setCreateAt(Instant.now());
 
             resultCode = ResultCode.CREATED;
 
@@ -201,13 +197,15 @@ public class OrderCheckoutService {
                 throw new ShopConflictException(ResultCode.CONFLICT);
 
             runningNumber = paymentsEntity.getReceiptNumber();
+            paymentsEntity.setResubmitAt(Instant.now());
+            paymentsEntity.setStatusChangedAt(Instant.now());
+
             resultCode = ResultCode.SUCCESS;
         }
 
         paymentsEntity.setPaymentStatus(
                 OrderStatus.ORDER_PAYMENT_PENDING.getOrderStatusCode()
         );
-        paymentsEntity.setPaymentRequestDate(Instant.now());
 
         PaymentsEntity newPaymentEntity = paymentsRepo.save(paymentsEntity);
 
