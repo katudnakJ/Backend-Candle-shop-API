@@ -1,6 +1,6 @@
 package com.senior.candleShopProject.datasource.repo;
 
-import com.senior.candleShopProject.datasource.domain.ISellerResp;
+import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

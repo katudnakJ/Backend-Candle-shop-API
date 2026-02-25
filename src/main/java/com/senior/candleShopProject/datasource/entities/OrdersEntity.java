@@ -42,7 +42,10 @@ public class OrdersEntity {
     private Instant orderCreatedAt;
 
     @Column(name = "status_changed_at")
-    private Instant statusChangedDate;
+    private Instant statusChangedAt;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
 
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)

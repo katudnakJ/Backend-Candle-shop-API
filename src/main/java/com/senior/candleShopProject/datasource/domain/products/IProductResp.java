@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.datasource.domain;
+package com.senior.candleShopProject.datasource.domain.products;
 
 import java.math.BigDecimal;
 import java.util.UUID;

@@ -5,7 +5,7 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.domain.IAddressResp;
-import com.senior.candleShopProject.datasource.domain.IUsersResp;
+import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.AddressesEntity;
 import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.AddressesRepo;

@@ -23,7 +23,7 @@ public enum OrderStatus {
 
     public static boolean isValidStatus(String status) {
         return Arrays.stream(values())
-                .anyMatch(v -> v.getOrderStatus().equalsIgnoreCase(status));
+                .anyMatch(v -> v.getOrderStatusCode().equalsIgnoreCase(status));
     }
 
 }

@@ -1,8 +1,8 @@
 package com.senior.candleShopProject.datasource.repo;
 
-import com.senior.candleShopProject.datasource.domain.IProductHomeListItemResp;
+import com.senior.candleShopProject.datasource.domain.products.IProductHomeListItemResp;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
-import com.senior.candleShopProject.datasource.domain.IProductResp;
+import com.senior.candleShopProject.datasource.domain.products.IProductResp;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -43,7 +43,8 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
     left join product_images pi
     on p.product_id = pi.product_id
     where is_primary = true
-    and is_featured = :isFeatured
+    and is_featured = true
+    and is_active = true
     order by p.product_id
     limit 20 offset 0;
     """,nativeQuery = true)

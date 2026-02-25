@@ -5,8 +5,7 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.datasource.domain.IAllItemsShoppingCartResp;
-import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
+import com.senior.candleShopProject.datasource.domain.shoppingCart.IAllItemsShoppingCartResp;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartItemsEntity;
 import com.senior.candleShopProject.datasource.repo.ShoppingCartItemsRepo;
 import com.senior.candleShopProject.datasource.repo.ShoppingCartRepo;
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.propertyeditors.UUIDEditor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;

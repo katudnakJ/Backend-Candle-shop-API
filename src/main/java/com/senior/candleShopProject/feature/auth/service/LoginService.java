@@ -11,7 +11,7 @@ import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CookieUtils;
 import com.senior.candleShopProject.common.utils.JwtUtils;
-import com.senior.candleShopProject.datasource.domain.IUsersResp;
+import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import com.senior.candleShopProject.datasource.entities.UsersEntity;

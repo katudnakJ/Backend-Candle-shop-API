@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface CustomersRepo extends JpaRepository<CustomersEntity, UUID> {
 
     Optional<CustomersEntity> findCustomersEntitiesByUsersEntity_UserId(UUID customerId);
+
+    CustomersEntity getCustomersEntityByUsersEntity_UserId(UUID usersEntityUserId);
 }

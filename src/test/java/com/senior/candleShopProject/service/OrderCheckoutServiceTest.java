@@ -10,7 +10,7 @@ import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.ProcessImageUtil;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
-import com.senior.candleShopProject.datasource.domain.ICartItemsForOrderItemsResp;
+import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.AddressesEntity;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;

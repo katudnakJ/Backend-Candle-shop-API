@@ -4,12 +4,12 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.datasource.domain.IProductHomeListItemResp;
+import com.senior.candleShopProject.datasource.domain.products.IProductHomeListItemResp;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
-import com.senior.candleShopProject.datasource.domain.IProductImagesResp;
-import com.senior.candleShopProject.datasource.domain.IProductResp;
-import com.senior.candleShopProject.datasource.domain.ProductHomeListItemResp;
+import com.senior.candleShopProject.datasource.domain.products.IProductImagesResp;
+import com.senior.candleShopProject.datasource.domain.products.IProductResp;
+import com.senior.candleShopProject.datasource.domain.products.ProductHomeListItemResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductDetailResp;
 import lombok.RequiredArgsConstructor;
@@ -89,7 +89,6 @@ public class ProductService {
                         item.getProductId(),
                         item.getProductName(),
                         item.getPrice(),
-                        item.getIsActive(),
                         item.getProductCreatedDate(),
                         item.getTotalSelled(),
                         publicImageBaseUrl + item.getProductImgPath()

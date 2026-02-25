@@ -8,7 +8,7 @@ import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.common.utils.CookieUtils;
 import com.senior.candleShopProject.common.utils.JwtUtils;
-import com.senior.candleShopProject.datasource.domain.IUsersResp;
+import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import com.senior.candleShopProject.feature.auth.service.LoginService;

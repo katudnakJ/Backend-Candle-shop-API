@@ -12,7 +12,7 @@ import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
-import com.senior.candleShopProject.datasource.domain.ICartItemsForOrderItemsResp;
+import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.*;
 import com.senior.candleShopProject.datasource.repo.*;
 import lombok.RequiredArgsConstructor;
@@ -198,7 +198,7 @@ public class OrderCheckoutService {
                     runningNumber + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1]
             );
             paymentsEntity.setOrdersEntity(ordersEntity);
-            paymentsEntity.setCreateAt(Instant.now());
+            paymentsEntity.setCreatedAt(Instant.now());
 
             resultCode = ResultCode.CREATED;
 
