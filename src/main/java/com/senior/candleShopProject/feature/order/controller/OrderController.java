@@ -41,5 +41,15 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @Schema(description = "Get order details by order id.")
+    @GetMapping("/{orderId}")
+    public ResponseEntity<GenericResponse> getOrderDetailsByOrderId(@RequestAttribute("userId") String userId,
+                                                                   @PathVariable("orderId") String orderId) throws ShopServiceApiException {
+        log.info("Getting order details by order id: {}", orderId);
+        UUID userUUID = UUID.fromString(userId);
+        UUID orderUUID = UUID.fromString(orderId);
 
+        GenericResponse response = orderService.getOrderDetailsByOrderId(userUUID, orderUUID);
+        return ResponseEntity.ok(response);
+    }
 }

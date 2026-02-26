@@ -22,5 +22,5 @@ public interface IOrderDetailByStatusResp {
     String getRecipientPhone();
     Instant getPaymentCreatedAt();
     Instant getOrderCreatedAt();
-    Instant getOrderCompletedAt();
+    Instant getCompletedAt();
 }

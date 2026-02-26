@@ -24,20 +24,6 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     Long getNextOrderNo();
 
     @Query(value = """
-    select  oi.order_id as orderId,
-            oi.order_item_id as orderItemId,
-            oi.product_name_at_purchase as productName,
-            oi.quantity as quantity,
-            oi.price_per_unit_at_purchase as pricePerUnit,
-            oi.subtotal_at_purchase as subtotal,
-            pi.product_img_path as productImagePath
-    from order_items oi
-    left join product_images pi on pi.product_id = oi.product_id and pi.is_primary = true
-    where oi.order_id in :orderIds;
-       """, nativeQuery = true)
-    List<IOrderItemListResp> getOrderItemByOrderId(@Param("orderIds") List<UUID> orderIds);
-
-    @Query(value = """
         select o.order_id as orderId,
               o.total_quantity as totalQuantity,
               o.total_amount as totalAmount,
@@ -48,10 +34,12 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
         from orders o
         left join order_shipping_address osa
         on o.order_id = osa.order_id
-        where o.customer_id = 'c0a80212-9c4f-190a-819c-4fe930870001'
-        and o.order_status = 'PD';
+        where (:isSeller = TRUE or o.customer_id = :customerId)
+        and o.order_status = :status;
        """, nativeQuery = true)
-    List<IOrderByStatusResp> getOrderByCustIdStatus(@Param("customerId") UUID customerId, @Param("status") String status);
+    List<IOrderByStatusResp> getOrderByCustIdStatus(@Param("customerId") UUID customerId,
+                                                    @Param("status") String status,
+                                                    @Param("isSeller") Boolean isSeller);
 
     @Query(value = """
             select o.order_id as orderId,
@@ -69,8 +57,8 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
              osa.recipient_first_name as recipientFirstName,
              osa.recipient_last_name as recipientLastName,
              osa.recipient_phone as recipientPhone,
-             pm.created_at as paymentCreateAt,
-             o.created_at as orderCreateAt,
+             pm.created_at as paymentCreatedAt,
+             o.created_at as orderCreatedAt,
              o.completed_at as orderCompletedAt
        from orders o
        join order_shipping_address osa
@@ -80,4 +68,5 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
        """, nativeQuery = true)
     IOrderDetailByStatusResp getOrderDetailByOrderId(@Param("orderId") UUID orderId);
 
+    boolean existsByOrderIdAndCustomersEntity_UsersEntity_UserId(UUID orderId, UUID userId);
 }

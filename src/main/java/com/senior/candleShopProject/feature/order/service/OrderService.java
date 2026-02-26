@@ -5,8 +5,8 @@ import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.ShopBadRequestException;
+import com.senior.candleShopProject.common.exception.ShopConflictException;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
-import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
@@ -15,8 +15,10 @@ import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
 import com.senior.candleShopProject.datasource.repo.CarriersRepo;
 import com.senior.candleShopProject.datasource.repo.CustomersRepo;
+import com.senior.candleShopProject.datasource.repo.OrderItemsRepo;
 import com.senior.candleShopProject.datasource.repo.OrdersRepo;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderByStatusResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailsResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderItemsListResp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +34,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+
+    private final UserCheckTemp userCheckTemp;
+
     private final OrdersRepo ordersRepo;
     private final CarriersRepo carriersRepo;
     private final CustomersRepo customersRepo;
+    private final OrderItemsRepo orderItemsRepo;
 
     public GenericResponse getAllCarriers() {
         GenericResponse response = new GenericResponse();
@@ -44,18 +50,17 @@ public class OrderService {
     }
 
     public GenericResponse getOrderByStatus(UUID userId, String status) throws ShopServiceApiException {
+        userCheckTemp.checkExistsUser(userId);
         boolean validStatus = OrderStatus.isValidStatus(status);
 
-        CustomersEntity existCustomer = customersRepo.getCustomersEntityByUsersEntity_UserId(userId);
+        UUID customerId = userCheckTemp.getCustomerId(userId);
 
-        if (existCustomer == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
         if (!validStatus)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Invalid order status.");
 
-        List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(existCustomer.getCustomerId(), status);
+        List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(customerId, status,(userCheckTemp.getSellerId(userId) != null));
         List<UUID> orderIds = order.stream().map(IOrderByStatusResp::getOrderId).toList();
-        List<IOrderItemListResp> orderItems = ordersRepo.getOrderItemByOrderId(orderIds);
+        List<IOrderItemListResp> orderItems = orderItemsRepo.getOrderItemByOrderIds(orderIds);
 
         if (orderItems == null || orderItems.isEmpty())
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order not found.");
@@ -74,21 +79,29 @@ public class OrderService {
         return response;
     }
 
-//    public GenericResponse getOrderDetailsByOrderId(UUID userId, UUID orderId) throws ShopServiceApiException {
-//        UserCheckTemp.isExistsUser(userId);
-//        IOrderDetailByStatusResp orderDetails = ordersRepo.getOrderDetailByOrderId(orderId);
-//
-//        if(orderDetails == null)
-//            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
-//
-//        IOrderDetailByStatusResp orderItems = ordersRepo.getOrderDetailByOrderId(orderId);
-//
-//        if (orderItems == null)
-//            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order items not found.");
-//
-//        List<OrderItemsListResp> orderItemsListResp = mapToOrderItemsListResp(orderItems);
-//
-//    }
+    public GenericResponse getOrderDetailsByOrderId(UUID userId, UUID orderId) throws ShopServiceApiException {
+        userCheckTemp.checkExistsUser(userId);
+        userCheckTemp.isOwnerOfOrder(userId, orderId);
+
+        IOrderDetailByStatusResp orderDetails = ordersRepo.getOrderDetailByOrderId(orderId);
+
+        if(orderDetails == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+        List<IOrderItemListResp> orderItemsListResp = orderItemsRepo.getOrderItemByOrderIds(List.of(orderId));
+
+        if (orderItemsListResp.isEmpty())
+            throw new ShopConflictException(ResultCode.CONFLICT,"Order must contain at least one item.");
+
+        OrderDetailsResp orderDetailsResp = new OrderDetailsResp();
+        orderDetailsResp.setOrderDetail(orderDetails);
+        orderDetailsResp.setOrderItems(orderItemsListResp);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(orderDetailsResp);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
+    }
 
     private List<OrderByStatusResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
 

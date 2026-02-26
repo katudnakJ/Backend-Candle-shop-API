@@ -22,5 +22,4 @@ public interface SellerRepo extends JpaRepository<SellerEntity, UUID> {
 
     SellerEntity getSellerEntitiesByUsersEntity_UserId(UUID usersEntityUserId);
 
-    boolean existsByUsersEntity_UserId(UUID userId);
 }
