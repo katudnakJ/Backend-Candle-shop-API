@@ -171,7 +171,7 @@ public class OrderCheckoutServiceTest {
         PaymentsEntity existing = new PaymentsEntity();
         existing.setPaymentId(paymentId);
         existing.setReceiptNumber("RCPT-123");
-        existing.setPaymentStatus(OrderStatus.ORDER_PAYMENT_REJECTED.getOrderStatusCode());
+        existing.setPaymentStatus(OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode());
         when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(existing);
 
         PaymentsEntity saved = new PaymentsEntity();
@@ -213,7 +213,7 @@ public class OrderCheckoutServiceTest {
         when(paymentsRepo.existsByOrdersEntity_OrderId(orderId)).thenReturn(true);
         PaymentsEntity existing = new PaymentsEntity();
         existing.setReceiptNumber("RCPT-123");
-        existing.setPaymentStatus(OrderStatus.ORDER_PAYMENT_PENDING.getOrderStatusCode());
+        existing.setPaymentStatus(OrderStatus.ORDER_PAYMENT_PENDING.getStatusCode());
         when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(existing);
 
         assertThrows(ShopConflictException.class, () ->

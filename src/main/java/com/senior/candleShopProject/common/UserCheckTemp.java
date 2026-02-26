@@ -31,11 +31,11 @@ public class UserCheckTemp{
          if (!usersRepo.existsById(userId))
              throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
     }
-    public UUID getCustomerId(UUID userId) throws ShopDataNotFoundException {
+    public UUID getCustomerIdByUserId(UUID userId) throws ShopDataNotFoundException {
         return customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId).get().getCustomerId();
     }
 
-    public UUID getSellerId(UUID userId){
+    public UUID getSellerIdByUserId(UUID userId){
         return sellerRepo.getSellerByUserId(userId)
                 .getSellerId();
     }

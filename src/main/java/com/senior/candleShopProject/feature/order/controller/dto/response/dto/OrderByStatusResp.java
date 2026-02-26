@@ -1,7 +1,7 @@
-package com.senior.candleShopProject.feature.order.controller.dto.response;
+package com.senior.candleShopProject.feature.order.controller.dto.response.dto;
 
-import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
+import com.senior.candleShopProject.common.OrderStatus;
+import com.senior.candleShopProject.feature.order.controller.dto.response.OrderItemsListResp;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,8 +16,10 @@ public class OrderByStatusResp {
     private Integer totalQuantity;
     private BigDecimal totalAmount;
     private BigDecimal netAmount;
-    private String orderStatus;
+    private OrderStatus orderStatus;
     private String orderNo;
     private String addressLabel;
+    private String trackingNo;
+    private String rejectionReason;
     private List<OrderItemsListResp> orderItems;
 }

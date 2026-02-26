@@ -104,7 +104,7 @@ public class OrderCheckoutService {
         ordersEntity.setTotalAmount(totalAmount);
         ordersEntity.setNetAmount(totalAmount.add(calculateShippingCost(totalQuantity)));
         ordersEntity.setOrderStatus(OrderStatus
-                .ORDER_PAYMENT_PENDING.getOrderStatusCode()
+                .ORDER_PAYMENT_PENDING.getStatusCode()
         );
         ordersEntity.setOrderCreatedAt(Instant.now());
         ordersEntity.setCustomersEntity(customersEntity);
@@ -205,7 +205,7 @@ public class OrderCheckoutService {
         }else{
             paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
-            if(!paymentsEntity.getPaymentStatus().equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_REJECTED.getOrderStatusCode()))
+            if(!paymentsEntity.getPaymentStatus().equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
                 throw new ShopConflictException(ResultCode.CONFLICT);
 
             runningNumber = paymentsEntity.getReceiptNumber();
@@ -216,7 +216,7 @@ public class OrderCheckoutService {
         }
 
         paymentsEntity.setPaymentStatus(
-                OrderStatus.ORDER_PAYMENT_PENDING.getOrderStatusCode()
+                OrderStatus.ORDER_PAYMENT_PENDING.getStatusCode()
         );
 
         PaymentsEntity newPaymentEntity = paymentsRepo.save(paymentsEntity);

@@ -24,16 +24,20 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     Long getNextOrderNo();
 
     @Query(value = """
-        select o.order_id as orderId,
-              o.total_quantity as totalQuantity,
-              o.total_amount as totalAmount,
-              o.net_amount as netAmount,
-              o.order_status as orderStatus,
-              o.order_no as orderNo,
-              osa.address_label as addressLabel
-        from orders o
-        left join order_shipping_address osa
-        on o.order_id = osa.order_id
+            select o.order_id as orderId,
+                  o.total_quantity as totalQuantity,
+                  o.total_amount as totalAmount,
+                  o.net_amount as netAmount,
+                  o.order_status as orderStatus,
+                  o.order_no as orderNo,
+                  osa.address_label as addressLabel,
+                  sm.tracking_number as trackingNumber,
+                  pm.rejection_reason as rejectionReason
+            from orders o
+            left join order_shipping_address osa
+            on o.order_id = osa.order_id
+            left join payments pm on pm.order_id = o.order_id\s
+            left join shipment sm on sm.order_id = o.order_id
         where (:isSeller = TRUE or o.customer_id = :customerId)
         and o.order_status = :status;
        """, nativeQuery = true)

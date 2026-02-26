@@ -38,4 +38,8 @@ public class Constants {
     public static final int SHIPPING_ITEMS_PER_BOX = 100;
     public static final BigDecimal SHIPPING_PRICE_LESS_THAN_10 = new BigDecimal("50.00");
     public static final BigDecimal SHIPPING_PRICE_MORE_THAN_10 = new BigDecimal("120.00");
+
+//    Shipping Method
+    public static final String SHIPPING_METHOD_STANDARD = "STANDARD";
+    public static final String SHIPPING_METHOD_YIPPEE = "YIPPEE";
 }

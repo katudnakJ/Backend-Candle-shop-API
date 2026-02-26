@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -21,6 +22,9 @@ public class CarriersEntity {
 
     @Column(name = "carrier_name")
     private String carrierName;
+
+    @Column(name = "shipping_fee")
+    private BigDecimal shippingFee;
 
 //    Relationships
     @OneToOne(mappedBy = "carriersEntity")
