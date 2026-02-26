@@ -76,9 +76,8 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
        join order_shipping_address osa
        on o.order_id = osa.order_id
        join payments pm on pm.order_id = o.order_id
-       where o.order_id = :orderId
-       and o.order_status = :status;
+       where o.order_id = :orderId;
        """, nativeQuery = true)
-    IOrderDetailByStatusResp getOrderDetailByStatus(@Param("orderId") UUID orderId, @Param("status") String status);
+    IOrderDetailByStatusResp getOrderDetailByOrderId(@Param("orderId") UUID orderId);
 
 }

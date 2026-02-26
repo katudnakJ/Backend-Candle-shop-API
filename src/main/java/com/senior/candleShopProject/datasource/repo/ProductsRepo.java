@@ -37,6 +37,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
               p.price as price,
               p.product_created_date as productCreatedDate,
               p.total_selled as totalSelled,
+              p.slug as productSlug,
               pi.product_img_path as productImgPath
             from products p
             left join product_images pi

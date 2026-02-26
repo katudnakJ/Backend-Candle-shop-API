@@ -3,12 +3,14 @@ package com.senior.candleShopProject.feature.order.service;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.ShopBadRequestException;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
+import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
 import com.senior.candleShopProject.datasource.repo.CarriersRepo;
@@ -72,6 +74,21 @@ public class OrderService {
         return response;
     }
 
+//    public GenericResponse getOrderDetailsByOrderId(UUID userId, UUID orderId) throws ShopServiceApiException {
+//        UserCheckTemp.isExistsUser(userId);
+//        IOrderDetailByStatusResp orderDetails = ordersRepo.getOrderDetailByOrderId(orderId);
+//
+//        if(orderDetails == null)
+//            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+//
+//        IOrderDetailByStatusResp orderItems = ordersRepo.getOrderDetailByOrderId(orderId);
+//
+//        if (orderItems == null)
+//            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order items not found.");
+//
+//        List<OrderItemsListResp> orderItemsListResp = mapToOrderItemsListResp(orderItems);
+//
+//    }
 
     private List<OrderByStatusResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
 
@@ -84,19 +101,9 @@ public class OrderService {
 //         set order items to each order response
         order.forEach(orderItem -> {
             List<IOrderItemListResp> itemsMap = orderItemsMap.get(orderItem.getOrderId());
+            List<OrderItemsListResp> orderItemsListResp = mapToOrderItemsListResp(itemsMap);
+
             OrderByStatusResp orderByStatusResp = new OrderByStatusResp();
-
-            List<OrderItemsListResp> orderItemsListResp = itemsMap.stream().map(item -> {;
-                OrderItemsListResp items = new OrderItemsListResp();
-                items.setOrderItemId(item.getOrderItemId());
-                items.setProductName(item.getProductName());
-                items.setQuantity(item.getQuantity());
-                items.setPricePerUnit(item.getPricePerUnit());
-                items.setSubTotal(item.getSubTotal());
-                items.setProductImagePath(item.getProductImgPath());
-                return items;
-            }).toList();
-
             orderByStatusResp.setOrderId(orderItem.getOrderId());
             orderByStatusResp.setTotalQuantity(orderItem.getTotalQuantity());
             orderByStatusResp.setTotalAmount(orderItem.getTotalAmount());
@@ -111,4 +118,16 @@ public class OrderService {
         return responseData;
     }
 
+    private List<OrderItemsListResp> mapToOrderItemsListResp(List<IOrderItemListResp> itemsMap) {
+        return itemsMap.stream().map(item -> {;
+            OrderItemsListResp items = new OrderItemsListResp();
+            items.setOrderItemId(item.getOrderItemId());
+            items.setProductName(item.getProductName());
+            items.setQuantity(item.getQuantity());
+            items.setPricePerUnit(item.getPricePerUnit());
+            items.setSubTotal(item.getSubTotal());
+            items.setProductImagePath(item.getProductImgPath());
+            return items;
+        }).toList();
+    }
 }

@@ -3,6 +3,7 @@ package com.senior.candleShopProject.feature.order.controller;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.feature.order.service.OrderService;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @Schema(description = "Get all carriers.")
     @GetMapping("/carriers")
     public ResponseEntity<GenericResponse> getAllCarriers(@RequestAttribute("userId") String userId) {
         log.info("Getting all carriers");
@@ -28,6 +30,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @Schema(description = "Get order by status.")
     @GetMapping()
     public ResponseEntity<GenericResponse> getOrderByStatus(@RequestAttribute("userId") String userId,
                                                             @RequestParam("status") String status) throws ShopServiceApiException {
@@ -37,4 +40,6 @@ public class OrderController {
         GenericResponse response = orderService.getOrderByStatus(userUUID, status);
         return ResponseEntity.ok(response);
     }
+
+
 }

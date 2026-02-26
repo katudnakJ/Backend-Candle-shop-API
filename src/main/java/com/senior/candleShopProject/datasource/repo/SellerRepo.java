@@ -21,4 +21,6 @@ public interface SellerRepo extends JpaRepository<SellerEntity, UUID> {
     ISellerResp getSellerByUserId(@Param(value = "userId") UUID userId);
 
     SellerEntity getSellerEntitiesByUsersEntity_UserId(UUID usersEntityUserId);
+
+    boolean existsByUsersEntity_UserId(UUID userId);
 }

@@ -13,4 +13,6 @@ public interface CustomersRepo extends JpaRepository<CustomersEntity, UUID> {
     Optional<CustomersEntity> findCustomersEntitiesByUsersEntity_UserId(UUID customerId);
 
     CustomersEntity getCustomersEntityByUsersEntity_UserId(UUID usersEntityUserId);
+
+    boolean existsCustomersEntitiesByUsersEntity_UserId(UUID userId);
 }

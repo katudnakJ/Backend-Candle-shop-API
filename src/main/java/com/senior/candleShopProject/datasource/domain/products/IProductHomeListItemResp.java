@@ -17,5 +17,6 @@ public class IProductHomeListItemResp {
     private BigDecimal price;
     private Instant productCreatedDate;
     private Integer totalSelled;
+    private String productSlug;
     private String productImgPath;
 }
