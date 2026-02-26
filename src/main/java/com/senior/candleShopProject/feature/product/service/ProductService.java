@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,20 +62,21 @@ public class ProductService {
     public GenericResponse getProductHomeListItem() throws ShopServiceApiException {
 
 //      featured products
-        List<IProductHomeListItemResp> featuredProducts = productsRepo.getProductHomeListItemResp(true);
+        List<IProductHomeListItemResp> featureFromRepo = productsRepo.getProductHomeListItemResp(true);
+        List<IProductHomeListItemResp> featuredProducts = addPrefixProductImgPath(featureFromRepo);
 
 //      non-featured products
-        List<IProductHomeListItemResp> nonFeaturedProducts = productsRepo.getProductHomeListItemResp(false);
-        Integer nonFeaturedProductsCount = productsRepo.getCountProductHomeListItemResp(false);
+        List<IProductHomeListItemResp> nonFeaturedFromRepo = productsRepo.getProductHomeListItemResp(false);
+        List<IProductHomeListItemResp> nonFeaturedProducts = addPrefixProductImgPath(nonFeaturedFromRepo);
 
-        if (featuredProducts.isEmpty() && nonFeaturedProducts.isEmpty())
+        if (featureFromRepo.isEmpty() && nonFeaturedFromRepo.isEmpty())
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "All Products list are empty.");
 
         ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
-        productHomeListItemResp.setFeaturedProduct(addPrefixProductImgPath(featuredProducts));
+        productHomeListItemResp.setFeaturedProduct((featuredProducts));
 
         productHomeListItemResp.setNonFeaturedProduct(addPrefixProductImgPath(nonFeaturedProducts));
-        productHomeListItemResp.setNonFeaturedTotal(nonFeaturedProductsCount);
+        productHomeListItemResp.setNonFeaturedTotal(nonFeaturedProducts.size());
 
         GenericResponse response = new GenericResponse();
         response.setData(productHomeListItemResp);
@@ -83,16 +85,13 @@ public class ProductService {
 
     }
 
-    private List<IProductHomeListItemResp> addPrefixProductImgPath (List<IProductHomeListItemResp> productHomeListItemResp) {
-       return(
-              productHomeListItemResp.stream().map(item -> new IProductHomeListItemResp(
-                        item.getProductId(),
-                        item.getProductName(),
-                        item.getPrice(),
-                        item.getProductCreatedDate(),
-                        item.getTotalSelled(),
-                        publicImageBaseUrl + item.getProductImgPath()
-              )).toList());
-
+    private List<IProductHomeListItemResp> addPrefixProductImgPath (List<IProductHomeListItemResp> productsList) {
+        productsList.forEach(product -> {
+            if(product.getProductImgPath() != null)
+                product.setProductImgPath(publicImageBaseUrl+product.getProductImgPath());
+            else
+                product.setProductImgPath(null);
+        });
+        return productsList;
     }
 }

@@ -31,32 +31,19 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
     IProductResp getProductById(@Param("productId") UUID productId);
 
     @Query(value = """
-    Select
-      p.product_id as productId,
-      p.product_name as productName,
-      p.price as price,
-      p.is_active as isActive,
-      p.product_created_date,
-      p.total_selled as totalSelled,
-      pi.product_img_path as productImgPath
-    from products p
-    left join product_images pi
-    on p.product_id = pi.product_id
-    where is_primary = true
-    and is_featured = true
-    and is_active = true
-    order by p.product_id
-    limit 20 offset 0;
+          Select
+              p.product_id as productId,
+              p.product_name as productName,
+              p.price as price,
+              p.product_created_date as productCreatedDate,
+              p.total_selled as totalSelled,
+              pi.product_img_path as productImgPath
+            from products p
+            left join product_images pi
+            on p.product_id = pi.product_id
+            and pi.is_primary = true
+            where p.is_featured = :isFeatured
+            and p.is_active = true;
     """,nativeQuery = true)
     List<IProductHomeListItemResp> getProductHomeListItemResp(@Param("isFeatured") Boolean isFeatured);
-
-    @Query(value = """
-        Select count(*)
-        from products p left join product_images pi
-        on p.product_id = pi.product_id
-        where is_primary = true
-        and is_featured = :isFeatured
-        limit 20 offset 0;
-    """,nativeQuery = true)
-    Integer getCountProductHomeListItemResp(@Param("isFeatured") Boolean isFeatured);
 }

@@ -89,7 +89,6 @@ public class ProductServiceTest {
 
         IProductHomeListItemResp featuredProductResp = mock(IProductHomeListItemResp.class);
         when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(List.of(featuredProductResp));
-        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(1);
 
         GenericResponse response = productService.getProductHomeListItem();
 
@@ -97,13 +96,11 @@ public class ProductServiceTest {
         assertEquals(ResultCode.SUCCESS, response.getStatus());
 
         verify(productsRepo, times(2)).getProductHomeListItemResp(anyBoolean());
-        verify(productsRepo, times(1)).getCountProductHomeListItemResp(anyBoolean());
     }
 
     @Test
     void testGetProductHomeListItem_DataNotFound() throws ShopServiceApiException {
         when(productsRepo.getProductHomeListItemResp(anyBoolean())).thenReturn(Collections.emptyList());
-        when(productsRepo.getCountProductHomeListItemResp(anyBoolean())).thenReturn(0);
 
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
             productService.getProductHomeListItem();
