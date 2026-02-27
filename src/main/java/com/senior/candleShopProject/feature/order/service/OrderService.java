@@ -42,6 +42,7 @@ public class OrderService {
     private final OrderItemsRepo orderItemsRepo;
     private final PaymentsRepo paymentsRepo;
 
+//    Business logic for order management
     public GenericResponse getAllCarriers() {
         GenericResponse response = new GenericResponse();
         response.setData(carriersRepo.findAll());
@@ -245,6 +246,8 @@ public class OrderService {
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }
+
+//    Extracted method for business logic
 
     private List<OrderByStatusResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
 
