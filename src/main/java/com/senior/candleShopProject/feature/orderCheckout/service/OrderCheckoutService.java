@@ -139,7 +139,6 @@ public class OrderCheckoutService {
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
 
 
-
         Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof);
 
         GenericResponse response = new GenericResponse();
@@ -211,7 +210,7 @@ public class OrderCheckoutService {
             runningNumber = paymentsEntity.getReceiptNumber();
             paymentsEntity.setResubmitAt(Instant.now());
             paymentsEntity.setStatusChangedAt(Instant.now());
-
+            paymentsEntity.setRejectionReason(null);
             resultCode = ResultCode.SUCCESS;
         }
 

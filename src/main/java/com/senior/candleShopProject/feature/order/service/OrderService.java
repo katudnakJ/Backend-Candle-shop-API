@@ -12,6 +12,7 @@ import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByStatu
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
+import com.senior.candleShopProject.datasource.entities.SellerEntity;
 import com.senior.candleShopProject.datasource.entities.ShipmentEntity;
 import com.senior.candleShopProject.datasource.repo.*;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
@@ -39,7 +40,6 @@ public class OrderService {
     private final CarriersRepo carriersRepo;
     private final OrderItemsRepo orderItemsRepo;
     private final PaymentsRepo paymentsRepo;
-    private final ShipmentRepo shipmentRepo;
 
     public GenericResponse getAllCarriers() {
         GenericResponse response = new GenericResponse();
@@ -50,8 +50,8 @@ public class OrderService {
 
     public GenericResponse getOrderByStatus(UUID userId, String status) throws ShopServiceApiException {
 
-//        if (status == null || status.isEmpty())
-//            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Status is required.");
+        if (status == null || status.isEmpty())
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Status is required.");
 
         userCheckTemp.checkExistsUser(userId);
         boolean validStatus = OrderStatus.isValidStatus(status);
@@ -62,6 +62,13 @@ public class OrderService {
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Invalid order status.");
 
         List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(customerId, status,(userCheckTemp.getSellerIdByUserId(userId) != null));
+        if (order == null || order.isEmpty()){
+            GenericResponse response = new GenericResponse();
+            response.setData(null);
+            response.setStatus(ResultCode.SUCCESS);
+            return response;
+        }
+
         List<UUID> orderIds = order.stream().map(IOrderByStatusResp::getOrderId).toList();
         List<IOrderItemListResp> orderItems = orderItemsRepo.getOrderItemByOrderIds(orderIds);
 
@@ -83,9 +90,6 @@ public class OrderService {
     }
 
     public GenericResponse getOrderDetailsByOrderId(UUID userId, UUID orderId) throws ShopServiceApiException {
-
-//        if (orderId == null)
-//            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Order ID is required.");
 
         userCheckTemp.checkExistsUser(userId);
         userCheckTemp.isOwnerOfOrder(userId, orderId);
@@ -112,9 +116,6 @@ public class OrderService {
 
     public GenericResponse confirmPayment(UUID userId, UUID orderId) throws  ShopServiceApiException {
 
-//        if (orderId == null)
-//            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Order ID is required.");
-
         userCheckTemp.checkExistsUser(userId);
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);
         if (order.isEmpty())
@@ -122,7 +123,13 @@ public class OrderService {
 
         OrdersEntity orderEntity = order.get();
         OrderStatus newStatus = OrderStatus.ORDER_TO_SHIP;
-        OrderStatus.validToChangeStatus(orderEntity.getOrderStatus(), newStatus.getStatusCode());
+
+        PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+
+        boolean isValidStatus = OrderStatus.validToChangeStatus(payment.getPaymentStatus(), newStatus.getStatusCode());
+
+        if (!isValidStatus)
+            throw new ShopConflictException(ResultCode.CONFLICT,"Only orders with 'Payment Pending' status can be confirmed.");
 
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
@@ -130,14 +137,91 @@ public class OrderService {
             throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
 
         Instant timeNow = Instant.now();
-        PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+        SellerEntity seller = new SellerEntity();
+        seller.setSellerId(sellerId);
+
         payment.setPaymentStatus(OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode());
         payment.setStatusChangedAt(timeNow);
         payment.setApproveAt(timeNow);
+        payment.setSellerEntity(seller);
 
-        orderEntity.setOrderStatus(newStatus.getStatusCode());
+        return getGenericResponse(orderEntity, newStatus, timeNow, payment);
+
+    }
+
+    public GenericResponse rejectPayment(UUID userId,UUID orderId, RejectPaymentReq rejectPaymentReq ) throws  ShopServiceApiException {
+
+        if (orderId == null || rejectPaymentReq.getReason().isEmpty())
+                throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Order ID and reason are required.");
+
+        userCheckTemp.checkExistsUser(userId);
+        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
+
+        if( sellerId == null )
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+
+        Optional<OrdersEntity> order = ordersRepo.findById(orderId);
+            if (order.isEmpty())
+                throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order not found.");
+
+            PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+
+            if( payment == null )
+                throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Payment not found.");
+
+            OrdersEntity orderEntity = order.get();
+            OrderStatus newStatus = OrderStatus.ORDER_PAYMENT_REJECTED;
+
+        boolean isValidStatus = OrderStatus.validToChangeStatus(payment.getPaymentStatus(), newStatus.getStatusCode());
+
+        if (!isValidStatus)
+            throw new ShopConflictException(ResultCode.CONFLICT,"Only orders with 'Payment Pending' status can be confirmed.");
+
+        Instant timeNow = Instant.now();
+
+        payment.setPaymentStatus(newStatus.getStatusCode());
+        payment.setStatusChangedAt(timeNow);
+        payment.setRejectionReason(rejectPaymentReq.getReason());
+
+        return getGenericResponse(orderEntity, newStatus, timeNow, payment);
+    }
+
+    public GenericResponse trackOrder(UUID userId, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
+        userCheckTemp.checkExistsUser(userId);
+
+        if (orderId == null || trackOrderReq.getTrackingNumber().isEmpty())
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Tracking number is required.");
+
+        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
+
+        if (sellerId == null)
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+
+        Optional<OrdersEntity> order = ordersRepo.findById(orderId);
+        if (order.isEmpty())
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order not found.");
+
+        OrderStatus newStatus = OrderStatus.ORDER_TO_RECIEVE;
+
+        boolean isValidStatus = OrderStatus.validToChangeStatus(order.get().getOrderStatus(), newStatus.getStatusCode());
+
+        if (!isValidStatus)
+            throw new ShopConflictException(ResultCode.CONFLICT,"Only orders with 'TO SHIP' status can be confirmed.");
+
+        Instant timeNow = Instant.now();
+
+        OrdersEntity orderEntity = order.get();
+        orderEntity.setOrderStatus(OrderStatus.ORDER_TO_RECIEVE.getStatusCode());
         orderEntity.setStatusChangedAt(timeNow);
+        orderEntity.setOrderStatus(newStatus.getStatusCode());
 
+        String trackNumbers = String.join(",", trackOrderReq.getTrackingNumber());
+        ShipmentEntity shipment = new ShipmentEntity();
+        shipment.setOrdersEntity(orderEntity);
+        shipment.setDeliveryMethod(Constants.SHIPPING_METHOD_STANDARD);
+        shipment.setTrackingNumber(trackNumbers);
+
+        orderEntity.setShipmentEntity(shipment);
         OrdersEntity newOrder = ordersRepo.save(orderEntity);
 
         OrderStatusChangeResp orderStatusChangeResp = setOrderStatusChangeResp(newOrder, newStatus);
@@ -146,81 +230,15 @@ public class OrderService {
         response.setData(orderStatusChangeResp);
         response.setStatus(ResultCode.SUCCESS);
         return response;
-
     }
 
-    public GenericResponse rejectPayment(UUID userId, RejectPaymentReq rejectPaymentReq ) throws  ShopServiceApiException {
+    private GenericResponse getGenericResponse(OrdersEntity orderEntity, OrderStatus newStatus, Instant timeNow, PaymentsEntity payment) {
 
-//        if (rejectPaymentReq.getOrderId() == null || rejectPaymentReq.getReason().isEmpty())
-//                throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Order ID and reason are required.");
-
-        userCheckTemp.checkExistsUser(userId);
-        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
-
-        if( sellerId == null )
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
-
-        Optional<OrdersEntity> order = ordersRepo.findById(rejectPaymentReq.getOrderId());
-            if (order.isEmpty())
-                throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order not found.");
-
-            PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(rejectPaymentReq.getOrderId());
-
-            if( payment == null )
-                throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Payment not found.");
-
-            OrdersEntity orderEntity = order.get();
-            OrderStatus newStatus = OrderStatus.ORDER_PAYMENT_REJECTED;
-            Instant timeNow = Instant.now();
-
-            payment.setPaymentStatus(newStatus.getStatusCode());
-            payment.setStatusChangedAt(timeNow);
-            payment.setRejectionReason(rejectPaymentReq.getReason());
-
+        if (!Objects.equals(newStatus.getStatusCode(), OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
             orderEntity.setOrderStatus(newStatus.getStatusCode());
-            orderEntity.setStatusChangedAt(timeNow);
-            orderEntity.setPaymentsEntity(payment);
 
-            OrdersEntity newOrder = ordersRepo.save(orderEntity);
-
-            OrderStatusChangeResp orderStatusChangeResp = setOrderStatusChangeResp(newOrder, newStatus);
-
-            GenericResponse response = new GenericResponse();
-            response.setData(orderStatusChangeResp);
-            response.setStatus(ResultCode.SUCCESS);
-            return response;
-    }
-
-    public GenericResponse trackOrder(UUID userId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
-        userCheckTemp.checkExistsUser(userId);
-
-//        if (trackOrderReq.getOrderId() == null || trackOrderReq.getTrackNo().isEmpty())
-//            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Tracking number is required.");
-
-        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
-
-        if (sellerId == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
-
-        Optional<OrdersEntity> order = ordersRepo.findById(trackOrderReq.getOrderId());
-        if (order.isEmpty())
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order not found.");
-
-        OrderStatus newStatus = OrderStatus.ORDER_TO_RECIEVE;
-        OrderStatus.validToChangeStatus(order.get().getOrderStatus(), newStatus.getStatusCode());
-
-        String trackNumbers = String.join(",", trackOrderReq.getTrackingNumber());
-        ShipmentEntity shipment = new ShipmentEntity();
-        shipment.setDeliveryMethod(Constants.SHIPPING_METHOD_STANDARD);
-        shipment.setTrackingNumber(trackNumbers);
-
-        Instant timeNow = Instant.now();
-
-        OrdersEntity orderEntity = order.get();
-        orderEntity.setOrderStatus(OrderStatus.ORDER_TO_RECIEVE.getStatusCode());
         orderEntity.setStatusChangedAt(timeNow);
-        orderEntity.setOrderStatus(newStatus.getStatusCode());
-        orderEntity.setShipmentEntity(shipment);
+        orderEntity.setPaymentsEntity(payment);
 
         OrdersEntity newOrder = ordersRepo.save(orderEntity);
 
@@ -241,22 +259,31 @@ public class OrderService {
                 .collect(Collectors.groupingBy(IOrderItemListResp::getOrderId));
 
 //         set order items to each order response
-        order.forEach(orderItem -> {
-            List<IOrderItemListResp> itemsMap = orderItemsMap.get(orderItem.getOrderId());
+            order.forEach(orders -> {
+            List<IOrderItemListResp> itemsMap = orderItemsMap.getOrDefault(orders.getOrderId(),Collections.emptyList());
             List<OrderItemsListResp> orderItemsListResp = mapToOrderItemsListResp(itemsMap);
 
+            List<String> trackingNumbers;
+            if(orders.getTrackingNumber() == null || orders.getTrackingNumber().isEmpty())
+                trackingNumbers = Collections.emptyList();
+            else
+                trackingNumbers = Arrays.stream(orders.getTrackingNumber().split(","))
+                        .map(String::trim)
+                        .toList();
+
             OrderByStatusResp orderByStatusResp = new OrderByStatusResp();
-            orderByStatusResp.setOrderId(orderItem.getOrderId());
-            orderByStatusResp.setTotalQuantity(orderItem.getTotalQuantity());
-            orderByStatusResp.setTotalAmount(orderItem.getTotalAmount());
-            orderByStatusResp.setNetAmount(orderItem.getNetAmount());
+            orderByStatusResp.setOrderId(orders.getOrderId());
+            orderByStatusResp.setTotalQuantity(orders.getTotalQuantity());
+            orderByStatusResp.setTotalAmount(orders.getTotalAmount());
+            orderByStatusResp.setNetAmount(orders.getNetAmount());
             orderByStatusResp.setOrderStatus(
-                    OrderStatus.getStatusRespByStatusCode(orderItem.getOrderStatus())
+                    OrderStatus.getStatusRespByStatusCode(orders.getOrderStatus())
             );
-            orderByStatusResp.setOrderNo(orderItem.getOrderNo());
-            orderByStatusResp.setAddressLabel(orderItem.getAddressLabel());
-            orderByStatusResp.setTrackingNo(orderItem.getTrackingNo());
-            orderByStatusResp.setRejectionReason(orderItem.getRejectionReason());
+            orderByStatusResp.setOrderNo(orders.getOrderNo());
+            orderByStatusResp.setAddressLabel(orders.getAddressLabel());
+            orderByStatusResp.setTrackingNo(trackingNumbers);
+            orderByStatusResp.setDeliveryMethod(orders.getDeliveryMethod());
+            orderByStatusResp.setRejectionReason(orders.getRejectionReason());
             orderByStatusResp.setOrderItems(orderItemsListResp);
             responseData.add(orderByStatusResp);
         });

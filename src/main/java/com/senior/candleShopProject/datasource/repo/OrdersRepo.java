@@ -1,7 +1,6 @@
 package com.senior.candleShopProject.datasource.repo;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByStatusResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,11 +31,12 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
                   o.order_no as orderNo,
                   osa.address_label as addressLabel,
                   sm.tracking_number as trackingNumber,
+                  sm.delivery_method as deliveryMethod,
                   pm.rejection_reason as rejectionReason
             from orders o
             left join order_shipping_address osa
             on o.order_id = osa.order_id
-            left join payments pm on pm.order_id = o.order_id\s
+            left join payments pm on pm.order_id = o.order_id
             left join shipment sm on sm.order_id = o.order_id
         where (:isSeller = TRUE or o.customer_id = :customerId)
         and o.order_status = :status;

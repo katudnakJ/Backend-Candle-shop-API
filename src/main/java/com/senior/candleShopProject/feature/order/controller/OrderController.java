@@ -70,22 +70,26 @@ public class OrderController {
     @Schema (description = "Reject payment for order by seller.")
     @PatchMapping("/{orderId}/reject")
     public ResponseEntity rejectPayment(@RequestAttribute("userId") String userId,
+                                        @PathVariable ("orderId") String orderId,
                                         @RequestBody RejectPaymentReq rejectPaymentReq) throws ShopServiceApiException {
-            log.info("Rejecting payment for order {}", rejectPaymentReq.getOrderId());
+            log.info("Rejecting payment for order {}", orderId);
             UUID userUUID = UUID.fromString(userId);
+            UUID orderUUID = UUID.fromString(orderId);
 
-            GenericResponse response = orderService.rejectPayment(userUUID, rejectPaymentReq);
+            GenericResponse response = orderService.rejectPayment(userUUID, orderUUID, rejectPaymentReq);
             return ResponseEntity.ok(response);
     }
 
     @Schema(description = "Track order by seller.")
     @PatchMapping("/{orderId}/track")
     public ResponseEntity trackOrder(@RequestAttribute("userId") String userId,
+                                     @PathVariable ("orderId") String orderId,
                                      @RequestBody TrackOrderReq trackOrderReq) throws ShopServiceApiException {
-        log.info("Tracking order {}", trackOrderReq.getOrderId());
+        log.info("Tracking order {}",orderId);
         UUID userUUID = UUID.fromString(userId);
+        UUID orderUUID = UUID.fromString(orderId);
 
-        GenericResponse response = orderService.trackOrder(userUUID, trackOrderReq);
+        GenericResponse response = orderService.trackOrder(userUUID,orderUUID, trackOrderReq);
         return ResponseEntity.ok(response);
     }
 }

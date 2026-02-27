@@ -9,7 +9,5 @@ import java.util.UUID;
 @Getter
 @Setter
 public class TrackOrderReq {
-    private UUID orderId;
-    private String newStatus;
     private List<String> trackingNumber;
 }

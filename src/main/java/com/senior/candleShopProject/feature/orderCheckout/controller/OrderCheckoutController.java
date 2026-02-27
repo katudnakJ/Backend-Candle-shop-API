@@ -40,7 +40,7 @@ public class OrderCheckoutController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{orderId}")
+    @PutMapping(value = "/{orderId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity retryPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable("orderId") String orderId,
                                         @RequestParam("imageData") MultipartFile imageData) throws ShopServiceApiException, IOException {

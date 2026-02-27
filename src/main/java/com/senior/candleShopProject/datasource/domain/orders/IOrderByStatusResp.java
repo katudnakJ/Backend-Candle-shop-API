@@ -11,6 +11,7 @@ public interface IOrderByStatusResp {
     String getOrderStatus();
     String getOrderNo();
     String getAddressLabel();
-    String getTrackingNo();
+    String getTrackingNumber();
+    String getDeliveryMethod();
     String getRejectionReason();
 }

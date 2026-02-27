@@ -8,6 +8,5 @@ import java.util.UUID;
 @Setter
 @Getter
 public class RejectPaymentReq {
-    private UUID orderId;
     private String reason;
 }

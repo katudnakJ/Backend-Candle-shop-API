@@ -7,7 +7,7 @@ import java.util.Arrays;
 public enum OrderStatus {
     ORDER_PAYMENT_PENDING("PD","PAYMENT PENDING","รอยืนยันชำระเงิน"),
     ORDER_PAYMENT_REJECTED("RJ","PAYMENT REJECTED","การชำระเงินถูกปฏิเสธ"),
-    ORDER_PAYMENT_APPROVED("AP","PAYMENT APPROVED","การชำระเงินได้รับการอนุมัติ"),
+    ORDER_PAYMENT_APPROVED("AP","PAYMENT APPROVED","การชำระเงินได้รับการอนุมัติเรียบร้อย"),
     ORDER_TO_SHIP("TS","TO SHIP","ที่ต้องจัดส่ง"),
     ORDER_TO_RECIEVE("TR","TO RECEIVE","ที่ต้องได้รับ"),
     ORDER_COMPLETED("CP","COMPLETED","คำสั่งซื้อเสร็จสมบูรณ์"),;

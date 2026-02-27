@@ -19,7 +19,8 @@ public class OrderByStatusResp {
     private OrderStatus orderStatus;
     private String orderNo;
     private String addressLabel;
-    private String trackingNo;
+    private List<String> trackingNo;
     private String rejectionReason;
+    private String deliveryMethod;
     private List<OrderItemsListResp> orderItems;
 }

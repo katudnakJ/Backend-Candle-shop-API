@@ -1,5 +1,6 @@
 package com.senior.candleShopProject.datasource.entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
