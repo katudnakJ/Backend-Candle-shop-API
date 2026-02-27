@@ -6,11 +6,16 @@ import com.senior.candleShopProject.common.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -106,4 +111,36 @@ public class GlobalExceptionHandler {
         response.setStatus(ResultCode.FILE_TOO_LARGE);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<GenericResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        log.error("Http Message Not Readable Exception : ", ex.getMessage());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.INVALID_PARAMS);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<GenericResponse> handleNoHandlerFoundException(NoHandlerFoundException ex) {
+        log.error("No Handler Found Exception : ", ex.getMessage());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<GenericResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        log.error("Method Argument Not Valid Exception : ", ex.getMessage());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.INVALID_PARAMS);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<GenericResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        log.error("HTTP Request Method Not Supported Exception : ", ex.getMessage());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 }

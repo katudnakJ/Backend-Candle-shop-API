@@ -16,7 +16,7 @@ public class OrderByStatusResp {
     private Integer totalQuantity;
     private BigDecimal totalAmount;
     private BigDecimal netAmount;
-    private OrderStatus orderStatus;
+    private String orderStatus;
     private String orderNo;
     private String addressLabel;
     private List<String> trackingNo;

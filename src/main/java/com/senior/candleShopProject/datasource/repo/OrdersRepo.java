@@ -1,6 +1,6 @@
 package com.senior.candleShopProject.datasource.repo;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByStatusResp;
+import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -46,7 +46,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
                                                     @Param("isSeller") Boolean isSeller);
 
     @Query(value = """
-            select o.order_id as orderId,
+       select o.order_id as orderId,
              o.total_quantity as totalQauntity,
              o.total_amount as totalAmount,
              o.net_amount as netAmount,
@@ -62,15 +62,19 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
              osa.recipient_last_name as recipientLastName,
              osa.recipient_phone as recipientPhone,
              pm.created_at as paymentCreatedAt,
+             pm.approve_at as paymentApproveAt,
              o.created_at as orderCreatedAt,
-             o.completed_at as orderCompletedAt
+             o.completed_at as orderCompletedAt,
+             sm.tracking_number as trackingNumber,
+             sm.delivery_method as deliveryMethod,
+             pm.rejection_reason as rejectionReason
        from orders o
-       join order_shipping_address osa
-       on o.order_id = osa.order_id
-       join payments pm on pm.order_id = o.order_id
+       left join order_shipping_address osa on o.order_id = osa.order_id
+       left join payments pm on pm.order_id = o.order_id
+       left join shipment sm on sm.order_id = o.order_id
        where o.order_id = :orderId;
        """, nativeQuery = true)
-    IOrderDetailByStatusResp getOrderDetailByOrderId(@Param("orderId") UUID orderId);
+    IOrderDetailByOrderIdResp getOrderDetailByOrderId(@Param("orderId") UUID orderId);
 
     boolean existsByOrderIdAndCustomersEntity_UsersEntity_UserId(UUID orderId, UUID userId);
 }

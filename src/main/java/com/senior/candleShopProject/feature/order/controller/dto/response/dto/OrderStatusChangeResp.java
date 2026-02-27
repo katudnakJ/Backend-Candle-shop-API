@@ -11,6 +11,6 @@ import java.util.UUID;
 @Getter
 public class OrderStatusChangeResp {
     private UUID orderId;
-    private OrderStatus newStatus;
+    private String newStatus;
     private Instant statusChangedAt;
 }

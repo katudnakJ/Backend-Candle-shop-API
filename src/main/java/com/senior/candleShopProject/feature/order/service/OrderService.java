@@ -8,7 +8,7 @@ import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByStatusResp;
+import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
@@ -17,8 +17,9 @@ import com.senior.candleShopProject.datasource.entities.ShipmentEntity;
 import com.senior.candleShopProject.datasource.repo.*;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
+import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailByOrderIdResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderByStatusResp;
-import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailsResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderDetailsResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderItemsListResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderStatusChangeResp;
 import lombok.RequiredArgsConstructor;
@@ -94,7 +95,7 @@ public class OrderService {
         userCheckTemp.checkExistsUser(userId);
         userCheckTemp.isOwnerOfOrder(userId, orderId);
 
-        IOrderDetailByStatusResp orderDetails = ordersRepo.getOrderDetailByOrderId(orderId);
+        IOrderDetailByOrderIdResp orderDetails = ordersRepo.getOrderDetailByOrderId(orderId);
 
         if(orderDetails == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
@@ -104,9 +105,7 @@ public class OrderService {
         if (orderItemsListResp.isEmpty())
             throw new ShopConflictException(ResultCode.CONFLICT,"Order must contain at least one item.");
 
-        OrderDetailsResp orderDetailsResp = new OrderDetailsResp();
-        orderDetailsResp.setOrderDetail(orderDetails);
-        orderDetailsResp.setOrderItems(orderItemsListResp);
+        OrderDetailsResp orderDetailsResp = mapToOrderDetailsResp(orderDetails, orderItemsListResp);
 
         GenericResponse response = new GenericResponse();
         response.setData(orderDetailsResp);
@@ -150,9 +149,6 @@ public class OrderService {
     }
 
     public GenericResponse rejectPayment(UUID userId,UUID orderId, RejectPaymentReq rejectPaymentReq ) throws  ShopServiceApiException {
-
-        if (orderId == null || rejectPaymentReq.getReason().isEmpty())
-                throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Order ID and reason are required.");
 
         userCheckTemp.checkExistsUser(userId);
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
@@ -263,22 +259,14 @@ public class OrderService {
             List<IOrderItemListResp> itemsMap = orderItemsMap.getOrDefault(orders.getOrderId(),Collections.emptyList());
             List<OrderItemsListResp> orderItemsListResp = mapToOrderItemsListResp(itemsMap);
 
-            List<String> trackingNumbers;
-            if(orders.getTrackingNumber() == null || orders.getTrackingNumber().isEmpty())
-                trackingNumbers = Collections.emptyList();
-            else
-                trackingNumbers = Arrays.stream(orders.getTrackingNumber().split(","))
-                        .map(String::trim)
-                        .toList();
+            List<String> trackingNumbers = getTrackingNumbers(orders.getTrackingNumber());
 
             OrderByStatusResp orderByStatusResp = new OrderByStatusResp();
             orderByStatusResp.setOrderId(orders.getOrderId());
             orderByStatusResp.setTotalQuantity(orders.getTotalQuantity());
             orderByStatusResp.setTotalAmount(orders.getTotalAmount());
             orderByStatusResp.setNetAmount(orders.getNetAmount());
-            orderByStatusResp.setOrderStatus(
-                    OrderStatus.getStatusRespByStatusCode(orders.getOrderStatus())
-            );
+            orderByStatusResp.setOrderStatus(orders.getOrderStatus());
             orderByStatusResp.setOrderNo(orders.getOrderNo());
             orderByStatusResp.setAddressLabel(orders.getAddressLabel());
             orderByStatusResp.setTrackingNo(trackingNumbers);
@@ -304,11 +292,56 @@ public class OrderService {
         }).toList();
     }
 
+    private OrderDetailsResp mapToOrderDetailsResp(IOrderDetailByOrderIdResp orderDetails, List<IOrderItemListResp> orderItemsListResp) {
+
+        List<String> trackingNumbers = getTrackingNumbers(orderDetails.getTrackingNumber());
+
+        OrderDetailByOrderIdResp orderDetailByStatus = new OrderDetailByOrderIdResp();
+        orderDetailByStatus.setOrderId(orderDetails.getOrderId());
+        orderDetailByStatus.setTotalQuantity(orderDetails.getTotalQuantity());
+        orderDetailByStatus.setTotalAmount(orderDetails.getTotalAmount());
+        orderDetailByStatus.setNetAmount(orderDetails.getNetAmount());
+        orderDetailByStatus.setOrderStatus(orderDetails.getOrderStatus());
+        orderDetailByStatus.setOrderNo(orderDetails.getOrderNo());
+        orderDetailByStatus.setAddressLabel(orderDetails.getAddressLabel());
+        orderDetailByStatus.setDeliveryAddress(orderDetails.getDeliveryAddress());
+        orderDetailByStatus.setPostcode(orderDetails.getPostcode());
+        orderDetailByStatus.setProvince(orderDetails.getProvince());
+        orderDetailByStatus.setDistrict(orderDetails.getDistrict());
+        orderDetailByStatus.setSubDistrict(orderDetails.getSubDistrict());
+        orderDetailByStatus.setRecipientFirstName(orderDetails.getRecipientFirstName());
+        orderDetailByStatus.setRecipientLastName(orderDetails.getRecipientLastName());
+        orderDetailByStatus.setRecipientPhone(orderDetails.getRecipientPhone());
+        orderDetailByStatus.setPaymentCreatedAt(orderDetails.getPaymentCreatedAt());
+        orderDetailByStatus.setPaymentApproveAt(orderDetails.getPaymentApproveAt());
+        orderDetailByStatus.setOrderCreatedAt(orderDetails.getOrderCreatedAt());
+        orderDetailByStatus.setCompletedAt(orderDetails.getCompletedAt());
+        orderDetailByStatus.setTrackingNumber(trackingNumbers.stream().toList());
+        orderDetailByStatus.setDeliveryMethod(orderDetails.getDeliveryMethod());
+        orderDetailByStatus.setRejectionReason(orderDetails.getRejectionReason());
+
+        List<OrderItemsListResp> orderItemsList = mapToOrderItemsListResp(orderItemsListResp);
+
+        OrderDetailsResp orderDetailsResp = new OrderDetailsResp();
+        orderDetailsResp.setOrderDetail(orderDetailByStatus);
+        orderDetailsResp.setOrderItems(orderItemsList);
+        return orderDetailsResp;
+    }
+
     private OrderStatusChangeResp setOrderStatusChangeResp(OrdersEntity orderEntity, OrderStatus newStatus) {
         OrderStatusChangeResp orderStatusChangeResp = new OrderStatusChangeResp();
         orderStatusChangeResp.setOrderId(orderEntity.getOrderId());
-        orderStatusChangeResp.setNewStatus(newStatus);
+        orderStatusChangeResp.setNewStatus(newStatus.getStatusCode());
         orderStatusChangeResp.setStatusChangedAt(orderEntity.getStatusChangedAt());
         return orderStatusChangeResp;
+    }
+
+    private List<String> getTrackingNumbers(String trackingNumber) {
+        if (trackingNumber == null || trackingNumber.isEmpty())
+            return Collections.emptyList();
+
+        return Arrays.stream(trackingNumber.split(","))
+                .map(String::trim)
+                .toList();
     }
 }
