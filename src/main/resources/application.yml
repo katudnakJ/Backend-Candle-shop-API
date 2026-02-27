@@ -32,11 +32,11 @@ logging:
     console: "%d{yyyy-MM-dd'T'HH:mm:ss.SXXX}|%level|${spring.application.name}|${PID}|%thread|%logger{40}|%message%n"
 
 #Swagger configuration
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui
+#springdoc:
+#  api-docs:
+#    path: /api-docs
+#  swagger-ui:
+#    path: /swagger-ui
 
 # Supabase configuration
 supabase:

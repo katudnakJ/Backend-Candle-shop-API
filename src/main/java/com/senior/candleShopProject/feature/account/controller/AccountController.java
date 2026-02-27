@@ -7,6 +7,7 @@ import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.feature.account.controller.dto.request.AddUserAddressReq;
 import com.senior.candleShopProject.feature.account.controller.dto.request.SyncUserAddressReq;
 import com.senior.candleShopProject.feature.account.service.AccountService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping("/address")
+    @Operation(summary = "Get Account, address API.", description = "Get user address.")
     public ResponseEntity<GenericResponse> getUserAddresses(@RequestAttribute("userId") String userId) throws ShopServiceApiException {
         log.info("Get user address by user id {}", userId);
 
@@ -37,6 +39,7 @@ public class AccountController {
     }
 
     @GetMapping("/address/{addressId}")
+    @Operation(summary = "Get Account, address API", description = "Get user address by address id.")
     public ResponseEntity<GenericResponse> getUserAddressesByAddressId(@RequestAttribute("userId") String userId,
                                                                        @PathVariable("addressId") String addressId) throws ShopServiceApiException {
         log.info("Get user address by user address id {}", userId);
@@ -49,6 +52,7 @@ public class AccountController {
     }
 
     @PostMapping("/address")
+    @Operation(summary = "Add user address API.", description = "Add new user address.")
     public ResponseEntity<GenericResponse> addUserAddress(@RequestAttribute("userId") String userId,
                                                           @RequestBody AddUserAddressReq addUserAddressReq) throws ShopServiceApiException {
         log.info("Add user address by user id {}", userId);
@@ -60,6 +64,7 @@ public class AccountController {
     }
 
     @PutMapping("/address")
+    @Operation(summary = "Sync user address API.", description = "Update user address.")
     public ResponseEntity<GenericResponse> syncUserAddress(@RequestAttribute("userId") String userId,
                                                           @RequestBody SyncUserAddressReq syncUserAddressReq) throws ShopServiceApiException {
         log.info("Sync user address by user id {}", userId);
@@ -71,6 +76,7 @@ public class AccountController {
     }
 
     @DeleteMapping  ("/address/{addressId}")
+    @Operation(summary = "Delete user address API.", description = "Delete user address.")
     public ResponseEntity<GenericResponse> deleteUserAddress(@RequestAttribute("userId") String userId,
                                                            @PathVariable("addressId") String addressId) throws ShopServiceApiException {
         log.info("Delete user address by user id {}", userId);

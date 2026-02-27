@@ -7,6 +7,7 @@ import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.feature.shoppingCart.controller.dto.request.AddShoppingCartItemReq;
 import com.senior.candleShopProject.feature.shoppingCart.controller.dto.request.DeleteShoppingCartItemReq;
 import com.senior.candleShopProject.feature.shoppingCart.service.ShoppingCartService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class ShoppingCartController {
     private final ShoppingCartService shoppingCartService;
 
     @GetMapping()
+    @Operation(summary = "Get shopping cart API.", description = "Get shopping cart with all items.")
     public ResponseEntity getShoppingCart(@RequestAttribute("userId") String userId) throws ShopServiceApiException {
         log.info("Get shopping cart by user id {}", userId);
 
@@ -37,6 +39,7 @@ public class ShoppingCartController {
     }
 
     @PostMapping()
+    @Operation(summary = "Add shopping cart item API.", description = "Add items list to shopping cart.")
     public ResponseEntity addShoppingCartItem(@RequestAttribute("userId") String userId,
                                                      @RequestBody AddShoppingCartItemReq addShoppingCartItemReq) throws ShopServiceApiException {
         log.info("Add shopping cart item by user id.");
@@ -48,6 +51,7 @@ public class ShoppingCartController {
     }
 
     @DeleteMapping()
+    @Operation(summary = "Delete shopping cart item API.", description = "Delete items list from shopping cart.")
     public ResponseEntity deleteShoppingCartItem(@RequestAttribute("userId") String userId,
                                                  @RequestBody DeleteShoppingCartItemReq deleteShoppingCartItemReq) throws ShopServiceApiException {
         log.info("Delete shopping cart item by user id.");

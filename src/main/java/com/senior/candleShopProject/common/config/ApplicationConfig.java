@@ -18,6 +18,14 @@ public class ApplicationConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/v1/login", "/v1/login/**");
+                .excludePathPatterns(
+                        "/v1/login",
+                        "/v1/login/**",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/webjars/**"
+                );
     }
 }

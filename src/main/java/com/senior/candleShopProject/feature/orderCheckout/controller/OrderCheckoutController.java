@@ -41,6 +41,7 @@ public class OrderCheckoutController {
     }
 
     @PutMapping(value = "/{orderId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Retry payment for order API.", description = "Retry payment when payment is rejected.")
     public ResponseEntity retryPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable("orderId") String orderId,
                                         @RequestParam("imageData") MultipartFile imageData) throws ShopServiceApiException, IOException {
