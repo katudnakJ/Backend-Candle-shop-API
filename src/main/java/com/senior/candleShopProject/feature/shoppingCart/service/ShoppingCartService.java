@@ -8,7 +8,7 @@ import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
-import com.senior.candleShopProject.datasource.domain.IAllItemsShoppingCartResp;
+import com.senior.candleShopProject.datasource.domain.shoppingCart.IAllItemsShoppingCartResp;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartItemsEntity;
 import com.senior.candleShopProject.datasource.repo.ShoppingCartItemsRepo;
 import com.senior.candleShopProject.datasource.repo.ShoppingCartRepo;
@@ -124,8 +124,6 @@ public class ShoppingCartService {
             cartItemsList.setQuantity(cart.getQuantity());
             cartItemsList.setProductName(cart.getProductName());
             cartItemsList.setPrice(cart.getPrice());
-            cartItemsList.setWeight(cart.getWeight());
-            cartItemsList.setDescription(cart.getDescription());
             cartItemsList.setProductSlug(cart.getProductSlug());
             if(cart.getProductImgPath() == null)
                 cartItemsList.setProductImgPath(null);

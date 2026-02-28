@@ -23,8 +23,8 @@ public class PaymentsEntity {
     @Column(name = "payment_status")
     private String paymentStatus;
 
-    @Column(name = "create_at")
-    private Instant createAt;
+    @Column(name = "created_at")
+    private Instant createdAt;
 
     @Column(name = "resubmit_at")
     private Instant resubmitAt;

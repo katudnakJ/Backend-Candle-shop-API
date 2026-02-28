@@ -20,14 +20,8 @@ public class ShipmentEntity {
     @Column(name = "shipment_id")
     private UUID shipmentId;
 
-    @Column(name = "carrier")
-    private String carrier;
-
     @Column(name = "delivery_method")
     private String deliveryMethod;
-
-    @Column(name = "shipping_fee")
-    private BigDecimal shippingFee;
 
     @Column(name = "tracking_number")
     private String trackingNumber;

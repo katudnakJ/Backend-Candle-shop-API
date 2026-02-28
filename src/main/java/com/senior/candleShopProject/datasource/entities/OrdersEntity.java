@@ -1,5 +1,6 @@
 package com.senior.candleShopProject.datasource.entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,7 +43,10 @@ public class OrdersEntity {
     private Instant orderCreatedAt;
 
     @Column(name = "status_changed_at")
-    private Instant statusChangedDate;
+    private Instant statusChangedAt;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
 
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,4 +61,7 @@ public class OrdersEntity {
 
     @OneToOne(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private ShipmentEntity shipmentEntity;
+
+    @OneToOne(mappedBy = "ordersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private OrderShippingAddressEntity orderShippingAddressEntity;
 }

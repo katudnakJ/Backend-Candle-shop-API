@@ -18,6 +18,7 @@ public class ResultCode {
     public static final Status BAD_REQUEST = new Status(HttpStatus.BAD_REQUEST,"Bad Request.");
     public static final Status CREATED = new Status(HttpStatus.CREATED,"Created.");
     public static final Status FILE_TOO_LARGE = new Status(HttpStatus.CONTENT_TOO_LARGE,"File Too Large.");
+    public static final Status NOT_FOUND = new Status(HttpStatus.NOT_FOUND,"Not Found.");
 
 //    token
     public static final Status TOKEN_INVALID = new Status(HttpStatus.UNAUTHORIZED,"Token is Invalid.");

@@ -7,8 +7,8 @@ import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlRes
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
-import com.senior.candleShopProject.datasource.domain.ISellerResp;
-import com.senior.candleShopProject.datasource.domain.IUsersResp;
+import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
+import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
 import com.senior.candleShopProject.datasource.repo.OrdersRepo;
 import com.senior.candleShopProject.datasource.repo.SellerRepo;

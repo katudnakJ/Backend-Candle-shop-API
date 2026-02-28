@@ -15,4 +15,11 @@ public class CustomizeResponseUtil {
         result.put("id", value);
         return result;
     }
+
+    public static Map<String, Object> ReturnBodyWithCount(Integer count, Object data, String dataObjectName) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalCount", count);
+        result.put(dataObjectName, data);
+        return result;
+    }
 }

@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.datasource.domain;
+package com.senior.candleShopProject.datasource.domain.users;
 
 import java.util.UUID;
 

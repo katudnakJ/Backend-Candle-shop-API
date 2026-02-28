@@ -1,6 +1,6 @@
 package com.senior.candleShopProject.datasource.repo;
 
-import com.senior.candleShopProject.datasource.domain.ICartItemsForOrderItemsResp;
+import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartItemsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

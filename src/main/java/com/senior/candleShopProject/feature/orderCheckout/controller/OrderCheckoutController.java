@@ -29,15 +29,18 @@ public class OrderCheckoutController {
     @Operation(summary = "Checkout order API.")
     public ResponseEntity checkoutOrder(@RequestAttribute("userId") String userId,
                                         @RequestParam("imageData") MultipartFile imageData,
-                                        @RequestParam("shoppingCartItemIds") List<String> shoppingCartItemIds) throws ShopServiceApiException, IOException {
+                                        @RequestParam("shoppingCartItemIds") List<String> shoppingCartItemIds,
+                                        @RequestParam("addressId") String addressId
+    ) throws ShopServiceApiException, IOException {
         log.info("Checking out order API for user {}", userId);
 
         UUID userUuid = UUID.fromString(userId);
-        GenericResponse response = orderCheckoutService.checkoutOrder(userUuid, imageData, shoppingCartItemIds);
+        UUID addressUuid = UUID.fromString(addressId);
+        GenericResponse response = orderCheckoutService.checkoutOrder(userUuid, imageData, shoppingCartItemIds,addressUuid);
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{orderId}")
+    @PutMapping(value = "/{orderId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity retryPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable("orderId") String orderId,
                                         @RequestParam("imageData") MultipartFile imageData) throws ShopServiceApiException, IOException {

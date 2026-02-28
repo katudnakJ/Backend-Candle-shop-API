@@ -12,7 +12,7 @@ import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
-import com.senior.candleShopProject.datasource.domain.ICartItemsForOrderItemsResp;
+import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.*;
 import com.senior.candleShopProject.datasource.repo.*;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +47,14 @@ public class OrderCheckoutService {
     private final OrderItemsRepo orderItemsRepo;
     private final ShoppingCartRepo shoppingCartRepo;
     private final PaymentsRepo paymentsRepo;
+    private final OrderShippingAddressRepo orderShippingAddressRepo;
+    private final AddressesRepo addressesRepo;
 
     @Transactional
-    public GenericResponse checkoutOrder (UUID userId,MultipartFile paymentProof, List<String> cartItemIds) throws ShopServiceApiException, IOException {
+    public GenericResponse checkoutOrder (UUID userId,
+                                          MultipartFile paymentProof,
+                                          List<String> cartItem,
+                                          UUID addressId) throws ShopServiceApiException, IOException {
 
         Optional<CustomersEntity> customerOpt = customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId);
 
@@ -64,7 +69,7 @@ public class OrderCheckoutService {
 
 
 //        abstract OrderCheckoutReq
-        List<UUID> shoppingCartItemIds = cartItemIds
+        List<UUID> shoppingCartItemIds = cartItem
                 .stream()
                 .map(UUID::fromString)
                 .toList();
@@ -88,15 +93,22 @@ public class OrderCheckoutService {
 
 //      Save order & order items
         OrdersEntity ordersEntity = new OrdersEntity();
+
+        AddressesEntity addressesEntity = addressesRepo.findById(addressId)
+                .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Address not found."));
+        OrderShippingAddressEntity orderShippingAddressEntity = getOrderShippingAddressEntity(addressesEntity);
+        orderShippingAddressEntity.setOrdersEntity(ordersEntity);
+
         ordersEntity.setOrderNo(runningNumberGenerator.generateOrderRunningNumber(Constants.PREFIX_ORDER_NO));
         ordersEntity.setTotalQuantity(totalQuantity);
         ordersEntity.setTotalAmount(totalAmount);
         ordersEntity.setNetAmount(totalAmount.add(calculateShippingCost(totalQuantity)));
         ordersEntity.setOrderStatus(OrderStatus
-                .ORDER_PAYMENT_PENDING.getOrderStatusCode()
+                .ORDER_PAYMENT_PENDING.getStatusCode()
         );
         ordersEntity.setOrderCreatedAt(Instant.now());
         ordersEntity.setCustomersEntity(customersEntity);
+        ordersEntity.setOrderShippingAddressEntity(orderShippingAddressEntity);
 
         OrdersEntity newOrderEntity = ordersRepo.save(ordersEntity);
 
@@ -125,7 +137,6 @@ public class OrderCheckoutService {
 
         if (!ordersRepo.existsById(orderId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
-
 
 
         Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof);
@@ -186,25 +197,25 @@ public class OrderCheckoutService {
                     runningNumber + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1]
             );
             paymentsEntity.setOrdersEntity(ordersEntity);
-            paymentsEntity.setCreateAt(Instant.now());
+            paymentsEntity.setCreatedAt(Instant.now());
 
             resultCode = ResultCode.CREATED;
 
         }else{
             paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
-            if(!paymentsEntity.getPaymentStatus().equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_REJECTED.getOrderStatusCode()))
+            if(!paymentsEntity.getPaymentStatus().equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
                 throw new ShopConflictException(ResultCode.CONFLICT);
 
             runningNumber = paymentsEntity.getReceiptNumber();
             paymentsEntity.setResubmitAt(Instant.now());
             paymentsEntity.setStatusChangedAt(Instant.now());
-
+            paymentsEntity.setRejectionReason(null);
             resultCode = ResultCode.SUCCESS;
         }
 
         paymentsEntity.setPaymentStatus(
-                OrderStatus.ORDER_PAYMENT_PENDING.getOrderStatusCode()
+                OrderStatus.ORDER_PAYMENT_PENDING.getStatusCode()
         );
 
         PaymentsEntity newPaymentEntity = paymentsRepo.save(paymentsEntity);
@@ -243,5 +254,22 @@ public class OrderCheckoutService {
             );
         }
         return totalAmount;
+    }
+
+    private OrderShippingAddressEntity getOrderShippingAddressEntity(AddressesEntity addressesEntity) {
+        OrderShippingAddressEntity orderShippingAddressEntity = new OrderShippingAddressEntity();
+        OrdersEntity ordersEntity = new OrdersEntity();
+        orderShippingAddressEntity.setOrdersEntity(ordersEntity);
+        orderShippingAddressEntity.setDeliveryAddress(addressesEntity.getDeliveryAddress());
+        orderShippingAddressEntity.setPostcode(addressesEntity.getPostcode());
+        orderShippingAddressEntity.setProvince(addressesEntity.getProvince());
+        orderShippingAddressEntity.setDistrict(addressesEntity.getDistrict());
+        orderShippingAddressEntity.setSubDistrict(addressesEntity.getSubDistrict());
+        orderShippingAddressEntity.setAddressLabel(addressesEntity.getAddressLabel());
+        orderShippingAddressEntity.setRecipientFirstName(addressesEntity.getRecipientFirstName());
+        orderShippingAddressEntity.setRecipientLastName(addressesEntity.getRecipientLastName());
+        orderShippingAddressEntity.setRecipientPhone(addressesEntity.getRecipientPhone());
+
+        return orderShippingAddressEntity;
     }
 }

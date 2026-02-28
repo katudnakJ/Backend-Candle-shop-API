@@ -1,7 +1,5 @@
-package com.senior.candleShopProject.datasource.domain;
+package com.senior.candleShopProject.datasource.domain.products;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,8 +15,8 @@ public class IProductHomeListItemResp {
     private UUID productId;
     private String productName;
     private BigDecimal price;
-    private Boolean isActive;
     private Instant productCreatedDate;
     private Integer totalSelled;
+    private String productSlug;
     private String productImgPath;
 }
