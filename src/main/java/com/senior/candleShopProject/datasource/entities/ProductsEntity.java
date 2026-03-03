@@ -17,6 +17,8 @@ import java.util.UUID;
 @Table(name="products")
 public class    ProductsEntity {
     @Id
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "product_id")
     private UUID productId;
 
@@ -27,7 +29,7 @@ public class    ProductsEntity {
     private BigDecimal price;
 
     @Column(name = "weight")
-    private Integer weight;
+    private double weight;
 
     @Column(name = "description")
     private String description;
@@ -35,10 +37,10 @@ public class    ProductsEntity {
     @Column(name = "slug")
     private String slug;
 
-    @Column(name="isActive")
+    @Column(name="is_active")
     private boolean isActive;
 
-    @Column(name = "isFeatured")
+    @Column(name = "is_featured")
     private boolean isFeatured;
 
     @Column(name = "product_created_date")

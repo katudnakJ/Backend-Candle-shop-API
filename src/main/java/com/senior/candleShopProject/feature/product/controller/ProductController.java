@@ -3,12 +3,18 @@ package com.senior.candleShopProject.feature.product.controller;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.feature.product.controller.dto.request.CreateNewProductReq;
+import com.senior.candleShopProject.feature.product.controller.dto.request.UpdateProductReq;
 import com.senior.candleShopProject.feature.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,11 +50,14 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping()
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create new product API.", description = "สร้างสินค้าใหม่โดยผู้ขาย")
     public ResponseEntity<GenericResponse> createNewProduct(@RequestAttribute("userId") String userId,
-                                                            @RequestBody CreateNewProductReq createNewProductReq,
-                                                            @RequestPart("images") List<MultipartFile> imagesReqList,
+
+                                                            @ParameterObject
+                                                            @ModelAttribute CreateNewProductReq createNewProductReq,
+
+                                                            @RequestPart("imagesData") List<MultipartFile> imagesReqList,
                                                             @RequestParam("primaryIndex") Integer primaryIndex
                                                             ) throws ShopServiceApiException, IOException {
         log.info("Create new product");
@@ -58,12 +67,18 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping("/{productId}")
+    @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update product API.", description = "อัพเดตข้อมูลสินค้าโดยผู้ขาย")
     public ResponseEntity<GenericResponse> updateProduct(@RequestAttribute("userId") String userId,
                                                             @PathVariable(name = "productId") String productId,
-                                                            @RequestBody CreateNewProductReq updateProductReq,
+
+                                                            @ParameterObject @Nullable
+                                                             @ModelAttribute UpdateProductReq updateProductReq,
+
+                                                            @Nullable
                                                             @RequestPart("images") List<MultipartFile> imagesReqList,
+
+                                                            @Nullable
                                                             @RequestParam("primaryIndex") Integer primaryIndex) throws ShopServiceApiException, IOException {
         log.info("Update product with id {}", productId);
         UUID userUUID = UUID.fromString(userId);

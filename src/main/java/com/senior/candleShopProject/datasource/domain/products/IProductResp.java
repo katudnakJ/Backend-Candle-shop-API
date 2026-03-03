@@ -7,7 +7,7 @@ public interface IProductResp {
     UUID getProductId();
     String getProductName();
     BigDecimal getPrice();
-    Integer getWeight();
+    double getWeight();
     String getDescription();
     String getSlug();
     String getIsActive();

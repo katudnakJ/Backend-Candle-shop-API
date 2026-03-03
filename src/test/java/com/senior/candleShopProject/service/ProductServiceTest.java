@@ -9,6 +9,7 @@ import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
 import com.senior.candleShopProject.datasource.domain.products.IProductImagesResp;
 import com.senior.candleShopProject.datasource.domain.products.IProductResp;
+import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
 import com.senior.candleShopProject.feature.product.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,12 +52,9 @@ public class ProductServiceTest {
        IProductResp productResp = mock(IProductResp.class);
        when(productsRepo.getProductById(productId)).thenReturn(productResp);
 
-       IProductImagesResp iProductImagesResp = mock(IProductImagesResp.class);
-       when(iProductImagesResp.getProductImgId()).thenReturn(productImgId);
-       when(iProductImagesResp.getProductImgPath()).thenReturn("image.jpg");
-       when(iProductImagesResp.getIsPrimary()).thenReturn(true);
+       ProductImagesResp productImagesResp = mock(ProductImagesResp.class);
 
-       when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(iProductImagesResp));
+       when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(productImagesResp));
 
 
        GenericResponse response = productService.getProductsById(productId);

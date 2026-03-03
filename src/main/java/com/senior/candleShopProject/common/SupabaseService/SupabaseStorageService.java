@@ -7,12 +7,14 @@ import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,23 +86,21 @@ public class SupabaseStorageService {
     public void deleteImage(String bucketName, List<String> imagePaths) {
         String deleteUrl = baseUrl + "/storage/v1/object/" + bucketName;
 
-        supabaseWebClient.delete()
-                .uri(uriBuilder ->  uriBuilder
-                        .path(deleteUrl)
-                        .queryParam("prefixes", imagePaths)
-                        .build()
-                )
+        Map<String, List<String>> body = new HashMap<>();
+        body.put("prefixes", imagePaths);
+
+        supabaseWebClient.method(HttpMethod.DELETE)
+                .uri(deleteUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, response ->
                         response.bodyToMono(String.class).flatMap(errorBody -> {
-                            log.error("Supabase Storage Deletion Error: {}", errorBody);
-                            return Mono.error(new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Storage deletion failed."));
+                            log.error("Supabase Error: {}", errorBody);
+                            return Mono.error(new RuntimeException("Storage deletion failed : " + errorBody));
                         }))
-                .bodyToMono(Void.class)
-                .onErrorMap(ex -> {
-                    log.error("Deletion failed", ex);
-                    return new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Image deletion failed");
-                })
+                .bodyToMono(String.class)
+                .doOnSuccess(s -> log.info("Delete Successful: {}", s))
                 .block();
     }
 

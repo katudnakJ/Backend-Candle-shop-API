@@ -17,7 +17,7 @@ public class IAllItemsShoppingCartResp {
     Integer quantity;
     String productName;
     BigDecimal price;
-    Integer weight;
+    double weight;
     String description;
     String productSlug;
     String productImgPath;

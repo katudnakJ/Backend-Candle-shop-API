@@ -2,7 +2,6 @@ package com.senior.candleShopProject.feature.product.controller.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -10,11 +9,19 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class CreateNewProductReq {
+public class UpdateProductReq {
+
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = "blue candle")
     private String productName;
+
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private BigDecimal price;
+
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private double weight;
+
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String description;
 
     @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED,
@@ -23,4 +30,10 @@ public class CreateNewProductReq {
 
     @Schema(example = "false", defaultValue = "false")
     private boolean featured = false;
+
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private List<String> reUploadImageIds;
+
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    private List<String> deleteImageIds;
 }

@@ -20,10 +20,12 @@ import com.senior.candleShopProject.datasource.domain.products.IProductImagesRes
 import com.senior.candleShopProject.datasource.domain.products.IProductResp;
 import com.senior.candleShopProject.datasource.domain.products.ProductHomeListItemResp;
 import com.senior.candleShopProject.feature.product.controller.dto.request.CreateNewProductReq;
+import com.senior.candleShopProject.feature.product.controller.dto.request.UpdateProductReq;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductDetailResp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +60,7 @@ public class ProductService {
         if (product == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product not found.");
 
-        List<IProductImagesResp> images = productImagesRepo.getProductImagesByProductId(productId);
+        List<ProductImagesResp> images = productImagesRepo.getProductImagesByProductId(productId);
 
         List<ProductImagesResp> productImages = images.stream().map(image -> {
             ProductImagesResp resp = new ProductImagesResp();
@@ -109,8 +111,11 @@ public class ProductService {
             UUID userId,CreateNewProductReq createNewProductReq, List<MultipartFile> productImagesReq, int primaryIndex
     ) throws ShopServiceApiException, IOException {
 
-        if (createNewProductReq == null || productImagesReq.isEmpty() || primaryIndex < 0)
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Request body is missing or invalid primary index.");
+        if (createNewProductReq == null
+                || productImagesReq.isEmpty()
+                || primaryIndex < 0
+                || productImagesReq.size() <= primaryIndex
+        )throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Request body is missing or invalid primary index.");
 
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
@@ -144,11 +149,15 @@ public class ProductService {
 
     @Transactional
     public GenericResponse updateProduct(UUID userId,UUID productId,
-                                         CreateNewProductReq updateProductReq,
-                                         List<MultipartFile> productImagesReq, int primaryIndex) throws ShopServiceApiException, IOException {
+                                         UpdateProductReq updateProductReq,
+                                         List<MultipartFile> productImagesReq, Integer primaryIndex) throws ShopServiceApiException, IOException {
 
-        if (updateProductReq == null || productImagesReq.isEmpty() || primaryIndex < 0)
+        if ( primaryIndex != null && (primaryIndex < 0 || productImagesReq.size() <= primaryIndex))
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Request body is missing or invalid primary index.");
+
+        if (    productImagesReq.isEmpty()
+                && (updateProductReq.getReUploadImageIds() == null || updateProductReq.getDeleteImageIds() == null)
+        ) throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Product images or Image Ids are missing for re-upload.");
 
         if (productId == null)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Product id is missing.");
@@ -172,9 +181,13 @@ public class ProductService {
 
         ProductsEntity newProduct = productsRepo.save(existingProduct);
 
-        if ( !productImagesReq.isEmpty() ) {
-            List<ProductImagesEntity> newImages = uploadAndCreateProductImages(newProduct.getProductId(), productImagesReq,primaryIndex);
-            productImagesRepo.saveAll(newImages);
+
+        if ( !productImagesReq.isEmpty()) {
+
+            if (updateProductReq.getReUploadImageIds() != null) {
+                List<ProductImagesEntity> newImages = uploadAndCreateProductImages(newProduct.getProductId(), productImagesReq,primaryIndex);
+                productImagesRepo.saveAll(newImages);
+            }
         }
 
         GenericResponse response = new GenericResponse();
@@ -197,11 +210,11 @@ public class ProductService {
         ProductsEntity existingProduct = productsRepo.findById(productId)
                 .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product doesn't exists."));
 
-        List<IProductImagesResp> productImagesList = productImagesRepo.getProductImagesByProductId(productId);
+        List<ProductImagesResp> productImagesList = productImagesRepo.getProductImagesByProductId(productId);
         productsRepo.delete(existingProduct);
 
         List<String> imageIdsList = productImagesList.stream()
-                .map(img -> productId + "/" + img.getProductImgId())
+                .map(image -> productId + "/" + image.getProductImgPath())
                 .toList();
 
         supabaseStorageService.deleteImage(
@@ -210,7 +223,7 @@ public class ProductService {
         );
 
         GenericResponse response = new GenericResponse();
-        response.setData(CustomizeResponseUtil.ReturnKeyValueWhenComplete("productId", productId));
+        response.setData(null);
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }
@@ -225,7 +238,7 @@ public class ProductService {
         return productsList;
     }
 
-    private List<ProductImagesEntity> uploadAndCreateProductImages(UUID productId,List<MultipartFile> productImagesReq, int primaryIndex) throws ShopServiceApiException, IOException {
+    private List<ProductImagesEntity> uploadAndCreateProductImages(UUID productId,List<MultipartFile> productImagesReq, Integer primaryIndex) throws ShopServiceApiException, IOException {
         List<ProductImagesEntity> productImagesEntities = new ArrayList<>();
         ProductsEntity productEntity = new ProductsEntity();
         productEntity.setProductId(productId);
@@ -243,8 +256,7 @@ public class ProductService {
             imageEntity.setProductsEntity(productEntity);
             productImagesEntities.add(imageEntity);
 
-            String productImgPath = productId + "/" + productImgId;
-
+            String productImgPath = productId + "/" + productImgId + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
             uploadProductImagesToStorage(productImgPath, imageReq);
         }
         return productImagesEntities;
