@@ -227,7 +227,7 @@ public class OrderCheckoutService {
                 + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
 
         supabaseStorageService.uploadImage(
-                Constants.SUPABASE_RECEIPT_BUCKET_URL,
+                Constants.SUPABASE_RECEIPT_BUCKET_NAME,
                 imagePath,
                 processImageData(paymentProof),
                 Constants.CONTENT_TYPE_JPEG

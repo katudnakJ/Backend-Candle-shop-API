@@ -13,9 +13,7 @@ import java.util.UUID;
 @Table(name = "product_images")
 public class ProductImagesEntity {
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @Column(name = "product_img_id")
+        @Column(name = "product_img_id")
     private UUID productImgId;
 
     @Column(name = "product_img_path")

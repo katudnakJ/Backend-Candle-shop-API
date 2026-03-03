@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ImageValidationUtils {
@@ -24,6 +25,15 @@ public class ImageValidationUtils {
 
         if(!allowedExtensions.contains(imageFile.getContentType()))
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Invalid file type. Only JPG and PNG images are allowed.");
+    }
+
+    public  static void validateImages(List<MultipartFile> images) throws ShopServiceApiException {
+        if (images == null || images.isEmpty())
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "No files uploaded.");
+
+        for (MultipartFile image : images) {
+            validateImage(image);
+        }
     }
 
 }

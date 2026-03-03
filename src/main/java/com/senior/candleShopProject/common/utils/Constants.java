@@ -25,7 +25,8 @@ public class Constants {
 
 //    Supabase Storage Name
     public static final String SUPABASE_QR_PAYMENT_BUCKET_NAME = "qr-payment";
-    public static final String SUPABASE_RECEIPT_BUCKET_URL = "payment-proofs";
+    public static final String SUPABASE_RECEIPT_BUCKET_NAME = "payment-proofs";
+    public static final String SUPABASE_PRODUCT_BUCKET_NAME = "attachments";
 
 //  Date
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";

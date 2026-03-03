@@ -15,10 +15,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name="products")
-public class ProductsEntity {
+public class    ProductsEntity {
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "product_id")
     private UUID productId;
 
@@ -59,6 +57,6 @@ public class ProductsEntity {
     @OneToOne(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private ShoppingCartItemsEntity shoppingCartItemsEntity;
 
-    @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "productsEntity")
     private List<OrderItemsEntity> orderItemsEntities = new ArrayList<>();
 }

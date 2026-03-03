@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -25,7 +26,7 @@ public class SupabaseStorageService {
 
     private final WebClient supabaseWebClient;
 
-     public String createSignedImageUrl(String bucketName, String imagePath, int expiresInSeconds) {
+     private String createSignedImageUrl(String bucketName, String imagePath, int expiresInSeconds) {
 
          String url = "/storage/v1/object/sign/" + bucketName + "/" + imagePath;
         return supabaseWebClient.post()
@@ -58,7 +59,7 @@ public class SupabaseStorageService {
         return baseUrl + "/storage/v1" + signedImage;
     }
 
-    public void uploadImage(String bucketName, String imagePath, byte[] imageData, String contentType) throws ShopServiceApiException {
+    public void uploadImage(String bucketName, String imagePath, byte[] imageData, String contentType) {
         String uploadUrl = baseUrl + "/storage/v1/object/" + bucketName + "/" + imagePath;
 
         supabaseWebClient.post()
@@ -76,6 +77,29 @@ public class SupabaseStorageService {
                 .onErrorMap(ex -> {
                     log.error("Upload failed", ex);
                     return new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Image upload failed");
+                })
+                .block();
+    }
+
+    public void deleteImage(String bucketName, List<String> imagePaths) {
+        String deleteUrl = baseUrl + "/storage/v1/object/" + bucketName;
+
+        supabaseWebClient.delete()
+                .uri(uriBuilder ->  uriBuilder
+                        .path(deleteUrl)
+                        .queryParam("prefixes", imagePaths)
+                        .build()
+                )
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response ->
+                        response.bodyToMono(String.class).flatMap(errorBody -> {
+                            log.error("Supabase Storage Deletion Error: {}", errorBody);
+                            return Mono.error(new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Storage deletion failed."));
+                        }))
+                .bodyToMono(Void.class)
+                .onErrorMap(ex -> {
+                    log.error("Deletion failed", ex);
+                    return new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Image deletion failed");
                 })
                 .block();
     }
