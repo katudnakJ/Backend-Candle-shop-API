@@ -72,19 +72,18 @@ public class ProductController {
     public ResponseEntity<GenericResponse> updateProduct(@RequestAttribute("userId") String userId,
                                                             @PathVariable(name = "productId") String productId,
 
-                                                            @ParameterObject @Nullable
-                                                             @ModelAttribute UpdateProductReq updateProductReq,
+                                                            @ParameterObject
+                                                             @ModelAttribute CreateNewProductReq updateProductReq,
 
-                                                            @Nullable
-                                                            @RequestPart("images") List<MultipartFile> imagesReqList,
+                                                            @RequestPart(value = "images",required = false) List<MultipartFile> imagesReqList,
 
-                                                            @Nullable
-                                                            @RequestParam("primaryIndex") Integer primaryIndex) throws ShopServiceApiException, IOException {
+                                                         @RequestParam("primaryIndex") Integer primaryIndex
+    ) throws ShopServiceApiException, IOException {
         log.info("Update product with id {}", productId);
         UUID userUUID = UUID.fromString(userId);
         UUID productUUID = UUID.fromString(productId);
 
-        GenericResponse response = productService.updateProduct(userUUID, productUUID, updateProductReq, imagesReqList, primaryIndex);
+        GenericResponse response = productService.updateProduct(userUUID, productUUID, updateProductReq, imagesReqList,primaryIndex);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

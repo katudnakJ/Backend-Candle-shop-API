@@ -20,4 +20,7 @@ public interface ProductImagesRepo extends JpaRepository<ProductImagesEntity, UU
             "i.isPrimary AS isPrimary) " +
             "FROM ProductImagesEntity i WHERE i.productsEntity.productId = :productId")
     List<ProductImagesResp> getProductImagesByProductId(@Param("productId") UUID productId);
+
+
+    void deleteProductImagesEntitiesByProductsEntity_ProductId(UUID productsEntityProductId);
 }

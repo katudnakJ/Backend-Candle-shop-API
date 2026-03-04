@@ -143,4 +143,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ShopBadRequestRuntimeExc.class)
+    public ResponseEntity<GenericResponse> handleShopBadRequestRuntimeExc(ShopBadRequestRuntimeExc ex) {
+        log.error("Bad Request Runtime Exception : ", ex.getStatus().getRemark());
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ex.getStatus());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 }

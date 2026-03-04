@@ -11,29 +11,27 @@ import java.util.List;
 @Setter
 public class UpdateProductReq {
 
-    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "blue candle")
+    @Schema(example = "blue candle")
     private String productName;
 
-    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private BigDecimal price;
 
-    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private double weight;
+    private Double weight;
 
-    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private String description;
 
-    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED,
-            example = "true", defaultValue = "true")
-    private boolean active =true;
+    @Schema(example = "true", defaultValue = "true")
+    private Boolean active =true;
 
     @Schema(example = "false", defaultValue = "false")
-    private boolean featured = false;
+    private Boolean featured = false;
 
-    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private List<String> reUploadImageIds;
+    @Schema(defaultValue = "null")
+    private List<String> reUploadImageIds = null;
 
-    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-    private List<String> deleteImageIds;
+    @Schema(example = "0", defaultValue = "null")
+    private Integer primaryIndex = null;
+
+    @Schema(defaultValue = "null")
+    private List<String> deleteImageIds = null;
 }

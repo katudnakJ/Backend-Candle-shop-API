@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -83,10 +84,10 @@ public class SupabaseStorageService {
                 .block();
     }
 
-    public void deleteImage(String bucketName, List<String> imagePaths) {
+    public void deleteImage(String bucketName, Set<String> imagePaths) {
         String deleteUrl = baseUrl + "/storage/v1/object/" + bucketName;
 
-        Map<String, List<String>> body = new HashMap<>();
+        Map<String, Set<String>> body = new HashMap<>();
         body.put("prefixes", imagePaths);
 
         supabaseWebClient.method(HttpMethod.DELETE)
