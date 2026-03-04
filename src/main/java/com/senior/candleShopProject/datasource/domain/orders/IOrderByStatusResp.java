@@ -9,6 +9,7 @@ public interface IOrderByStatusResp {
     BigDecimal getTotalAmount();
     BigDecimal getNetAmount();
     String getOrderStatus();
+    String getPaymentStatus();
     String getOrderNo();
     String getAddressLabel();
     String getTrackingNumber();

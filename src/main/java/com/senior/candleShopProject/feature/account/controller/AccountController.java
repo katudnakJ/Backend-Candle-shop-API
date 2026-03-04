@@ -21,7 +21,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Candle Shop Account Service API.")
+@Tag(name = "Account Service API.")
 @RequestMapping("v1/account")
 public class AccountController {
 

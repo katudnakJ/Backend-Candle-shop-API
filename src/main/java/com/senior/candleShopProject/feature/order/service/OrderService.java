@@ -270,6 +270,7 @@ public class OrderService {
             orderByStatusResp.setTotalAmount(orders.getTotalAmount());
             orderByStatusResp.setNetAmount(orders.getNetAmount());
             orderByStatusResp.setOrderStatus(orders.getOrderStatus());
+            orderByStatusResp.setPaymentStatus(orders.getPaymentStatus());
             orderByStatusResp.setOrderNo(orders.getOrderNo());
             orderByStatusResp.setAddressLabel(orders.getAddressLabel());
             orderByStatusResp.setTrackingNo(trackingNumbers);

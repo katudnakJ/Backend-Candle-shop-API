@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@Tag(name = "Candle Shop Login API.")
+@Tag(name = "Login API.")
 @RequestMapping("v1/login")
 @RequiredArgsConstructor
 public class LoginController {
