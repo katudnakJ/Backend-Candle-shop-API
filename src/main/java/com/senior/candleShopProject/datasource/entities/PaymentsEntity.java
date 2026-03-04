@@ -15,8 +15,6 @@ import java.util.UUID;
 public class PaymentsEntity {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
     @Column(name = "payment_id")
     private UUID paymentId;
 

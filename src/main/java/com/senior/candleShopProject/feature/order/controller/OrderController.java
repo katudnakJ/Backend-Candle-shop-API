@@ -5,6 +5,7 @@ import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
 import com.senior.candleShopProject.feature.order.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -16,14 +17,14 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@Tag(name = "Candle Shop Order Service API.")
+@Tag(name = "Order Service API.")
 @RequestMapping("v1/order")
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
 
-    @Schema(description = "Get all carriers.")
+    @Operation(summary = "Get all carriers.", description = "ดึงข้อมูลผู้ให้บริการขนส่งทั้งหมด")
     @GetMapping("/carriers")
     public ResponseEntity<GenericResponse> getAllCarriers(@RequestAttribute("userId") String userId) {
         log.info("Getting all carriers");
@@ -32,7 +33,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @Schema(description = "Get order by status.")
+    @Operation(summary = "Get order by status.", description = "ดึงข้อมูลออเดอร์ตามสถานะ")
     @GetMapping()
     public ResponseEntity<GenericResponse> getOrderByStatus(@RequestAttribute("userId") String userId,
                                                             @RequestParam("status") String status) throws ShopServiceApiException {
@@ -43,7 +44,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @Schema(description = "Get order details by order id.")
+    @Operation(summary = "Get order details by order id.", description = "ดึงข้อมูลรายละเอียดออเดอร์ตามรหัสออเดอร์")
     @GetMapping("/{orderId}")
     public ResponseEntity<GenericResponse> getOrderDetailsByOrderId(@RequestAttribute("userId") String userId,
                                                                    @PathVariable("orderId") String orderId) throws ShopServiceApiException {
@@ -55,7 +56,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @Schema (description = "Confirm payment for order by seller.")
+    @Operation(summary = "Confirm payment for order by seller.", description = "ยืนยันการชำระเงินสำหรับออเดอร์โดยผู้ขาย")
     @PatchMapping("/{orderId}/confirm")
     public ResponseEntity confirmPayment(@RequestAttribute("userId") String userId,
                                          @PathVariable("orderId") String orderId) throws ShopServiceApiException {
@@ -67,7 +68,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @Schema (description = "Reject payment for order by seller.")
+    @Operation(summary = "Reject payment for order by seller.", description = "ปฏิเสธการชำระเงินสำหรับออเดอร์โดยผู้ขาย")
     @PatchMapping("/{orderId}/reject")
     public ResponseEntity rejectPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable ("orderId") String orderId,
@@ -80,7 +81,7 @@ public class OrderController {
             return ResponseEntity.ok(response);
     }
 
-    @Schema(description = "Track order by seller.")
+    @Operation(summary = "Add tracking number for order.", description = "ใส่เลขพัสดุสำหรับออเดอร์โดยผู้ขาย")
     @PatchMapping("/{orderId}/track")
     public ResponseEntity trackOrder(@RequestAttribute("userId") String userId,
                                      @PathVariable ("orderId") String orderId,

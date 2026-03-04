@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@Tag(name = "Candle Shop Logout API.")
+@Tag(name = "Logout API.")
 @RequestMapping("v1/logout")
 @RequiredArgsConstructor
 public class LogoutController {

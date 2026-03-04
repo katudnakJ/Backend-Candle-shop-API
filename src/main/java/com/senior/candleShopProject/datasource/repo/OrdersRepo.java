@@ -28,6 +28,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
                   o.total_amount as totalAmount,
                   o.net_amount as netAmount,
                   o.order_status as orderStatus,
+                  pm.payment_status as paymentStatus,
                   o.order_no as orderNo,
                   osa.address_label as addressLabel,
                   sm.tracking_number as trackingNumber,

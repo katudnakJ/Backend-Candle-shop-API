@@ -15,7 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name="products")
-public class ProductsEntity {
+public class    ProductsEntity {
     @Id
     @GeneratedValue
     @UuidGenerator(style = UuidGenerator.Style.TIME)
@@ -29,7 +29,7 @@ public class ProductsEntity {
     private BigDecimal price;
 
     @Column(name = "weight")
-    private Integer weight;
+    private double weight;
 
     @Column(name = "description")
     private String description;
@@ -37,10 +37,10 @@ public class ProductsEntity {
     @Column(name = "slug")
     private String slug;
 
-    @Column(name="isActive")
+    @Column(name="is_active")
     private boolean isActive;
 
-    @Column(name = "isFeatured")
+    @Column(name = "is_featured")
     private boolean isFeatured;
 
     @Column(name = "product_created_date")
@@ -59,6 +59,6 @@ public class ProductsEntity {
     @OneToOne(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private ShoppingCartItemsEntity shoppingCartItemsEntity;
 
-    @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "productsEntity")
     private List<OrderItemsEntity> orderItemsEntities = new ArrayList<>();
 }

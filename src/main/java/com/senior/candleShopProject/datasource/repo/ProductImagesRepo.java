@@ -2,6 +2,7 @@ package com.senior.candleShopProject.datasource.repo;
 
 import com.senior.candleShopProject.datasource.entities.ProductImagesEntity;
 import com.senior.candleShopProject.datasource.domain.products.IProductImagesResp;
+import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,12 +13,14 @@ import java.util.UUID;
 
 @Repository
 public interface ProductImagesRepo extends JpaRepository<ProductImagesEntity, UUID> {
-    @Query(value = """
-        select product_img_id AS productImgId,
-                product_img_path AS productImgPath,
-                is_primary AS isPrimary
-        from product_images
-        where product_id = :productId;
-        """,nativeQuery = true)
-    List<IProductImagesResp> getProductImagesByProductId(@Param("productId") UUID productId);
+
+    @Query("SELECT new com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp" +
+            "(i.productImgId AS productImgId, " +
+            "i.productImgPath AS productImgPath, " +
+            "i.isPrimary AS isPrimary) " +
+            "FROM ProductImagesEntity i WHERE i.productsEntity.productId = :productId")
+    List<ProductImagesResp> getProductImagesByProductId(@Param("productId") UUID productId);
+
+
+    void deleteProductImagesEntitiesByProductsEntity_ProductId(UUID productsEntityProductId);
 }

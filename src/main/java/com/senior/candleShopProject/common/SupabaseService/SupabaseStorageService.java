@@ -7,13 +7,17 @@ import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -25,7 +29,7 @@ public class SupabaseStorageService {
 
     private final WebClient supabaseWebClient;
 
-     public String createSignedImageUrl(String bucketName, String imagePath, int expiresInSeconds) {
+     private String createSignedImageUrl(String bucketName, String imagePath, int expiresInSeconds) {
 
          String url = "/storage/v1/object/sign/" + bucketName + "/" + imagePath;
         return supabaseWebClient.post()
@@ -58,7 +62,7 @@ public class SupabaseStorageService {
         return baseUrl + "/storage/v1" + signedImage;
     }
 
-    public void uploadImage(String bucketName, String imagePath, byte[] imageData, String contentType) throws ShopServiceApiException {
+    public void uploadImage(String bucketName, String imagePath, byte[] imageData, String contentType) {
         String uploadUrl = baseUrl + "/storage/v1/object/" + bucketName + "/" + imagePath;
 
         supabaseWebClient.post()
@@ -77,6 +81,27 @@ public class SupabaseStorageService {
                     log.error("Upload failed", ex);
                     return new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Image upload failed");
                 })
+                .block();
+    }
+
+    public void deleteImage(String bucketName, Set<String> imagePaths) {
+        String deleteUrl = baseUrl + "/storage/v1/object/" + bucketName;
+
+        Map<String, Set<String>> body = new HashMap<>();
+        body.put("prefixes", imagePaths);
+
+        supabaseWebClient.method(HttpMethod.DELETE)
+                .uri(deleteUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, response ->
+                        response.bodyToMono(String.class).flatMap(errorBody -> {
+                            log.error("Supabase Error: {}", errorBody);
+                            return Mono.error(new RuntimeException("Storage deletion failed : " + errorBody));
+                        }))
+                .bodyToMono(String.class)
+                .doOnSuccess(s -> log.info("Delete Successful: {}", s))
                 .block();
     }
 

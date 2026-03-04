@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@Tag(name = "Candle Shop Checkout API.")
+@Tag(name = "Checkout API.")
 @RequestMapping("v1/checkout")
 @RequiredArgsConstructor
 public class OrderCheckoutController {
