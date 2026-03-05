@@ -20,4 +20,6 @@ public class OpenAPIConfig {
                                 สามารถดูได้ที่นี่: \
                                 [API Documentation (Excel)](https://silpakorn-my.sharepoint.com/:x:/g/personal/katudnak_j_su_ac_th/IQAMpU6QUi_cSZtBqQaA-Z0BAWzsvpoVbGWu5y8M6vnatiA?e=D8zPhr&nav=MTVfezlEQjc4QTgwLUQ1NDEtNDBEMi05RUZFLUEwQUJBRjQ1RDg3MX0)"""));
     }
+
+
 }

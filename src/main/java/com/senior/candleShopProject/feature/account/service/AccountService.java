@@ -2,6 +2,7 @@ package com.senior.candleShopProject.feature.account.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.domain.IAddressResp;
@@ -11,7 +12,6 @@ import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.AddressesRepo;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import com.senior.candleShopProject.feature.account.controller.dto.request.AddUserAddressReq;
-import com.senior.candleShopProject.feature.account.controller.dto.request.SyncUserAddressReq;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,7 @@ public class AccountService {
 
     private final UsersRepo usersRepo;
     private final AddressesRepo addressesRepo;
+    private final UserCheckTemp userCheckTemp;
 
     public GenericResponse getUserAddresses(UUID userId) throws ShopServiceApiException {
         IUsersResp userProfile = usersRepo.getUserProfile(userId);
@@ -61,11 +62,22 @@ public class AccountService {
     @Transactional
     public GenericResponse addUserAddress(UUID userId, AddUserAddressReq addUserAddressReq) throws ShopServiceApiException {
 
-        if(addUserAddressReq.getIsDefault())
-            checkIsDefaultAddressExist(userId);
+        userCheckTemp.checkExistsUser(userId);
 
-        UsersEntity usersEntity = new UsersEntity();
-        usersEntity.setUserId(userId);
+        List<IAddressResp> existingAddressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
+
+        if (existingAddressList.size() >= 5)
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "User can only have up to 5 addresses.");
+
+        Optional<IAddressResp> defaultAddress = existingAddressList.stream()
+                .filter(IAddressResp::getIsDefault)
+                .findFirst();
+
+//        if default address is already exist and is not the same. Then set exist default address to false before update new default address.
+        if (addUserAddressReq.getIsDefault() && defaultAddress.isPresent()) {
+            unsetDefaultAddress(defaultAddress,userId);
+        }
+
 
         AddressesEntity newAddress = getAddressEntityByRequest(userId, addUserAddressReq);
 
@@ -79,31 +91,32 @@ public class AccountService {
     }
 
     @Transactional
-    public GenericResponse syncUserAddress(UUID userId, SyncUserAddressReq syncUserAddressReq) throws ShopServiceApiException {
+    public GenericResponse syncUserAddress(UUID userId, AddUserAddressReq syncUserAddressReq, UUID addressId) throws ShopServiceApiException {
 
-        UUID addressIdUUID = UUID.fromString(syncUserAddressReq.getAddressId());
-
-        if(syncUserAddressReq.getIsDefault())
-            checkIsDefaultAddressExist(userId);
-
-        AddressesEntity addressOpt = addressesRepo
-                .findAddressesEntitiesByAddressId_AndUsersEntity_UserId(addressIdUUID,userId);
+        AddressesEntity addressOpt = addressesRepo.findAddressesEntitiesByAddressId_AndUsersEntity_UserId(addressId,userId);
 
         if(addressOpt == null)
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "User can only update own address.");
 
-        addressOpt.setDeliveryAddress(syncUserAddressReq.getDeliveryAddress());
-        addressOpt.setPostcode(syncUserAddressReq.getPostcode());
-        addressOpt.setProvince(syncUserAddressReq.getProvince());
-        addressOpt.setDistrict(syncUserAddressReq.getDistrict());
-        addressOpt.setSubDistrict(syncUserAddressReq.getSubDistrict());
-        addressOpt.setAddressLabel(syncUserAddressReq.getAddressLabel());
-        addressOpt.setDefault(syncUserAddressReq.getIsDefault());
-        addressOpt.setRecipientFirstName(syncUserAddressReq.getRecipientFirstName());
-        addressOpt.setRecipientLastName(syncUserAddressReq.getRecipientLastName());
-        addressOpt.setRecipientPhone(syncUserAddressReq.getRecipientPhone());
+        List<IAddressResp> existingAddressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
 
-        addressesRepo.save(addressOpt);
+        Optional<IAddressResp> defaultAddress = existingAddressList.stream()
+                .filter(IAddressResp::getIsDefault)
+                .findFirst();
+
+            UUID existingDefaultAddressId = defaultAddress
+                .map(IAddressResp::getAddressId)
+                .map(UUID::fromString)
+                .orElse(null);
+//        if default address is already exist and is not the same. Then set exist default address to false before update new default address.
+        if (syncUserAddressReq.getIsDefault()&& defaultAddress.isPresent() && !existingDefaultAddressId.equals(addressId)) {
+            unsetDefaultAddress(defaultAddress,userId);
+        }
+
+        AddressesEntity newAddress = getAddressEntityByRequest(userId, syncUserAddressReq);
+        newAddress.setAddressId(addressOpt.getAddressId());
+
+        addressesRepo.save(newAddress);
 
         GenericResponse response = new GenericResponse();
         response.setData(null);
@@ -127,20 +140,11 @@ public class AccountService {
         return response;
     }
 
-    private void checkIsDefaultAddressExist(UUID userId) throws  ShopServiceApiException {
-        List<IAddressResp> addressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
-        boolean isDefaultAddressExist = addressList.stream().anyMatch(IAddressResp::getIsDefault);
-
-        if(isDefaultAddressExist)
-            throw new ShopConflictException(ResultCode.CONFLICT, "Default address already exist.");
-    }
-
     private AddressesEntity getAddressEntityByRequest(UUID userId, AddUserAddressReq addUserAddressReq){
         UsersEntity usersEntity = new UsersEntity();
         usersEntity.setUserId(userId);
 
         AddressesEntity newAddress = new AddressesEntity();
-        newAddress.setUsersEntity(usersEntity);
         newAddress.setDeliveryAddress(addUserAddressReq.getDeliveryAddress());
         newAddress.setPostcode(addUserAddressReq.getPostcode());
         newAddress.setProvince(addUserAddressReq.getProvince());
@@ -149,7 +153,32 @@ public class AccountService {
         newAddress.setAddressLabel(addUserAddressReq.getAddressLabel());
         newAddress.setDefault(addUserAddressReq.getIsDefault());
         newAddress.setRecipientFirstName(addUserAddressReq.getRecipientFirstName());
+        newAddress.setRecipientLastName(addUserAddressReq.getRecipientLastName());
+        newAddress.setRecipientPhone(addUserAddressReq.getRecipientPhone());
+        newAddress.setUsersEntity(usersEntity);
 
         return newAddress;
+    }
+
+    private void unsetDefaultAddress(Optional<IAddressResp> defaultAddress, UUID userId) {
+        AddressesEntity existDefaultAddress = new AddressesEntity();
+
+        UsersEntity usersEntity = new UsersEntity();
+        usersEntity.setUserId(userId);
+
+        IAddressResp iAddress = defaultAddress.get();
+        existDefaultAddress.setAddressId(UUID.fromString(iAddress.getAddressId()));
+        existDefaultAddress.setDeliveryAddress(iAddress.getDeliveryAddress());
+        existDefaultAddress.setPostcode(iAddress.getPostcode());
+        existDefaultAddress.setProvince(iAddress.getProvince());
+        existDefaultAddress.setDistrict(iAddress.getDistrict());
+        existDefaultAddress.setSubDistrict(iAddress.getSubDistrict());
+        existDefaultAddress.setAddressLabel(iAddress.getAddressLabel());
+        existDefaultAddress.setDefault(false);
+        existDefaultAddress.setRecipientFirstName(iAddress.getRecipientFirstName());
+        existDefaultAddress.setRecipientLastName(iAddress.getRecipientLastName());
+        existDefaultAddress.setRecipientPhone(iAddress.getRecipientPhone());
+        existDefaultAddress.setUsersEntity(usersEntity);
+        addressesRepo.save(existDefaultAddress);
     }
 }

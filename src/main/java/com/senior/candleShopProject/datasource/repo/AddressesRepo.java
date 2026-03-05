@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface AddressesRepo extends JpaRepository<AddressesEntity, UUID> {
 
     List<IAddressResp> findAddressesEntitiesByUsersEntity_UserId(UUID userId);
+
     AddressesEntity findAddressesEntitiesByAddressId_AndUsersEntity_UserId(UUID addressId, UUID userId);
 
     IAddressResp findAddressesEntitiesByAddressId(UUID addressId);

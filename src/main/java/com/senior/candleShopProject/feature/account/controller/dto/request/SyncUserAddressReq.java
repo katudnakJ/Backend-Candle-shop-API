@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class SyncUserAddressReq {
-    private String addressId;
     private String deliveryAddress;
     private String postcode;
     private String province;
