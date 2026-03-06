@@ -47,6 +47,6 @@ supabase:
   expiration:
     seller:
       check-qr-payment: ${SUPABASE_SELLER_CHECK_QR_PAYMENT_EXP}
-      check-reciept: ${SUPABASE_SELLER_CHECK_RECEIPT_EXP}
+      check-receipt: ${SUPABASE_SELLER_CHECK_RECEIPT_EXP}
     customer:
       check-qr-payment: ${SUPABASE_USER_CHECK_QR_PAYMENT_EXP}

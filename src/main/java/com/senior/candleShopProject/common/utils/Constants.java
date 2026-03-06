@@ -28,6 +28,10 @@ public class Constants {
     public static final String SUPABASE_RECEIPT_BUCKET_NAME = "payment-proofs";
     public static final String SUPABASE_PRODUCT_BUCKET_NAME = "attachments";
 
+    //    return key name
+    public static final String RESPONSE_KEY_EXP_DATE = "expirationDate";
+    public static final String RESPONSE_KEY_SIGNED_IMAGE = "signedImageUrl";
+
 //  Date
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String TIME_ZONE_BANGKOK = "Asia/Bangkok";
@@ -43,4 +47,6 @@ public class Constants {
 //    Shipping Method
     public static final String SHIPPING_METHOD_STANDARD = "STANDARD";
     public static final String SHIPPING_METHOD_YIPPEE = "YIPPEE";
+
+
 }

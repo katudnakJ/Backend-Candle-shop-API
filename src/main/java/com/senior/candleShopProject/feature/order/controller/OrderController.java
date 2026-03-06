@@ -93,4 +93,16 @@ public class OrderController {
         GenericResponse response = orderService.trackOrder(userUUID,orderUUID, trackOrderReq);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{orderId}/payment-proof")
+    @Operation(summary = "Get signed URL for payment proof image.", description = "ดึง URL สำหรับรูปภาพหลักฐานการชำระเงิน")
+    public ResponseEntity<GenericResponse> getPaymentProofImage(@RequestAttribute("userId") String userId,
+                                        @PathVariable("orderId") String orderId) throws ShopServiceApiException {
+        log.info("Getting payment proof image for order {}", orderId);
+        UUID userUUID = UUID.fromString(userId);
+        UUID orderUUID = UUID.fromString(orderId);
+
+        GenericResponse response = orderService.getPaymentSlipByOrderId(userUUID, orderUUID);
+        return ResponseEntity.ok(response);
+    }
 }

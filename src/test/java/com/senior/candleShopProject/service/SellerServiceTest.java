@@ -4,6 +4,7 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.*;
+import com.senior.candleShopProject.common.utils.GetImagePathUtils;
 import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
 import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
@@ -43,7 +44,11 @@ public class SellerServiceTest {
     @Mock
     private SellerRepo sellerRepo;
 
-    SupabaseStorageService supabaseStorageService = mock(SupabaseStorageService.class);
+    @Mock
+    SupabaseStorageService supabaseStorageService;
+
+    @Mock
+    private GetImagePathUtils getImagePathUtils;
 
     @BeforeEach
     void initTest() {
@@ -89,40 +94,35 @@ public class SellerServiceTest {
     }
 
     @Test
-    void testGetQrCodePayment_SellerFound_ReturnsSignedUrl() throws ShopServiceApiException {
+    void testGetQrCodePayment_SellerFound_ReturnsSignedUrl() throws Exception {
+
         UUID userId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
 
         IUsersResp user = mock(IUsersResp.class);
         ISellerResp seller = mock(ISellerResp.class);
 
+        GetImagePathUtils result = mock(GetImagePathUtils.class);
+
         when(usersRepo.getUserProfile(userId)).thenReturn(user);
         when(user.getIsSeller()).thenReturn(true);
+
         when(sellerRepo.getSellerByUserId(userId)).thenReturn(seller);
-        when(seller.getSellerId()).thenReturn(UUID.randomUUID());
-        when(seller.getQrPaymentImgPath()).thenReturn("qr.jpg");
-        when(supabaseStorageService.getSignedImageUrl(any(), any(), anyInt())).thenReturn("https://signed-url.com/qr.jpeg");
-
-        GenericResponse resp = sellerService.getQrCodePayment(userId);
-        assertEquals(ResultCode.SUCCESS, resp.getStatus());
-        assertNotNull(resp.getData());
-    }
-
-    @Test
-    void testGetQrCodePayment_SupabaseDataNotFound_ReturnsNull() throws ShopServiceApiException {
-        UUID userId = UUID.randomUUID();
-
-        IUsersResp user = mock(IUsersResp.class);
-        ISellerResp seller = mock(ISellerResp.class);
-        when(usersRepo.getUserProfile(userId)).thenReturn(user);
-        when(user.getIsSeller()).thenReturn(true);
-        when(sellerRepo.getSellerByUserId(userId)).thenReturn(seller);
-        when(seller.getSellerId()).thenReturn(UUID.randomUUID());
+        when(seller.getSellerId()).thenReturn(sellerId);
         when(seller.getQrPaymentImgPath()).thenReturn("qr.jpg");
 
-        ShopServiceApiException ex = new ShopServiceApiException(ResultCode.DATA_NOT_FOUND, "not found");
+        when(getImagePathUtils.getSignedQrPaymentImage(sellerId, "qr.jpg"))
+                .thenReturn(result);
 
-        when(supabaseStorageService.getSignedImageUrl(any(), any(), anyInt())).thenThrow(ex);
-        assertNull(sellerService.getQrCodePayment(userId));
+        when(result.getSignedImageUrl()).thenReturn("https://signed-url.com/qr.jpg");
+
+        GenericResponse response = sellerService.getQrCodePayment(userId);
+
+        assertEquals(ResultCode.SUCCESS, response.getStatus());
+        assertNotNull(response.getData());
+
+        verify(getImagePathUtils, times(1))
+                .getSignedQrPaymentImage(sellerId, "qr.jpg");
     }
 
     @Test

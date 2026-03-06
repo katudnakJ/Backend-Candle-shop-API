@@ -7,6 +7,7 @@ import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlRes
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
+import com.senior.candleShopProject.common.utils.GetImagePathUtils;
 import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
 import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.senior.candleShopProject.common.utils.LocalDateTimeUtils.getExpDateWithTimeZone;
@@ -32,12 +34,8 @@ import static com.senior.candleShopProject.common.utils.ProcessImageUtil.process
 @RequiredArgsConstructor
 public class SellerService {
 
-    @Value("${supabase.expiration.seller.check-qr-payment}")
-    private int checkQrCodeExpirationInSeconds;
-
-
-
     private final SupabaseStorageService supabaseStorageService;
+    private final GetImagePathUtils getImagePathUtils;
 
     private final OrdersRepo ordersRepo;
     private final UsersRepo usersRepo;
@@ -67,35 +65,13 @@ public class SellerService {
 
         ISellerResp seller = sellerRepo.getSellerByUserId(userId);
 
-        String imgPath = seller.getSellerId().toString() + "/"
-                + seller.getQrPaymentImgPath()
-                + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
-
-        ZonedDateTime expiresAt = getExpDateWithTimeZone(Constants.TIME_ZONE_BANGKOK, checkQrCodeExpirationInSeconds);
-
-        String signedImageUrl;
-                try{
-                    signedImageUrl = supabaseStorageService.getSignedImageUrl(
-                            Constants.SUPABASE_QR_PAYMENT_BUCKET_NAME,
-                            imgPath,
-                            checkQrCodeExpirationInSeconds
-                    );
-                } catch (ShopServiceApiException ex) {
-
-                    if (ResultCode.DATA_NOT_FOUND.equals(ex.getStatus())) {
-                        return null;
-                    }
-                    throw ex;
-                }
-
-        String qrPaymentImgUrl = signedImageUrl.isEmpty() ? null : signedImageUrl;
-
-        SignedImageUrlResp signedImageUrlResp = new SignedImageUrlResp();
-        signedImageUrlResp.setSignedImageUrl(qrPaymentImgUrl);
-        signedImageUrlResp.setExpiresAt(expiresAt);
+        SignedImageUrlResp result = getImagePathUtils.getSignedQrPaymentImage(
+                seller.getSellerId(),
+                seller.getQrPaymentImgPath()
+        );
 
         GenericResponse response = new GenericResponse();
-        response.setData(signedImageUrlResp);
+        response.setData(result);
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }
