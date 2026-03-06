@@ -8,7 +8,7 @@ import java.util.List;
 @Getter
 @Setter
 public class ProductHomeListItemResp {
-    private List<IProductHomeListItemResp> featuredProduct;
-    private List<IProductHomeListItemResp> nonFeaturedProduct;
-    private Integer nonFeaturedTotal;
+    private List<IProductHomeListItemResp> featuredProducts;
+    private List<IProductHomeListItemResp> allProducts;
+    private Integer totalProducts;
 }

@@ -44,7 +44,27 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
             on p.product_id = pi.product_id
             and pi.is_primary = true
             where p.is_featured = :isFeatured
-            and p.is_active = true;
+            and p.is_active = true
+            ORDER BY  p.total_selled DESC;
     """,nativeQuery = true)
     List<IProductHomeListItemResp> getProductHomeListItemResp(@Param("isFeatured") Boolean isFeatured);
+
+    @Query(value = """
+       Select
+              p.product_id as productId,
+              p.product_name as productName,
+              p.price as price,
+              p.product_created_date as productCreatedDate,
+              p.total_selled as totalSelled,
+              p.slug as productSlug,
+              pi.product_img_path as productImgPath
+            from products p
+            left join product_images pi
+            on p.product_id = pi.product_id
+            and pi.is_primary = true
+            where p.is_active = true
+            ORDER BY  p.product_created_date ASC
+            LIMIT :limit OFFSET :offset;
+""", nativeQuery = true)
+    List<IProductHomeListItemResp> getAllProductHomeList(@Param("limit") int limit, @Param("offset") int offset);
 }

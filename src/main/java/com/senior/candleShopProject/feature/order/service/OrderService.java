@@ -55,7 +55,7 @@ public class OrderService {
         return response;
     }
 
-    public GenericResponse getOrderByStatus(UUID userId, String status) throws ShopServiceApiException {
+    public GenericResponse getOrderByStatus(UUID userId, String status, int page, int size) throws ShopServiceApiException {
 
         if (status == null || status.isEmpty())
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Status is required.");
@@ -68,7 +68,13 @@ public class OrderService {
         if (!validStatus)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Invalid order status.");
 
-        List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(customerId, status,(userCheckTemp.getSellerIdByUserId(userId) != null));
+        List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(
+                customerId,
+                status,
+                (userCheckTemp.getSellerIdByUserId(userId) != null),
+                size,
+                page * size
+        );
         if (order == null || order.isEmpty()){
             GenericResponse response = new GenericResponse();
             response.setData(null);

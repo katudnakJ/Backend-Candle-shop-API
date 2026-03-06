@@ -39,9 +39,9 @@ public class ShoppingCartService {
 
     private final ShoppingCartItemsRepo shoppingCartItemsRepo;
 
-    public GenericResponse getShoppingCart(UUID userId) throws ShopServiceApiException {
+    public GenericResponse getShoppingCart(UUID userId, int page, int size) throws ShopServiceApiException {
 
-        List<IAllItemsShoppingCartResp> iShoppingCartResps = shoppingCartRepo.getAllItemsFromShoppingCartByUserId(userId);
+        List<IAllItemsShoppingCartResp> iShoppingCartResps = shoppingCartRepo.getAllItemsFromShoppingCartByUserId(userId, size, page * size);
 
         if (iShoppingCartResps.isEmpty()){
             GenericResponse response = new GenericResponse();

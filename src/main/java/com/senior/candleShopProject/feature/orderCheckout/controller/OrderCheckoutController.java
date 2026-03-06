@@ -28,9 +28,9 @@ public class OrderCheckoutController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Checkout order API.")
     public ResponseEntity checkoutOrder(@RequestAttribute("userId") String userId,
-                                        @RequestParam("imageData") MultipartFile imageData,
-                                        @RequestParam("shoppingCartItemIds") List<String> shoppingCartItemIds,
-                                        @RequestParam("addressId") String addressId
+                                        @RequestParam("image_data") MultipartFile imageData,
+                                        @RequestParam("shopping_cart_item_ids") List<String> shoppingCartItemIds,
+                                        @RequestParam("address_id") String addressId
     ) throws ShopServiceApiException, IOException {
         log.info("Checking out order API for user {}", userId);
 
@@ -44,7 +44,7 @@ public class OrderCheckoutController {
     @Operation(summary = "Retry payment for order API.", description = "Retry payment when payment is rejected.")
     public ResponseEntity retryPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable("orderId") String orderId,
-                                        @RequestParam("imageData") MultipartFile imageData) throws ShopServiceApiException, IOException {
+                                        @RequestParam("image_data") MultipartFile imageData) throws ShopServiceApiException, IOException {
         log.info("Checking out order API for user {}", userId);
 
         UUID userUuid = UUID.fromString(userId);

@@ -40,11 +40,16 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
             left join payments pm on pm.order_id = o.order_id
             left join shipment sm on sm.order_id = o.order_id
         where (:isSeller = TRUE or o.customer_id = :customerId)
-        and o.order_status = :status;
+        and o.order_status = :status
+        ORDER BY o.created_at ASC
+        LIMIT :limit OFFSET :offset;
        """, nativeQuery = true)
     List<IOrderByStatusResp> getOrderByCustIdStatus(@Param("customerId") UUID customerId,
                                                     @Param("status") String status,
-                                                    @Param("isSeller") Boolean isSeller);
+                                                    @Param("isSeller") Boolean isSeller,
+                                                    @Param("limit") int limit,
+                                                    @Param("offset") int offset
+    );
 
     @Query(value = """
        select o.order_id as orderId,

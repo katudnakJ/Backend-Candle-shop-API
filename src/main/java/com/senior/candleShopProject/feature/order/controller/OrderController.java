@@ -36,11 +36,13 @@ public class OrderController {
     @Operation(summary = "Get order by status.", description = "ดึงข้อมูลออเดอร์ตามสถานะ")
     @GetMapping()
     public ResponseEntity<GenericResponse> getOrderByStatus(@RequestAttribute("userId") String userId,
-                                                            @RequestParam("status") String status) throws ShopServiceApiException {
+                                                            @RequestParam("status") String status,
+                                                            @RequestParam(value = "page", defaultValue = "0") int page,
+                                                            @RequestParam(value = "size", defaultValue = "10") int size) throws ShopServiceApiException {
         log.info("Getting order by status for status: {}", status);
         UUID userUUID = UUID.fromString(userId);
 
-        GenericResponse response = orderService.getOrderByStatus(userUUID, status);
+        GenericResponse response = orderService.getOrderByStatus(userUUID, status, page, size);
         return ResponseEntity.ok(response);
     }
 

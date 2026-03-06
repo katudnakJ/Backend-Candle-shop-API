@@ -31,9 +31,13 @@ public interface ShoppingCartRepo extends JpaRepository<ShoppingCartEntity, UUID
             ON sci.product_id = p.product_id
             LEFT JOIN product_images pi
             ON p.product_id = pi.product_id AND pi.is_primary = true
-            WHERE u.user_id = :userId;
+            WHERE u.user_id = :userId
+            ORDER BY sci.create_at ASC
+            LIMIT :limit OFFSET :offset;
             """, nativeQuery = true)
-    List<IAllItemsShoppingCartResp> getAllItemsFromShoppingCartByUserId(@Param("userId") UUID userId);
+    List<IAllItemsShoppingCartResp> getAllItemsFromShoppingCartByUserId(@Param("userId") UUID userId,
+                                                                        @Param("limit") int limit,
+                                                                        @Param("offset") int offset);
 
     @Query(value = """
     select shopping_cart_id AS shoppingCartId
