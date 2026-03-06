@@ -2,6 +2,7 @@ package com.senior.candleShopProject.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.GetImagePathUtils;
@@ -102,7 +103,7 @@ public class SellerServiceTest {
         IUsersResp user = mock(IUsersResp.class);
         ISellerResp seller = mock(ISellerResp.class);
 
-        GetImagePathUtils result = mock(GetImagePathUtils.class);
+        SignedImageUrlResp result = mock(SignedImageUrlResp.class);
 
         when(usersRepo.getUserProfile(userId)).thenReturn(user);
         when(user.getIsSeller()).thenReturn(true);
@@ -111,10 +112,8 @@ public class SellerServiceTest {
         when(seller.getSellerId()).thenReturn(sellerId);
         when(seller.getQrPaymentImgPath()).thenReturn("qr.jpg");
 
-        when(getImagePathUtils.getSignedQrPaymentImage(sellerId, "qr.jpg"))
-                .thenReturn(result);
-
-        when(result.getSignedImageUrl()).thenReturn("https://signed-url.com/qr.jpg");
+        when(getImagePathUtils.getSignedQrPaymentImage(eq(sellerId), eq("qr.jpg"))).thenReturn(result);
+        when(getImagePathUtils.getSignedQrPaymentImage(any(), any())).thenReturn(result);
 
         GenericResponse response = sellerService.getQrCodePayment(userId);
 

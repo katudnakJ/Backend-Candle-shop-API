@@ -73,13 +73,13 @@ public class ProductService {
         return response;
     }
 
-    public GenericResponse getProductHomeListItem(int size, int page) throws ShopServiceApiException {
+    public GenericResponse getProductHomeListItem(int page, int size) throws ShopServiceApiException {
 
 //      get product from repository
         List<IProductHomeListItemResp> prepareFeatureProducts = productsRepo.getProductHomeListItemResp(true);
         List<IProductHomeListItemResp> prepareAllProducts = productsRepo.getAllProductHomeList(size, page * size);
 
-        if (prepareFeatureProducts.isEmpty() || prepareAllProducts.isEmpty())
+        if (prepareAllProducts.isEmpty())
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Products not found.");
 
         List<IProductHomeListItemResp> featuredProducts = addPrefixProductImgPath(prepareFeatureProducts);

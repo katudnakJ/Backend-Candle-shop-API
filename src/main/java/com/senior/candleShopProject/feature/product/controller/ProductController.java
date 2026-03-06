@@ -48,7 +48,7 @@ public class ProductController {
                                                               @RequestParam(value = "size", defaultValue = "10") int size
     ) throws ShopServiceApiException {
         log.info("Get product home list");
-        GenericResponse response = productService.getProductHomeListItem(size, page);
+        GenericResponse response = productService.getProductHomeListItem(page, size);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
