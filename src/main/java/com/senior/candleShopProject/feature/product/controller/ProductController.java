@@ -34,7 +34,7 @@ public class ProductController {
 
     @GetMapping("/details/{productId}")
     @Operation(summary = "Get product details API.", description = "Get product details by product id.")
-    public ResponseEntity<GenericResponse> getProductDetailsById(@PathVariable(name = "productId") String productId) throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> getProductDetailsById(@PathVariable(name = "product_d") String productId) throws ShopServiceApiException {
         log.info("Get product details by product id {}", productId);
         UUID productUUID = UUID.fromString(productId);
 
@@ -44,9 +44,11 @@ public class ProductController {
 
     @GetMapping()
     @Operation(summary = "Get product home list API.")
-    public ResponseEntity<GenericResponse> getProductHomeList() throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> getProductHomeList(@RequestParam(value = "page",defaultValue = "0") int page,
+                                                              @RequestParam(value = "size", defaultValue = "10") int size
+    ) throws ShopServiceApiException {
         log.info("Get product home list");
-        GenericResponse response = productService.getProductHomeListItem();
+        GenericResponse response = productService.getProductHomeListItem(page, size);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -58,7 +60,7 @@ public class ProductController {
                                                             @ModelAttribute CreateNewProductReq createNewProductReq,
 
                                                             @RequestPart("imagesData") List<MultipartFile> imagesReqList,
-                                                            @RequestParam("primaryIndex") Integer primaryIndex
+                                                            @RequestParam("primary_index") Integer primaryIndex
                                                             ) throws ShopServiceApiException, IOException {
         log.info("Create new product");
         UUID userUUID = UUID.fromString(userId);
@@ -77,7 +79,7 @@ public class ProductController {
 
                                                             @RequestPart(value = "images",required = false) List<MultipartFile> imagesReqList,
 
-                                                         @RequestParam("primaryIndex") Integer primaryIndex
+                                                         @RequestParam("primary_index") Integer primaryIndex
     ) throws ShopServiceApiException, IOException {
         log.info("Update product with id {}", productId);
         UUID userUUID = UUID.fromString(userId);

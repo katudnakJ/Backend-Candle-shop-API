@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,11 +52,13 @@ class ShoppingCartServiceTest {
     @Test
     void getShoppingCart_returnNullData_whenCartEmpty() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
+        int page = 0;
+        int size = 10;
 
-        when(shoppingCartRepo.getAllItemsFromShoppingCartByUserId(userId))
-                .thenReturn(List.of());
+        when(shoppingCartRepo.getAllItemsFromShoppingCartByUserId(userId, size, page * size))
+                .thenReturn(Collections.emptyList());
 
-        GenericResponse response = shoppingCartService.getShoppingCart(userId);
+        GenericResponse response = shoppingCartService.getShoppingCart(userId, page, size);
 
         assertThat(response.getStatus()).isEqualTo(ResultCode.SUCCESS);
         assertThat(response.getData()).isNull();
@@ -67,6 +70,8 @@ class ShoppingCartServiceTest {
         UUID cartId = UUID.randomUUID();
         UUID cartItemId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
+        int page = 0;
+        int size = 10;
 
         IAllItemsShoppingCartResp iShoppingCartResp = mock(IAllItemsShoppingCartResp.class);
         when(iShoppingCartResp.getShoppingCartId()).thenReturn(cartId);
@@ -78,9 +83,10 @@ class ShoppingCartServiceTest {
         when(iShoppingCartResp.getProductSlug()).thenReturn("candle-a");
         when(iShoppingCartResp.getProductImgPath()).thenReturn("images/a.png");
 
-        when(shoppingCartRepo.getAllItemsFromShoppingCartByUserId(userId)).thenReturn(List.of(iShoppingCartResp));
+        doReturn(List.of(iShoppingCartResp))
+                .when(shoppingCartRepo).getAllItemsFromShoppingCartByUserId(eq(userId), anyInt(), anyInt());
 
-        GenericResponse response = shoppingCartService.getShoppingCart(userId);
+        GenericResponse response = shoppingCartService.getShoppingCart(userId, page, size);
 
         assertThat(response.getStatus()).isEqualTo(ResultCode.SUCCESS);
         assertThat(response.getData()).isInstanceOf(ShoppingCartResp.class);

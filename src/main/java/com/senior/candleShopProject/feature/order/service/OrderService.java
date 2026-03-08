@@ -3,10 +3,12 @@ package com.senior.candleShopProject.feature.order.service;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
+import com.senior.candleShopProject.common.utils.GetImagePathUtils;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
@@ -30,12 +32,15 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.senior.candleShopProject.common.utils.CustomizeResponseUtil.ReturnSignedImageWithExp;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final UserCheckTemp userCheckTemp;
+    private final GetImagePathUtils getImagePathUtils;
 
     private final OrdersRepo ordersRepo;
     private final CarriersRepo carriersRepo;
@@ -50,7 +55,7 @@ public class OrderService {
         return response;
     }
 
-    public GenericResponse getOrderByStatus(UUID userId, String status) throws ShopServiceApiException {
+    public GenericResponse getOrderByStatus(UUID userId, String status, int page, int size) throws ShopServiceApiException {
 
         if (status == null || status.isEmpty())
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Status is required.");
@@ -63,7 +68,13 @@ public class OrderService {
         if (!validStatus)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Invalid order status.");
 
-        List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(customerId, status,(userCheckTemp.getSellerIdByUserId(userId) != null));
+        List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(
+                customerId,
+                status,
+                (userCheckTemp.getSellerIdByUserId(userId) != null),
+                size,
+                page * size
+        );
         if (order == null || order.isEmpty()){
             GenericResponse response = new GenericResponse();
             response.setData(null);
@@ -229,20 +240,29 @@ public class OrderService {
         return response;
     }
 
-    private GenericResponse getGenericResponse(OrdersEntity orderEntity, OrderStatus newStatus, Instant timeNow, PaymentsEntity payment) {
+    public GenericResponse getPaymentSlipByOrderId(UUID user, UUID orderId) throws ShopServiceApiException {
 
-        if (!Objects.equals(newStatus.getStatusCode(), OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
-            orderEntity.setOrderStatus(newStatus.getStatusCode());
+        UUID customerId = userCheckTemp.getCustomerIdByUserId(user);
 
-        orderEntity.setStatusChangedAt(timeNow);
-        orderEntity.setPaymentsEntity(payment);
+        if (customerId == null)
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
 
-        OrdersEntity newOrder = ordersRepo.save(orderEntity);
+        if (!userCheckTemp.isOwnerOfOrder(user, orderId))
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
 
-        OrderStatusChangeResp orderStatusChangeResp = setOrderStatusChangeResp(newOrder, newStatus);
+        PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+
+        if (payment == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Payment not found.");
+
+        SignedImageUrlResp result = getImagePathUtils.getSignedPaymentProofImage(
+                customerId,
+                payment.getPaymentId(),
+                payment.getPaymentProofPath()
+        );
 
         GenericResponse response = new GenericResponse();
-        response.setData(orderStatusChangeResp);
+        response.setData(result);
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }
@@ -330,6 +350,24 @@ public class OrderService {
         orderDetailsResp.setOrderDetail(orderDetailByStatus);
         orderDetailsResp.setOrderItems(orderItemsList);
         return orderDetailsResp;
+    }
+
+    private GenericResponse getGenericResponse(OrdersEntity orderEntity, OrderStatus newStatus, Instant timeNow, PaymentsEntity payment) {
+
+        if (!Objects.equals(newStatus.getStatusCode(), OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
+            orderEntity.setOrderStatus(newStatus.getStatusCode());
+
+        orderEntity.setStatusChangedAt(timeNow);
+        orderEntity.setPaymentsEntity(payment);
+
+        OrdersEntity newOrder = ordersRepo.save(orderEntity);
+
+        OrderStatusChangeResp orderStatusChangeResp = setOrderStatusChangeResp(newOrder, newStatus);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(orderStatusChangeResp);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
     }
 
     private OrderStatusChangeResp setOrderStatusChangeResp(OrdersEntity orderEntity, OrderStatus newStatus) {

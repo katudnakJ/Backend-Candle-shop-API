@@ -29,4 +29,3 @@ server:
   servlet:
     context-path: /candle-shop-project-api
 
-supabase:

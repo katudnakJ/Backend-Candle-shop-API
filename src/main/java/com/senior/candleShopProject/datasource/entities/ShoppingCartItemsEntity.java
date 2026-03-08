@@ -22,6 +22,9 @@ public class ShoppingCartItemsEntity {
     @Column(name = "quantity")
     private Integer quantity;
 
+    @Column(name = "create_at")
+    private Long createAt;
+
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shopping_cart_id", nullable = false)

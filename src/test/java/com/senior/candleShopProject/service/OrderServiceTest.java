@@ -51,7 +51,7 @@ public class OrderServiceTest {
     void getOrderByStatus_StatusNull_ThrowsBadRequest() {
         UUID userId = UUID.randomUUID();
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
-                orderService.getOrderByStatus(userId, null)
+                orderService.getOrderByStatus(userId, null, 0, 10)
         );
         assertEquals(ResultCode.BAD_REQUEST, ex.getStatus());
         verifyNoInteractions(userCheckTemp, ordersRepo, orderItemsRepo);
@@ -63,6 +63,8 @@ public class OrderServiceTest {
         String status = OrderStatus.ORDER_TO_SHIP.getStatusCode();
         UUID customerId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        int page = 0;
+        int size = 10;
 
         doNothing().when(userCheckTemp).checkExistsUser(userId);
         when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
@@ -80,7 +82,7 @@ public class OrderServiceTest {
         when(orderRow.getDeliveryMethod()).thenReturn(Constants.SHIPPING_METHOD_STANDARD);
         when(orderRow.getRejectionReason()).thenReturn(null);
 
-        when(ordersRepo.getOrderByCustIdStatus(eq(customerId), eq(status), eq(false)))
+        when(ordersRepo.getOrderByCustIdStatus(eq(customerId), eq(status), eq(false), eq(size), eq(page * size)))
                 .thenReturn(List.of(orderRow));
 
         IOrderItemListResp item = mock(IOrderItemListResp.class);
@@ -95,7 +97,7 @@ public class OrderServiceTest {
         when(orderItemsRepo.getOrderItemByOrderIds(eq(List.of(orderId))))
                 .thenReturn(List.of(item));
 
-        GenericResponse resp = orderService.getOrderByStatus(userId, status);
+        GenericResponse resp = orderService.getOrderByStatus(userId, status, page, size);
 
         assertNotNull(resp);
         assertEquals(ResultCode.SUCCESS, resp.getStatus());
@@ -103,7 +105,7 @@ public class OrderServiceTest {
 
         verify(userCheckTemp).checkExistsUser(userId);
         verify(userCheckTemp).getCustomerIdByUserId(userId);
-        verify(ordersRepo).getOrderByCustIdStatus(customerId, status, false);
+        verify(ordersRepo).getOrderByCustIdStatus(customerId, status, false, size, page * size);
         verify(orderItemsRepo).getOrderItemByOrderIds(List.of(orderId));
     }
 

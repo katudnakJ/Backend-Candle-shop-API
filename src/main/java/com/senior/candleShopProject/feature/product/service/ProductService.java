@@ -73,24 +73,25 @@ public class ProductService {
         return response;
     }
 
-    public GenericResponse getProductHomeListItem() throws ShopServiceApiException {
+    public GenericResponse getProductHomeListItem(int page, int size) throws ShopServiceApiException {
 
-//      featured products
-        List<IProductHomeListItemResp> featureFromRepo = productsRepo.getProductHomeListItemResp(true);
-        List<IProductHomeListItemResp> featuredProducts = addPrefixProductImgPath(featureFromRepo);
+//      get product from repository
+        List<IProductHomeListItemResp> prepareFeatureProducts = productsRepo.getProductHomeListItemResp(true);
+        List<IProductHomeListItemResp> prepareAllProducts = productsRepo.getAllProductHomeList(size, page * size);
 
-//      non-featured products
-        List<IProductHomeListItemResp> nonFeaturedFromRepo = productsRepo.getProductHomeListItemResp(false);
-        List<IProductHomeListItemResp> nonFeaturedProducts = addPrefixProductImgPath(nonFeaturedFromRepo);
+        if (prepareAllProducts.isEmpty())
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Products not found.");
 
-        if (featureFromRepo.isEmpty() && nonFeaturedFromRepo.isEmpty())
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "All Products list are empty.");
+        List<IProductHomeListItemResp> featuredProducts = addPrefixProductImgPath(prepareFeatureProducts);
+        List<IProductHomeListItemResp> allProducts = addPrefixProductImgPath(prepareAllProducts);
+
+
 
         ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
-        productHomeListItemResp.setFeaturedProduct((featuredProducts));
+        productHomeListItemResp.setFeaturedProducts((featuredProducts));
 
-        productHomeListItemResp.setNonFeaturedProduct(addPrefixProductImgPath(nonFeaturedProducts));
-        productHomeListItemResp.setNonFeaturedTotal(nonFeaturedProducts.size());
+        productHomeListItemResp.setAllProducts(addPrefixProductImgPath(allProducts));
+        productHomeListItemResp.setTotalProducts(allProducts.size());
 
         GenericResponse response = new GenericResponse();
         response.setData(productHomeListItemResp);

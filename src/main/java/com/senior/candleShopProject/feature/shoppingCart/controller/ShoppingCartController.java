@@ -27,14 +27,13 @@ public class ShoppingCartController {
 
     @GetMapping()
     @Operation(summary = "Get shopping cart API.", description = "Get shopping cart with all items.")
-    public ResponseEntity getShoppingCart(@RequestAttribute("userId") String userId) throws ShopServiceApiException {
+    public ResponseEntity getShoppingCart(@RequestAttribute("userId") String userId,
+                                          @RequestParam(value = "page", defaultValue = "0") int page,
+                                          @RequestParam(value = "size", defaultValue = "10") int size) throws ShopServiceApiException {
         log.info("Get shopping cart by user id {}", userId);
 
-        if (userId == null)
-            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "User id is missing.");
-
         UUID userUUID = UUID.fromString(userId);
-        GenericResponse response = shoppingCartService.getShoppingCart(userUUID);
+        GenericResponse response = shoppingCartService.getShoppingCart(userUUID, page, size );
         return ResponseEntity.ok(response);
     }
 

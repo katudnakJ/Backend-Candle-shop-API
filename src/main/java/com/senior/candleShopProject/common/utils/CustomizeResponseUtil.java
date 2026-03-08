@@ -1,5 +1,6 @@
 package com.senior.candleShopProject.common.utils;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +21,13 @@ public class CustomizeResponseUtil {
         Map<String, Object> result = new HashMap<>();
         result.put("totalCount", count);
         result.put(dataObjectName, data);
+        return result;
+    }
+
+    public static Map<String, Object> ReturnSignedImageWithExp(String signedImageUrl, ZonedDateTime expirationDate) {
+        Map<String, Object> result = new HashMap<>();
+        result.put(Constants.RESPONSE_KEY_SIGNED_IMAGE, signedImageUrl);
+        result.put(Constants.RESPONSE_KEY_EXP_DATE, expirationDate);
         return result;
     }
 }
