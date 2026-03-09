@@ -7,7 +7,7 @@ import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlRes
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
-import com.senior.candleShopProject.common.utils.GetImagePathUtils;
+import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
 import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
 import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
@@ -16,17 +16,13 @@ import com.senior.candleShopProject.datasource.repo.SellerRepo;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.UUID;
 
-import static com.senior.candleShopProject.common.utils.LocalDateTimeUtils.getExpDateWithTimeZone;
 import static com.senior.candleShopProject.common.utils.ProcessImageUtil.processImageData;
 
 @Service
@@ -35,7 +31,7 @@ import static com.senior.candleShopProject.common.utils.ProcessImageUtil.process
 public class SellerService {
 
     private final SupabaseStorageService supabaseStorageService;
-    private final GetImagePathUtils getImagePathUtils;
+    private final SupabaseImageUtils supabaseImageUtils;
 
     private final OrdersRepo ordersRepo;
     private final UsersRepo usersRepo;
@@ -65,7 +61,7 @@ public class SellerService {
 
         ISellerResp seller = sellerRepo.getSellerByUserId(userId);
 
-        SignedImageUrlResp result = getImagePathUtils.getSignedQrPaymentImage(
+        SignedImageUrlResp result = supabaseImageUtils.getSignedQrPaymentImage(
                 seller.getSellerId(),
                 seller.getQrPaymentImgPath()
         );
@@ -95,19 +91,12 @@ public class SellerService {
             throw new ShopConflictException(ResultCode.CONFLICT, "QR code payment already exists.");
 
         String type = Constants.CONTENT_TYPE_JPEG.split("/")[1];
-        String genQrPaymentUUID = UUID.randomUUID().toString();
+        UUID genQrPaymentUUID = UUID.randomUUID();
         sellerEntity.setQrPaymentImgPath(genQrPaymentUUID+ "." + type);
 
-        sellerRepo.save(sellerEntity);
+        SellerEntity newSeller = sellerRepo.save(sellerEntity);
 
-        String imagePath = sellerEntity.getSellerId() + "/" + genQrPaymentUUID;
-
-        supabaseStorageService.uploadImage(
-                Constants.SUPABASE_QR_PAYMENT_BUCKET_NAME,
-                imagePath,
-                processImageData(imageData),
-                Constants.CONTENT_TYPE_JPEG
-        );
+        supabaseImageUtils.uploadQrPaymentImage(newSeller, imageData);
 
         GenericResponse response = new GenericResponse();
         response.setData(null);
@@ -131,14 +120,9 @@ public class SellerService {
         if (sellerEntity == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Seller not found.");
 
-        String imagePath = sellerEntity.getSellerId() + "/" + sellerEntity.getQrPaymentImgPath();
-
-        supabaseStorageService.uploadImage(
-                Constants.SUPABASE_QR_PAYMENT_BUCKET_NAME,
-                imagePath,
-                processImageData(imageData),
-                Constants.CONTENT_TYPE_JPEG
-        );
+        supabaseImageUtils.uploadQrPaymentImage(
+                sellerEntity,
+                imageData);
 
         GenericResponse response = new GenericResponse();
         response.setData(null);

@@ -8,7 +8,7 @@ import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
-import com.senior.candleShopProject.common.utils.GetImagePathUtils;
+import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
@@ -32,15 +32,13 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.senior.candleShopProject.common.utils.CustomizeResponseUtil.ReturnSignedImageWithExp;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final UserCheckTemp userCheckTemp;
-    private final GetImagePathUtils getImagePathUtils;
+    private final SupabaseImageUtils supabaseImageUtils;
 
     private final OrdersRepo ordersRepo;
     private final CarriersRepo carriersRepo;
@@ -255,10 +253,11 @@ public class OrderService {
         if (payment == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Payment not found.");
 
-        SignedImageUrlResp result = getImagePathUtils.getSignedPaymentProofImage(
+        SignedImageUrlResp result = supabaseImageUtils.getSignedPaymentProofImage(
                 customerId,
                 payment.getPaymentId(),
-                payment.getPaymentProofPath()
+                payment.getPaymentProofPath(),
+                payment.getCreatedAt()
         );
 
         GenericResponse response = new GenericResponse();

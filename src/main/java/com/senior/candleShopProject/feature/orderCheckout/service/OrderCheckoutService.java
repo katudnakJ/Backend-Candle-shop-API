@@ -1,10 +1,7 @@
 package com.senior.candleShopProject.feature.orderCheckout.service;
 
 
-import com.senior.candleShopProject.common.GenericResponse;
-import com.senior.candleShopProject.common.OrderStatus;
-import com.senior.candleShopProject.common.ResultCode;
-import com.senior.candleShopProject.common.Status;
+import com.senior.candleShopProject.common.*;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.ShopConflictException;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
@@ -12,6 +9,7 @@ import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
+import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.*;
 import com.senior.candleShopProject.datasource.repo.*;
@@ -24,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,9 +36,11 @@ import static com.senior.candleShopProject.common.utils.ShippingUtils.calculateS
 @RequiredArgsConstructor
 public class OrderCheckoutService {
 
-    private final SupabaseStorageService supabaseStorageService;
-
     private final RunningNumberGenerator runningNumberGenerator;
+
+    private final UserCheckTemp userCheckTemp;
+
+    private final SupabaseImageUtils supabaseImageUtils;
 
     private final CustomersRepo customersRepo;
     private final ShoppingCartItemsRepo shoppingCartItemsRepo;
@@ -119,7 +120,7 @@ public class OrderCheckoutService {
         shoppingCartItemsRepo.deleteAllById(shoppingCartItemIds);
 
 //        save payment
-        Status resultCode = upsertPaymentEntity(customerId,newOrderEntity.getOrderId(),paymentProof);
+        Status resultCode = upsertPaymentEntity(customerId,newOrderEntity.getOrderId(),paymentProof, newOrderEntity.getOrderCreatedAt());
 
         GenericResponse response = new GenericResponse();
         response.setData(null);
@@ -128,18 +129,19 @@ public class OrderCheckoutService {
     }
 
     public GenericResponse retryPayment (UUID userId, UUID orderId, MultipartFile paymentProof) throws ShopServiceApiException, IOException {
-        Optional<CustomersEntity> customerOpt = customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId);
 
-        if(customerOpt.isEmpty())
+        UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
+
+        if (customerId == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
 
-        UUID customerId = customerOpt.get().getCustomerId();
+        Optional<OrdersEntity> orderOpt = ordersRepo.findById(orderId);
 
-        if (!ordersRepo.existsById(orderId))
+        if (orderOpt.isEmpty() || !orderOpt.get().getCustomersEntity().getCustomerId().equals(customerId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
 
 
-        Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof);
+        Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof, orderOpt.get().getOrderCreatedAt());
 
         GenericResponse response = new GenericResponse();
         response.setData(null);
@@ -176,7 +178,7 @@ public class OrderCheckoutService {
         return orderItemsEntity;
     }
 
-    private Status upsertPaymentEntity(UUID customerId,UUID orderId,MultipartFile paymentProof) throws ShopServiceApiException, IOException {
+    private Status upsertPaymentEntity(UUID customerId,UUID orderId,MultipartFile paymentProof, Instant createdAt) throws ShopServiceApiException, IOException {
 //        true if new checkout, false if update existing payment proof
         boolean isNewCheckout = !paymentsRepo.existsByOrdersEntity_OrderId(orderId);
 
@@ -192,6 +194,7 @@ public class OrderCheckoutService {
 
             paymentsEntity = new PaymentsEntity();
 
+            paymentsEntity.setPaymentId(UUID.randomUUID());
             paymentsEntity.setReceiptNumber(runningNumber);
             paymentsEntity.setPaymentProofPath(
                     runningNumber + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1]
@@ -220,17 +223,13 @@ public class OrderCheckoutService {
 
         PaymentsEntity newPaymentEntity = paymentsRepo.save(paymentsEntity);
 
-//        image path : /customer_id/payment_id/receipt_number
-        String imagePath = customerId + "/"
-                + newPaymentEntity.getPaymentId() + "/"
-                + runningNumber
-                + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
-
-        supabaseStorageService.uploadImage(
-                Constants.SUPABASE_RECEIPT_BUCKET_NAME,
-                imagePath,
-                processImageData(paymentProof),
-                Constants.CONTENT_TYPE_JPEG
+//        image path : /YYYY/customer_id/payment_id/receipt_number **YYYY = CE-Year / ปีคริสต์ศักราช
+        supabaseImageUtils.uploadPaymentImage(
+                createdAt,
+                customerId,
+                newPaymentEntity,
+                paymentProof,
+                runningNumber
         );
 
         return resultCode;

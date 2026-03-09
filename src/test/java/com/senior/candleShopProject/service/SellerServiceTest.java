@@ -5,7 +5,7 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.*;
-import com.senior.candleShopProject.common.utils.GetImagePathUtils;
+import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
 import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
 import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
@@ -49,7 +49,7 @@ public class SellerServiceTest {
     SupabaseStorageService supabaseStorageService;
 
     @Mock
-    private GetImagePathUtils getImagePathUtils;
+    private SupabaseImageUtils supabaseImageUtils;
 
     @BeforeEach
     void initTest() {
@@ -112,15 +112,15 @@ public class SellerServiceTest {
         when(seller.getSellerId()).thenReturn(sellerId);
         when(seller.getQrPaymentImgPath()).thenReturn("qr.jpg");
 
-        when(getImagePathUtils.getSignedQrPaymentImage(eq(sellerId), eq("qr.jpg"))).thenReturn(result);
-        when(getImagePathUtils.getSignedQrPaymentImage(any(), any())).thenReturn(result);
+        when(supabaseImageUtils.getSignedQrPaymentImage(eq(sellerId), eq("qr.jpg"))).thenReturn(result);
+        when(supabaseImageUtils.getSignedQrPaymentImage(any(), any())).thenReturn(result);
 
         GenericResponse response = sellerService.getQrCodePayment(userId);
 
         assertEquals(ResultCode.SUCCESS, response.getStatus());
         assertNotNull(response.getData());
 
-        verify(getImagePathUtils, times(1))
+        verify(supabaseImageUtils, times(1))
                 .getSignedQrPaymentImage(sellerId, "qr.jpg");
     }
 

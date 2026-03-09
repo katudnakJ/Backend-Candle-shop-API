@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -81,12 +82,13 @@ public class ShoppingCartService {
             shoppingCartItemsEntity.setQuantity(addShoppingCartItemReq.getQuantity());
         }else{
             shoppingCartItemsEntity = getShoppingCartItemsEntity(addShoppingCartItemReq, shoppingCartId);
+            shoppingCartItemsEntity.setCreatedAt(Instant.now());
         }
         ShoppingCartItemsEntity savedData = shoppingCartItemsRepo.save(shoppingCartItemsEntity);
 
         GenericResponse response = new GenericResponse();
         response.setData(CustomizeResponseUtil.ReturnKeyValueWhenComplete(savedData.getShoppingCartItemId()));
-        response.setStatus(ResultCode.CREATED);
+        response.setStatus(ResultCode.SUCCESS);
 
         return response;
     }
