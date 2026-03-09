@@ -107,4 +107,16 @@ public class OrderController {
         GenericResponse response = orderService.getPaymentSlipByOrderId(userUUID, orderUUID);
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/{orderId}/received")
+    @Operation(summary = "Confirm order received by customer.", description = "ยืนยันการได้รับสินค้าโดยลูกค้า")
+    public ResponseEntity confirmOrderReceived(@RequestAttribute("userId") String userId,
+                                              @PathVariable("orderId") String orderId) throws ShopServiceApiException {
+        log.info("Confirming order received for order {}", orderId);
+        UUID userUUID = UUID.fromString(userId);
+        UUID orderUUID = UUID.fromString(orderId);
+
+        GenericResponse response = orderService.confirmReceipt(userUUID, orderUUID);
+        return ResponseEntity.ok(response);
+        }
 }

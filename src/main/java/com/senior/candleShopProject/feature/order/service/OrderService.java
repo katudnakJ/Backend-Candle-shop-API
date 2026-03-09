@@ -27,6 +27,7 @@ import com.senior.candleShopProject.feature.order.controller.dto.response.dto.Or
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
@@ -238,14 +239,14 @@ public class OrderService {
         return response;
     }
 
-    public GenericResponse getPaymentSlipByOrderId(UUID user, UUID orderId) throws ShopServiceApiException {
+    public GenericResponse getPaymentSlipByOrderId(UUID userId, UUID orderId) throws ShopServiceApiException {
 
-        UUID customerId = userCheckTemp.getCustomerIdByUserId(user);
+        UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
 
         if (customerId == null)
             throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
 
-        if (!userCheckTemp.isOwnerOfOrder(user, orderId))
+        if (!userCheckTemp.isOwnerOfOrder(userId, orderId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
 
         PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
@@ -262,6 +263,34 @@ public class OrderService {
 
         GenericResponse response = new GenericResponse();
         response.setData(result);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
+    }
+
+    @Transactional
+    public GenericResponse confirmReceipt(UUID userId, UUID orderId) throws ShopServiceApiException {
+
+        UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
+
+        if (customerId == null || !userCheckTemp.isOwnerOfOrder(userId, orderId))
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission.");
+
+        OrdersEntity order = ordersRepo.findById(orderId)
+                .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found."));
+
+        if (
+                !OrderStatus.validToChangeStatus(order.getOrderStatus(), OrderStatus.ORDER_COMPLETED.getStatusCode())
+        ) throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Only orders with 'TO RECEIVE' status can be confirmed.");
+
+        Instant timeNow = Instant.now();
+        order.setOrderStatus(OrderStatus.ORDER_COMPLETED.getStatusCode());
+        order.setStatusChangedAt(timeNow);
+        order.setCompletedAt(timeNow);
+
+        OrdersEntity newOrder = ordersRepo.save(order);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(setOrderStatusChangeResp(newOrder, OrderStatus.ORDER_COMPLETED));
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }

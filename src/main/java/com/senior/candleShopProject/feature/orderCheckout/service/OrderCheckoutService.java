@@ -2,7 +2,6 @@ package com.senior.candleShopProject.feature.orderCheckout.service;
 
 
 import com.senior.candleShopProject.common.*;
-import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.ShopConflictException;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
@@ -22,13 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.senior.candleShopProject.common.utils.ProcessImageUtil.processImageData;
 import static com.senior.candleShopProject.common.utils.ShippingUtils.calculateShippingCost;
 
 @Slf4j
@@ -137,7 +134,10 @@ public class OrderCheckoutService {
 
         Optional<OrdersEntity> orderOpt = ordersRepo.findById(orderId);
 
-        if (orderOpt.isEmpty() || !orderOpt.get().getCustomersEntity().getCustomerId().equals(customerId))
+        if(orderOpt.isEmpty())
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+        if (!orderOpt.get().getCustomersEntity().getCustomerId().equals(customerId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
 
 
@@ -208,7 +208,7 @@ public class OrderCheckoutService {
             paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
             if(!paymentsEntity.getPaymentStatus().equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
-                throw new ShopConflictException(ResultCode.CONFLICT);
+                throw new ShopConflictException(ResultCode.CONFLICT, "Status of payment is not rejected. You can't resubmit payment proof.");
 
             runningNumber = paymentsEntity.getReceiptNumber();
             paymentsEntity.setResubmitAt(Instant.now());
@@ -224,7 +224,7 @@ public class OrderCheckoutService {
         PaymentsEntity newPaymentEntity = paymentsRepo.save(paymentsEntity);
 
 //        image path : /YYYY/customer_id/payment_id/receipt_number **YYYY = CE-Year / ปีคริสต์ศักราช
-        supabaseImageUtils.uploadPaymentImage(
+        supabaseImageUtils.uploadPaymentProofImage(
                 createdAt,
                 customerId,
                 newPaymentEntity,

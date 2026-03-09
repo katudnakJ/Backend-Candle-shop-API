@@ -70,8 +70,8 @@ public class SupabaseImageUtils {
         return signedImageUrlResp;
     }
 
-    public void uploadPaymentImage(Instant createdAt, UUID customerId, PaymentsEntity newPaymentEntity,
-                                   MultipartFile paymentProof, String runningNumber) throws IOException {
+    public void uploadPaymentProofImage(Instant createdAt, UUID customerId, PaymentsEntity newPaymentEntity,
+                                        MultipartFile paymentProof, String runningNumber) throws IOException {
         String yearPrefix = String.valueOf(createdAt.atZone(ZoneId.of(Constants.TIME_ZONE_BANGKOK)).getYear());
         String imagePath = yearPrefix + "/" +
                 customerId + "/"

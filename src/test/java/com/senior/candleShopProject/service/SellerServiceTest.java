@@ -4,6 +4,7 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
+import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
 import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.*;
 
 @TestComponent
 public class SellerServiceTest {
+
     @InjectMocks
     private SellerService sellerService;
 
@@ -238,10 +240,12 @@ public class SellerServiceTest {
 
         doNothing().when(supabaseStorageService).uploadImage(any(), any(), any(), any());
 
+
+
         GenericResponse resp = sellerService.addQrCodePayment(userId, multipartFile);
         assertEquals(ResultCode.CREATED, resp.getStatus());
 
-        verify(supabaseStorageService, times(1)).uploadImage(any(), any(), any(), any());
+        verify(supabaseImageUtils, times(1)).uploadQrPaymentImage(sellerEntity, multipartFile);
     }
 
     @Test
