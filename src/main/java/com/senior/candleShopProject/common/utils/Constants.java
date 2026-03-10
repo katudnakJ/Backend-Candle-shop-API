@@ -27,6 +27,7 @@ public class Constants {
     public static final String SUPABASE_QR_PAYMENT_BUCKET_NAME = "qr-payment";
     public static final String SUPABASE_RECEIPT_BUCKET_NAME = "payment-proofs";
     public static final String SUPABASE_PRODUCT_BUCKET_NAME = "attachments";
+    public static final String SUPABASE_RECEIPTS_BUCKET_NAME = "receipts";
 
     //    return key name
     public static final String RESPONSE_KEY_EXP_DATE = "expirationDate";

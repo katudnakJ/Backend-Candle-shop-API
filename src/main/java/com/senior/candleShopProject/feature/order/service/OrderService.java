@@ -272,11 +272,11 @@ public class OrderService {
 
         UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
 
-        if (customerId == null || !userCheckTemp.isOwnerOfOrder(userId, orderId))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission.");
-
         OrdersEntity order = ordersRepo.findById(orderId)
                 .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found."));
+
+        if (customerId == null ||  order.getCustomersEntity().getCustomerId() != customerId)
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission.");
 
         if (
                 !OrderStatus.validToChangeStatus(order.getOrderStatus(), OrderStatus.ORDER_COMPLETED.getStatusCode())
