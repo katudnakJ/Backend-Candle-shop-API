@@ -10,7 +10,7 @@ public interface IOrderDetailByOrderIdResp {
     BigDecimal getTotalAmount();
     BigDecimal getNetAmount();
     String getOrderStatus();
-    String getOrderNo();
+    String getOrderNumber();
     String getAddressLabel();
     String getDeliveryAddress();
     String getPostcode();

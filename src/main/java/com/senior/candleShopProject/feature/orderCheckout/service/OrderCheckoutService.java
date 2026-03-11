@@ -97,7 +97,7 @@ public class OrderCheckoutService {
         OrderShippingAddressEntity orderShippingAddressEntity = getOrderShippingAddressEntity(addressesEntity);
         orderShippingAddressEntity.setOrdersEntity(ordersEntity);
 
-        ordersEntity.setOrderNo(runningNumberGenerator.generateOrderRunningNumber(Constants.PREFIX_ORDER_NO));
+        ordersEntity.setOrderNumber(runningNumberGenerator.generateOrderRunningNumber(Constants.PREFIX_ORDER_NO));
         ordersEntity.setTotalQuantity(totalQuantity);
         ordersEntity.setTotalAmount(totalAmount);
         ordersEntity.setNetAmount(totalAmount.add(calculateShippingCost(totalQuantity)));

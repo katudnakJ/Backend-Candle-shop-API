@@ -1,6 +1,7 @@
 package com.senior.candleShopProject.datasource.repo;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
+import com.senior.candleShopProject.datasource.domain.orders.IReceiptInformationResp;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,7 +30,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
                   o.net_amount as netAmount,
                   o.order_status as orderStatus,
                   pm.payment_status as paymentStatus,
-                  o.order_no as orderNo,
+                  o.order_number as orderNumber,
                   osa.address_label as addressLabel,
                   sm.tracking_number as trackingNumber,
                   sm.delivery_method as deliveryMethod,
@@ -57,7 +58,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
              o.total_amount as totalAmount,
              o.net_amount as netAmount,
              o.order_status as orderStatus,
-             o.order_no as orderNo,
+             o.order_number as orderNumber,
              osa.address_label as addressLabel,
              osa.delivery_address as deliveryAddress,
              osa.postcode as postcode,
@@ -83,4 +84,41 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     IOrderDetailByOrderIdResp getOrderDetailByOrderId(@Param("orderId") UUID orderId);
 
     boolean existsByOrderIdAndCustomersEntity_UsersEntity_UserId(UUID orderId, UUID userId);
+
+    @Query(value ="""
+    select p.payment_status as paymentStatus,
+        p.receipt_number as paymentReceiptNumber,
+        o.order_number as orderNumber,
+        o.total_amount as orderTotalAmount,
+        o.net_amount as orderNetAmount,
+        ad.recipient_first_name as sellerFirstName,
+        ad.recipient_last_name as sellerLastName,
+        ad.recipient_phone as sellerPhone,
+        ad.delivery_address as sellerDeliveryAddress,
+        ad.postcode as sellerPostcode,
+        ad.province as sellerProvince,
+        ad.district as sellerDistrict,
+        ad.sub_district as sellerSubDistrict,
+        osa.recipient_first_name as customerFirstName,
+        osa.recipient_last_name as customerLastName,
+        osa.recipient_phone as customerPhone,
+        osa.delivery_address as customerDeliveryAddress,
+        osa.postcode as customerPostcode,
+        osa.province as customerProvince,
+        osa.district as customerDistrict,
+        osa.sub_district as customerSubDistrict
+    from orders o
+    join payments p on o.order_id = p.order_id
+    join customers c on c.customer_id = o.customer_id
+    join users u on u.user_id = c.user_id
+    left join seller s on s.seller_id = p.seller_id
+    left join addresses ad on s.user_id = ad.user_id
+    and ad.is_default = true
+    left join order_shipping_address osa on osa.order_id = o.order_id
+    where p.payment_status = 'AP'
+    and o.order_status in ('TS','TR','CP')
+    and u.user_id = :userId
+    and o.order_id = :orderId;
+""", nativeQuery = true)
+    IReceiptInformationResp getReceiptInformationByOrderId(@Param("userId") UUID userId, @Param("orderId") UUID orderId);
 }

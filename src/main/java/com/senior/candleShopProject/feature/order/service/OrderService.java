@@ -9,9 +9,7 @@ import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
+import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
@@ -20,15 +18,18 @@ import com.senior.candleShopProject.datasource.repo.*;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailByOrderIdResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.PDFResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderByStatusResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderDetailsResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderItemsListResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderStatusChangeResp;
+import com.senior.candleShopProject.feature.order.generator.PDFGenerators;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,6 +41,7 @@ public class OrderService {
 
     private final UserCheckTemp userCheckTemp;
     private final SupabaseImageUtils supabaseImageUtils;
+    private final PDFGenerators pdfGenerators;
 
     private final OrdersRepo ordersRepo;
     private final CarriersRepo carriersRepo;
@@ -295,6 +297,35 @@ public class OrderService {
         return response;
     }
 
+    @Transactional(readOnly = true)
+    public PDFResp generateReceiptToPDF (UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
+
+        PaymentsEntity paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+
+
+//        if (paymentsEntity.getReceiptPath() == null || paymentsEntity.getReceiptPath().isEmpty()) {
+//            no receipt generated for this order then generate
+            IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
+
+            List<IReceiptOrderItemResp> orderItemRespList = orderItemsRepo.getOrderItemsForReceipt(orderId);
+
+            if (orderItemRespList == null || orderItemRespList.isEmpty())
+                throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+            byte[] pdf = pdfGenerators.generateReceiptPDF(receiptInfo, orderItemRespList);
+
+            System.out.println("PDF size: " + pdf.length);
+
+            PDFResp pdfResp = new PDFResp();
+            pdfResp.setPdf(pdf);
+            pdfResp.setPdfName("receipt_" + paymentsEntity.getReceiptNumber() + ".pdf");
+            return pdfResp;
+
+
+//        }
+
+//        }
+    }
 //    Extracted method for business logic
 
     private List<OrderByStatusResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
@@ -319,7 +350,7 @@ public class OrderService {
             orderByStatusResp.setNetAmount(orders.getNetAmount());
             orderByStatusResp.setOrderStatus(orders.getOrderStatus());
             orderByStatusResp.setPaymentStatus(orders.getPaymentStatus());
-            orderByStatusResp.setOrderNo(orders.getOrderNo());
+            orderByStatusResp.setOrderNo(orders.getOrderNumber());
             orderByStatusResp.setAddressLabel(orders.getAddressLabel());
             orderByStatusResp.setTrackingNo(trackingNumbers);
             orderByStatusResp.setDeliveryMethod(orders.getDeliveryMethod());
@@ -354,7 +385,7 @@ public class OrderService {
         orderDetailByStatus.setTotalAmount(orderDetails.getTotalAmount());
         orderDetailByStatus.setNetAmount(orderDetails.getNetAmount());
         orderDetailByStatus.setOrderStatus(orderDetails.getOrderStatus());
-        orderDetailByStatus.setOrderNo(orderDetails.getOrderNo());
+        orderDetailByStatus.setOrderNo(orderDetails.getOrderNumber());
         orderDetailByStatus.setAddressLabel(orderDetails.getAddressLabel());
         orderDetailByStatus.setDeliveryAddress(orderDetails.getDeliveryAddress());
         orderDetailByStatus.setPostcode(orderDetails.getPostcode());

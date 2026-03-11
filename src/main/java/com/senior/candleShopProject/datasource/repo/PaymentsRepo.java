@@ -16,4 +16,5 @@ public interface PaymentsRepo extends JpaRepository<PaymentsEntity, UUID> {
     boolean existsByOrdersEntity_OrderId(UUID orderId);
 
     PaymentsEntity findPaymentsEntitiesByOrdersEntity_OrderId(UUID orderId);
+
 }

@@ -1,6 +1,5 @@
 package com.senior.candleShopProject.datasource.entities;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,8 +23,8 @@ public class OrdersEntity {
     @Column(name = "order_id")
     private UUID orderId;
 
-    @Column(name="order_no")
-    private String orderNo;
+    @Column(name="order_number")
+    private String orderNumber;
 
     @Column(name = "total_quantity")
     private Integer totalQuantity;

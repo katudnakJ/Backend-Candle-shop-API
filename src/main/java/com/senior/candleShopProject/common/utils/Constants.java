@@ -17,7 +17,7 @@ public class Constants {
 
 //    Database
     public static final String DB_SEQUENCE_ORDER_NAME = "order_no_seq";
-    public static final String DB_SEQUENCE_PAYMENT_NO = "receipt_no_seq";
+    public static final String DB_SEQUENCE_PAYMENT_NAME = "receipt_no_seq";
 
 //    Running Number Prefix
     public static final String PREFIX_ORDER_NO = "ORD";
