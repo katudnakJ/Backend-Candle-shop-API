@@ -2,11 +2,10 @@ package com.senior.candleShopProject.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
-import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
+import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
-import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
-import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.datasource.domain.users.ISellerResp;
 import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
@@ -51,7 +50,7 @@ public class SellerServiceTest {
     SupabaseStorageService supabaseStorageService;
 
     @Mock
-    private SupabaseImageUtils supabaseImageUtils;
+    private SupabaseStorageUtils supabaseStorageUtils;
 
     @BeforeEach
     void initTest() {
@@ -105,7 +104,7 @@ public class SellerServiceTest {
         IUsersResp user = mock(IUsersResp.class);
         ISellerResp seller = mock(ISellerResp.class);
 
-        SignedImageUrlResp result = mock(SignedImageUrlResp.class);
+        SignedFileUrlResp result = mock(SignedFileUrlResp.class);
 
         when(usersRepo.getUserProfile(userId)).thenReturn(user);
         when(user.getIsSeller()).thenReturn(true);
@@ -114,15 +113,15 @@ public class SellerServiceTest {
         when(seller.getSellerId()).thenReturn(sellerId);
         when(seller.getQrPaymentImgPath()).thenReturn("qr.jpg");
 
-        when(supabaseImageUtils.getSignedQrPaymentImage(eq(sellerId), eq("qr.jpg"))).thenReturn(result);
-        when(supabaseImageUtils.getSignedQrPaymentImage(any(), any())).thenReturn(result);
+        when(supabaseStorageUtils.getSignedQrPaymentImage(eq(sellerId), eq("qr.jpg"))).thenReturn(result);
+        when(supabaseStorageUtils.getSignedQrPaymentImage(any(), any())).thenReturn(result);
 
         GenericResponse response = sellerService.getQrCodePayment(userId);
 
         assertEquals(ResultCode.SUCCESS, response.getStatus());
         assertNotNull(response.getData());
 
-        verify(supabaseImageUtils, times(1))
+        verify(supabaseStorageUtils, times(1))
                 .getSignedQrPaymentImage(sellerId, "qr.jpg");
     }
 
@@ -238,14 +237,14 @@ public class SellerServiceTest {
         when(sellerEntity.getSellerId()).thenReturn(UUID.randomUUID());
         when(sellerRepo.save(any())).thenReturn(sellerEntity);
 
-        doNothing().when(supabaseStorageService).uploadImage(any(), any(), any(), any());
+        doNothing().when(supabaseStorageService).uploadFile(any(), any(), any(), any());
 
 
 
         GenericResponse resp = sellerService.addQrCodePayment(userId, multipartFile);
         assertEquals(ResultCode.CREATED, resp.getStatus());
 
-        verify(supabaseImageUtils, times(1)).uploadQrPaymentImage(sellerEntity, multipartFile);
+        verify(supabaseStorageUtils, times(1)).uploadQrPaymentImage(sellerEntity, multipartFile);
     }
 
     @Test
@@ -334,7 +333,7 @@ public class SellerServiceTest {
         when(sellerRepo.getSellerEntitiesByUsersEntity_UserId(userId)).thenReturn(sellerEntity);
         when(sellerEntity.getSellerId()).thenReturn(UUID.randomUUID());
         when(sellerEntity.getQrPaymentImgPath()).thenReturn("qr.jpg");
-        doNothing().when(supabaseStorageService).uploadImage(any(), any(), any(), any());
+        doNothing().when(supabaseStorageService).uploadFile(any(), any(), any(), any());
         when(sellerRepo.findById(any())).thenReturn(Optional.of(sellerEntity));
         when(sellerRepo.save(any())).thenReturn(sellerEntity);
 

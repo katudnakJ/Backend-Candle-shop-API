@@ -5,14 +5,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
 
 
 public interface IReceiptInformationResp {
+
 //    Payment information
-    String getPaymentStatus();
+    UUID getPaymentId();
+    String getPaymentReceiptNumber();
 
 //    Order information
-    String getPaymentReceiptNumber();
     String getOrderNumber();
     BigDecimal getOrderTotalAmount();
     BigDecimal getOrderNetAmount();
@@ -28,6 +31,7 @@ public interface IReceiptInformationResp {
     String getSellerSubDistrict();
 
 //      customer information
+    UUID getCustomerId();
     String getCustomerFirstName(); // customer's recipientFirstName
     String getCustomerLastName(); // customer's recipientLastName
     String getCustomerPhone(); // customer's recipientPhone

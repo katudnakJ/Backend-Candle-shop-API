@@ -39,6 +39,7 @@ public class Constants {
 
 //    Content type
     public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+    public static final String CONTENT_TYPE_PDF = "application/pdf";
 
 //    Shipping
     public static final int SHIPPING_ITEMS_PER_BOX = 100;
@@ -48,6 +49,12 @@ public class Constants {
 //    Shipping Method
     public static final String SHIPPING_METHOD_STANDARD = "STANDARD";
     public static final String SHIPPING_METHOD_YIPPEE = "YIPPEE";
+
+//    PDF
+    public static final String PDF_FILE_NAME_PREFIX = "receipt_";
+    public static final String PDF_SIGN_NAME = "Moji's Candle Shop";
+    public static final String PDF_SIGN_LOCATION = "Thailand";
+    public static final String PDF_SIGN_REASON = "Invoice Digital Signature";
 
 
 }

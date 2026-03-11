@@ -11,7 +11,7 @@ import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.ProcessImageUtil;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
-import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.AddressesEntity;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
@@ -63,7 +63,7 @@ public class OrderCheckoutServiceTest {
     private UserCheckTemp userCheckTemp;
 
     @Mock
-    SupabaseImageUtils supabaseImageUtils;
+    SupabaseStorageUtils supabaseStorageUtils;
 
     @BeforeEach
     void init() {
@@ -131,7 +131,7 @@ public class OrderCheckoutServiceTest {
             mocked.when(() -> ProcessImageUtil.processImageData(any(MultipartFile.class)))
                     .thenReturn(new byte[] {1,2,3});
 
-            doNothing().when(supabaseStorageService).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            doNothing().when(supabaseStorageService).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
 
             GenericResponse resp = orderCheckoutService.checkoutOrder(userId, paymentProof, cartItemIds,addressId);
 
@@ -144,7 +144,7 @@ public class OrderCheckoutServiceTest {
             verify(orderItemsRepo, times(1)).saveAll(anyList());
             verify(shoppingCartItemsRepo, times(1)).deleteAllById(cartItemUUIDs);
             verify(paymentsRepo, times(1)).save(any(PaymentsEntity.class));
-            verify(supabaseImageUtils, times(1)).uploadPaymentProofImage(any(), any(), any(), any(), anyString());
+            verify(supabaseStorageUtils, times(1)).uploadPaymentProofImage(any(), any(), any(), any(), anyString());
         }
     }
 
@@ -202,7 +202,7 @@ public class OrderCheckoutServiceTest {
         try (MockedStatic<ProcessImageUtil> mocked = mockStatic(ProcessImageUtil.class)) {
             mocked.when(() -> ProcessImageUtil.processImageData(any(MultipartFile.class)))
                     .thenReturn(new byte[]{9,8,7});
-            doNothing().when(supabaseStorageService).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            doNothing().when(supabaseStorageService).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
 
             GenericResponse resp = orderCheckoutService.retryPayment(userId, orderId, paymentProof);
             assertNotNull(resp);
@@ -212,7 +212,7 @@ public class OrderCheckoutServiceTest {
             verify(paymentsRepo, times(1)).existsByOrdersEntity_OrderId(orderId);
             verify(paymentsRepo, times(1)).findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
             verify(paymentsRepo, times(1)).save(any(PaymentsEntity.class));
-            verify(supabaseImageUtils, times(1)).uploadPaymentProofImage(any(), any(), any(), any(), anyString());
+            verify(supabaseStorageUtils, times(1)).uploadPaymentProofImage(any(), any(), any(), any(), anyString());
         }
     }
 

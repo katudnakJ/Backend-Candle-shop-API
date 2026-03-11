@@ -15,7 +15,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,9 +28,9 @@ public class SupabaseStorageService {
 
     private final WebClient supabaseWebClient;
 
-     private String createSignedImageUrl(String bucketName, String imagePath, int expiresInSeconds) {
+     private String createSignedFileUrl(String bucketName, String filePath, int expiresInSeconds) {
 
-         String url = "/storage/v1/object/sign/" + bucketName + "/" + imagePath;
+         String url = "/storage/v1/object/sign/" + bucketName + "/" + filePath;
         return supabaseWebClient.post()
                 .uri(url)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -54,22 +53,22 @@ public class SupabaseStorageService {
                 .block();
     }
 
-    public String getSignedImageUrl(String bucketName, String imagePath, int expiresInSeconds) throws ShopServiceApiException {
-        String signedImage =createSignedImageUrl(bucketName, imagePath, expiresInSeconds);
+    public String getSignedFileUrl(String bucketName, String filePath, int expiresInSeconds) throws ShopServiceApiException {
+        String signedImage = createSignedFileUrl(bucketName, filePath, expiresInSeconds);
 
         if (signedImage == null)
             return null;
         return baseUrl + "/storage/v1" + signedImage;
     }
 
-    public void uploadImage(String bucketName, String imagePath, byte[] imageData, String contentType) {
-        String uploadUrl = baseUrl + "/storage/v1/object/" + bucketName + "/" + imagePath;
+    public void uploadFile(String bucketName, String filePath, byte[] file, String contentType) {
+        String uploadUrl = baseUrl + "/storage/v1/object/" + bucketName + "/" + filePath;
 
         supabaseWebClient.post()
                 .uri(uploadUrl)
                 .contentType(MediaType.parseMediaType(contentType))
                 .header("x-upsert", "true")
-                .bodyValue(imageData)
+                .bodyValue(file)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, response ->
                         response.bodyToMono(String.class).flatMap(errorBody -> {
@@ -84,11 +83,11 @@ public class SupabaseStorageService {
                 .block();
     }
 
-    public void deleteImage(String bucketName, Set<String> imagePaths) {
+    public void deleteFiles(String bucketName, Set<String> filePaths) {
         String deleteUrl = baseUrl + "/storage/v1/object/" + bucketName;
 
         Map<String, Set<String>> body = new HashMap<>();
-        body.put("prefixes", imagePaths);
+        body.put("prefixes", filePaths);
 
         supabaseWebClient.method(HttpMethod.DELETE)
                 .uri(deleteUrl)

@@ -8,7 +8,7 @@ import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
-import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.*;
 import com.senior.candleShopProject.datasource.repo.*;
@@ -37,7 +37,7 @@ public class OrderCheckoutService {
 
     private final UserCheckTemp userCheckTemp;
 
-    private final SupabaseImageUtils supabaseImageUtils;
+    private final SupabaseStorageUtils supabaseStorageUtils;
 
     private final CustomersRepo customersRepo;
     private final ShoppingCartItemsRepo shoppingCartItemsRepo;
@@ -224,7 +224,7 @@ public class OrderCheckoutService {
         PaymentsEntity newPaymentEntity = paymentsRepo.save(paymentsEntity);
 
 //        image path : /YYYY/customer_id/payment_id/receipt_number **YYYY = CE-Year / ปีคริสต์ศักราช
-        supabaseImageUtils.uploadPaymentProofImage(
+        supabaseStorageUtils.uploadPaymentProofImage(
                 createdAt,
                 customerId,
                 newPaymentEntity,

@@ -3,12 +3,12 @@ package com.senior.candleShopProject.feature.order.service;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
-import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
+import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
-import com.senior.candleShopProject.common.utils.SupabaseImageUtils;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final UserCheckTemp userCheckTemp;
-    private final SupabaseImageUtils supabaseImageUtils;
+    private final SupabaseStorageUtils supabaseStorageUtils;
     private final PDFGenerators pdfGenerators;
 
     private final OrdersRepo ordersRepo;
@@ -256,7 +256,7 @@ public class OrderService {
         if (payment == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Payment not found.");
 
-        SignedImageUrlResp result = supabaseImageUtils.getSignedPaymentProofImage(
+        SignedFileUrlResp result = supabaseStorageUtils.getSignedPaymentProofImage(
                 customerId,
                 payment.getPaymentId(),
                 payment.getPaymentProofPath(),
@@ -298,33 +298,42 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public PDFResp generateReceiptToPDF (UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
+    public GenericResponse generateReceiptToPDF (UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
 
         PaymentsEntity paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
+        IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
 
-//        if (paymentsEntity.getReceiptPath() == null || paymentsEntity.getReceiptPath().isEmpty()) {
+        if (receiptInfo == null || paymentsEntity == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+        if (paymentsEntity.getReceiptPath() == null || paymentsEntity.getReceiptPath().isEmpty()) {
 //            no receipt generated for this order then generate
-            IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
-
             List<IReceiptOrderItemResp> orderItemRespList = orderItemsRepo.getOrderItemsForReceipt(orderId);
 
             if (orderItemRespList == null || orderItemRespList.isEmpty())
                 throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
 
-            byte[] pdf = pdfGenerators.generateReceiptPDF(receiptInfo, orderItemRespList);
+            paymentsEntity.setReceiptPath(
+                    receiptInfo.getPaymentReceiptNumber() + "." + Constants.CONTENT_TYPE_PDF.split("/")[1]
+            );
 
+            PaymentsEntity newPayment = paymentsRepo.save(paymentsEntity);
+
+            Instant timeNow = Instant.now();
+            byte[] pdf = pdfGenerators.generateReceiptPDFWithSignature(receiptInfo, orderItemRespList);
             System.out.println("PDF size: " + pdf.length);
+            supabaseStorageUtils.uploadReceiptPDF(
+                    timeNow, // use current time for PDF
+                    pdf,
+                    receiptInfo.getCustomerId(),
+                    receiptInfo.getPaymentId(),
+                    receiptInfo.getPaymentReceiptNumber()
+            );
+            return  getSignedPdfUrlResponse(newPayment, receiptInfo.getCustomerId());
+        }
+        return getSignedPdfUrlResponse(paymentsEntity, receiptInfo.getCustomerId());
 
-            PDFResp pdfResp = new PDFResp();
-            pdfResp.setPdf(pdf);
-            pdfResp.setPdfName("receipt_" + paymentsEntity.getReceiptNumber() + ".pdf");
-            return pdfResp;
-
-
-//        }
-
-//        }
     }
 //    Extracted method for business logic
 
@@ -444,5 +453,24 @@ public class OrderService {
         return Arrays.stream(trackingNumber.split(","))
                 .map(String::trim)
                 .toList();
+    }
+
+    private GenericResponse getSignedPdfUrlResponse(PaymentsEntity paymentsEntity, UUID customerId) throws ShopServiceApiException {
+
+        SignedFileUrlResp signedPdfUrl = supabaseStorageUtils.getSignedReceiptPDFUrl(
+                paymentsEntity.getCreatedAt(),
+                customerId,
+                paymentsEntity.getPaymentId(),
+                paymentsEntity.getReceiptPath()
+        );
+
+        PDFResp pdfResp = new PDFResp();
+        pdfResp.setPdfSignedUrl(signedPdfUrl);
+        pdfResp.setPdfName("receipt_" + paymentsEntity.getReceiptNumber() + Constants.CONTENT_TYPE_PDF.split("/")[1]);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(pdfResp);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
     }
 }

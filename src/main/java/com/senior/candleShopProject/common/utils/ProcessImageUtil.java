@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class ProcessImageUtil {
+
+//    make image to jpeg, size 800x800, quality 1.0, and return byte array
     public static byte[] processImageData(MultipartFile imageData) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 

@@ -1,6 +1,6 @@
 package com.senior.candleShopProject.common.utils;
 
-import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
+import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
@@ -23,7 +23,7 @@ import static com.senior.candleShopProject.common.utils.ProcessImageUtil.process
 @Setter
 @Component
 @RequiredArgsConstructor
-public class SupabaseImageUtils {
+public class SupabaseStorageUtils {
 
     private final SupabaseStorageService supabaseStorageService;
 
@@ -36,7 +36,10 @@ public class SupabaseImageUtils {
     @Value("${supabase.expiration.customer.check-qr-payment}")
     private int customerCheckPaymentExp;
 
-    public SignedImageUrlResp getSignedPaymentProofImage(UUID customerId, UUID paymentId, String paymentProofPath, Instant createdAt) throws ShopServiceApiException {
+    @Value("${pdf.getFile.expiration}")
+    private int getPdfFileExp;
+
+    public SignedFileUrlResp getSignedPaymentProofImage(UUID customerId, UUID paymentId, String paymentProofPath, Instant createdAt) throws ShopServiceApiException {
 
         String yearPrefix = String.valueOf(createdAt.atZone(ZoneId.of(Constants.TIME_ZONE_BANGKOK)).getYear());
 
@@ -45,29 +48,29 @@ public class SupabaseImageUtils {
 
         ZonedDateTime expirationDate = getExpDateWithTimeZone(Constants.TIME_ZONE_BANGKOK, sellerCheckReceiptExp);
 
-        String signedImageUrl = supabaseStorageService.getSignedImageUrl(bucketName, imagePath, sellerCheckReceiptExp);
+        String signedImageUrl = supabaseStorageService.getSignedFileUrl(bucketName, imagePath, sellerCheckReceiptExp);
 
-        SignedImageUrlResp signedImageUrlResp = new SignedImageUrlResp();
-        signedImageUrlResp.setSignedImageUrl(signedImageUrl);
-        signedImageUrlResp.setExpiresAt(expirationDate);
+        SignedFileUrlResp signedFileUrlResp = new SignedFileUrlResp();
+        signedFileUrlResp.setSignedFileUrl(signedImageUrl);
+        signedFileUrlResp.setExpiresAt(expirationDate);
 
-        return signedImageUrlResp;
+        return signedFileUrlResp;
     }
 
-    public SignedImageUrlResp getSignedQrPaymentImage(UUID sellerId, String qrPaymentImgPath) throws ShopServiceApiException {
+    public SignedFileUrlResp getSignedQrPaymentImage(UUID sellerId, String qrPaymentImgPath) throws ShopServiceApiException {
 
         String bucketName = Constants.SUPABASE_QR_PAYMENT_BUCKET_NAME;
         String imagePath = sellerId + "/" + qrPaymentImgPath;
 
         ZonedDateTime expirationDate = getExpDateWithTimeZone(Constants.TIME_ZONE_BANGKOK, sellerCheckQrPaymentExp);
 
-        String signedImageUrl = supabaseStorageService.getSignedImageUrl(bucketName, imagePath, sellerCheckQrPaymentExp);
+        String signedImageUrl = supabaseStorageService.getSignedFileUrl(bucketName, imagePath, sellerCheckQrPaymentExp);
 
-        SignedImageUrlResp signedImageUrlResp = new SignedImageUrlResp();
-        signedImageUrlResp.setSignedImageUrl(signedImageUrl);
-        signedImageUrlResp.setExpiresAt(expirationDate);
+        SignedFileUrlResp signedFileUrlResp = new SignedFileUrlResp();
+        signedFileUrlResp.setSignedFileUrl(signedImageUrl);
+        signedFileUrlResp.setExpiresAt(expirationDate);
 
-        return signedImageUrlResp;
+        return signedFileUrlResp;
     }
 
     public void uploadPaymentProofImage(Instant createdAt, UUID customerId, PaymentsEntity newPaymentEntity,
@@ -79,7 +82,7 @@ public class SupabaseImageUtils {
                 + runningNumber
                 + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
 
-        supabaseStorageService.uploadImage(
+        supabaseStorageService.uploadFile(
                 Constants.SUPABASE_RECEIPT_BUCKET_NAME,
                 imagePath,
                 processImageData(paymentProof),
@@ -90,11 +93,45 @@ public class SupabaseImageUtils {
     public void uploadQrPaymentImage(SellerEntity sellerEntity, MultipartFile imageData) throws IOException {
         String imagePath = sellerEntity.getSellerId() + "/" + sellerEntity.getQrPaymentImgPath();
 
-        supabaseStorageService.uploadImage(
+        supabaseStorageService.uploadFile(
                 Constants.SUPABASE_QR_PAYMENT_BUCKET_NAME,
                 imagePath,
                 processImageData(imageData),
                 Constants.CONTENT_TYPE_JPEG
         );
+    }
+
+//    PDF
+    public void uploadReceiptPDF(Instant createdAt,byte[] pdf, UUID customerId, UUID paymentId, String receiptNumber) throws IOException {
+        String yearPrefix = String.valueOf(createdAt.atZone(ZoneId.of(Constants.TIME_ZONE_BANGKOK)).getYear());
+        String pdfPath = yearPrefix + "/" +
+                customerId + "/"
+                + paymentId + "/"
+                + receiptNumber + "." + Constants.CONTENT_TYPE_PDF.split("/")[1];
+
+        supabaseStorageService.uploadFile(
+                Constants.SUPABASE_RECEIPTS_BUCKET_NAME,
+                pdfPath,
+                pdf,
+                Constants.CONTENT_TYPE_PDF
+        );
+    }
+
+    public SignedFileUrlResp getSignedReceiptPDFUrl(Instant createdAt, UUID customerId, UUID paymentId, String receiptPath) throws ShopServiceApiException {
+        String yearPrefix = String.valueOf(createdAt.atZone(ZoneId.of(Constants.TIME_ZONE_BANGKOK)).getYear());
+        String pdfPath = yearPrefix + "/" +
+                customerId + "/"
+                + paymentId + "/"
+                + receiptPath;
+
+        ZonedDateTime expirationDate = getExpDateWithTimeZone(Constants.TIME_ZONE_BANGKOK, getPdfFileExp);
+
+        String signedPdfUrl = supabaseStorageService.getSignedFileUrl(Constants.SUPABASE_RECEIPTS_BUCKET_NAME, pdfPath, getPdfFileExp);
+
+        SignedFileUrlResp signedFileUrlResp = new SignedFileUrlResp();
+        signedFileUrlResp.setSignedFileUrl(signedPdfUrl);
+        signedFileUrlResp.setExpiresAt(expirationDate);
+
+        return signedFileUrlResp;
     }
 }

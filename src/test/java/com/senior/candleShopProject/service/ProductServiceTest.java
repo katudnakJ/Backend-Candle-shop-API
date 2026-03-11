@@ -162,7 +162,7 @@ public class ProductServiceTest {
             verify(userCheckTemp, times(1)).getSellerIdByUserId(userId);
             verify(productsRepo, times(1)).save(any(ProductsEntity.class));
             verify(productImagesRepo, times(1)).saveAll(anyList());
-            verify(supabaseStorageService, times(2)).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            verify(supabaseStorageService, times(2)).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
         }
     }
 
@@ -222,8 +222,8 @@ public class ProductServiceTest {
             verify(productImagesRepo, times(1)).getProductImagesByProductId(productId);
             verify(productImagesRepo, times(1)).deleteProductImagesEntitiesByProductsEntity_ProductId(productId);
             verify(productImagesRepo, times(1)).saveAll(anyList());
-            verify(supabaseStorageService, times(1)).deleteImage(anyString(), anySet());
-            verify(supabaseStorageService, times(2)).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            verify(supabaseStorageService, times(1)).deleteFiles(anyString(), anySet());
+            verify(supabaseStorageService, times(2)).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
         }
     }
 
@@ -283,7 +283,7 @@ public class ProductServiceTest {
         assertNull(resp.getData());
 
         verify(productsRepo, times(1)).delete(existing);
-        verify(supabaseStorageService, times(1)).deleteImage(anyString(), anySet());
+        verify(supabaseStorageService, times(1)).deleteFiles(anyString(), anySet());
     }
 
     @Test

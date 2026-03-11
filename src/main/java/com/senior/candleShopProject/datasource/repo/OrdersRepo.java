@@ -86,7 +86,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     boolean existsByOrderIdAndCustomersEntity_UsersEntity_UserId(UUID orderId, UUID userId);
 
     @Query(value ="""
-    select p.payment_status as paymentStatus,
+    select p.payment_id as paymentId,
         p.receipt_number as paymentReceiptNumber,
         o.order_number as orderNumber,
         o.total_amount as orderTotalAmount,
@@ -99,6 +99,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
         ad.province as sellerProvince,
         ad.district as sellerDistrict,
         ad.sub_district as sellerSubDistrict,
+        c.customer_id as customerId,
         osa.recipient_first_name as customerFirstName,
         osa.recipient_last_name as customerLastName,
         osa.recipient_phone as customerPhone,

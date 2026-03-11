@@ -125,16 +125,13 @@ public class OrderController {
 
         @GetMapping("/{orderId}/receipt")
         @Operation(summary = "Get receipt PDF for order.", description = "ดึงไฟล์ PDF ใบเสร็จสำหรับออเดอร์")
-        public ResponseEntity<byte[]> getReceiptPDF(@RequestAttribute("userId") String userId,
+        public ResponseEntity<GenericResponse> getReceiptPDF(@RequestAttribute("userId") String userId,
                                               @PathVariable("orderId") String orderId) throws ShopServiceApiException, IOException {
             log.info("Getting receipt PDF for order {}", orderId);
             UUID userUUID = UUID.fromString(userId);
             UUID orderUUID = UUID.fromString(orderId);
 
-            PDFResp response = orderService.generateReceiptToPDF(userUUID, orderUUID);
-            return ResponseEntity.ok()
-                    .header("Content-Disposition", "inline; filename=\"" + response.getPdfName() + "\"")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(response.getPdf());
+            GenericResponse response = orderService.generateReceiptToPDF(userUUID, orderUUID);
+            return ResponseEntity.ok(response);
         }
 }
