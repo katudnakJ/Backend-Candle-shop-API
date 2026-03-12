@@ -48,4 +48,10 @@ public enum OrderStatus {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid order status code: " + orderStatus));
     }
+
+    public static boolean isValidStatusForGeneratePDF(String orderStatus) {
+        return orderStatus.equalsIgnoreCase(ORDER_TO_SHIP.getStatusCode()) ||
+                orderStatus.equalsIgnoreCase( ORDER_TO_RECIEVE.getStatusCode()) ||
+                orderStatus.equalsIgnoreCase( ORDER_COMPLETED.getStatusCode());
+    }
 }

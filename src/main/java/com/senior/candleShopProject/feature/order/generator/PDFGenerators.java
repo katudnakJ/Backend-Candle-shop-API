@@ -181,7 +181,10 @@ public class PDFGenerators {
         text(content, reg, footerText, 12, (PAGE_WIDTH - width) / 2, 50);
     }
 
-    public byte[] generateReceiptPDFWithSignature(IReceiptInformationResp info, List<IReceiptOrderItemResp> items) throws IOException {
+    public byte[] generateReceiptPDFWithSignature(IReceiptInformationResp info, List<IReceiptOrderItemResp> items) throws Exception {
+
+        byte[] pdfBytes;
+
         try (PDDocument document = new PDDocument()) {
             PDType0Font fontReg = PDType0Font.load(document, new ByteArrayInputStream(fontRegBytes), true);
             PDType0Font fontBold = PDType0Font.load(document, new ByteArrayInputStream(fontBoldBytes), true);
@@ -222,14 +225,14 @@ public class PDFGenerators {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             document.save(out);
-            byte[] pdfBytes = out.toByteArray();
-
-            PdfDigitalSigner signer = new PdfDigitalSigner(cachedKeyStore, keyStorePassword);
-            return signer.signPdf(pdfBytes);
+            pdfBytes = out.toByteArray();
 
         } catch (Exception e) {
             log.error("PDF Generation failed: ", e);
             throw new RuntimeException(e);
         }
+
+        PdfDigitalSigner signer = new PdfDigitalSigner(cachedKeyStore, keyStorePassword);
+        return signer.signPdf(pdfBytes);
     }
 }

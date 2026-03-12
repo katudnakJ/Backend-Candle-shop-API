@@ -19,6 +19,7 @@ public interface IReceiptInformationResp {
     String getOrderNumber();
     BigDecimal getOrderTotalAmount();
     BigDecimal getOrderNetAmount();
+    String getOrderStatus();
 
 //    Seller information
     String getSellerFirstName(); // seller's recipientFirstName

@@ -26,7 +26,6 @@ public record CMSProcessableInputStream(InputStream input) implements CMSTypedDa
             out.write(buffer, 0, n);
         }
 
-        input.close();
     }
 
     @Override

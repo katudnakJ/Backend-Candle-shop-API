@@ -91,6 +91,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
         o.order_number as orderNumber,
         o.total_amount as orderTotalAmount,
         o.net_amount as orderNetAmount,
+        o.order_status as orderStatus,
         ad.recipient_first_name as sellerFirstName,
         ad.recipient_last_name as sellerLastName,
         ad.recipient_phone as sellerPhone,

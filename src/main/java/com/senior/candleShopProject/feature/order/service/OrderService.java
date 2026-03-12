@@ -297,15 +297,24 @@ public class OrderService {
         return response;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public GenericResponse generateReceiptToPDF (UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
 
         PaymentsEntity paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
+        if (paymentsEntity == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+        if (OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode().equalsIgnoreCase(paymentsEntity.getPaymentStatus()))
+            throw new ShopConflictException(ResultCode.CONFLICT, "Only payment with 'APPROVED' status can generate receipt PDF.");
+
         IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
 
-        if (receiptInfo == null || paymentsEntity == null)
+        if (receiptInfo == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+        if (!OrderStatus.isValidStatusForGeneratePDF(receiptInfo.getOrderStatus()))
+            throw new ShopConflictException(ResultCode.CONFLICT, "Only orders with 'TO SHIP', 'TO RECEIVE' or 'COMPLETED' status can generate receipt PDF.");
 
         if (paymentsEntity.getReceiptPath() == null || paymentsEntity.getReceiptPath().isEmpty()) {
 //            no receipt generated for this order then generate
@@ -321,7 +330,14 @@ public class OrderService {
             PaymentsEntity newPayment = paymentsRepo.save(paymentsEntity);
 
             Instant timeNow = Instant.now();
-            byte[] pdf = pdfGenerators.generateReceiptPDFWithSignature(receiptInfo, orderItemRespList);
+
+            byte[] pdf;
+            try {
+               pdf = pdfGenerators.generateReceiptPDFWithSignature(receiptInfo, orderItemRespList);
+            }catch (Exception e){
+                log.error("Error generating receipt PDF for order {}: {}", orderId, e.getMessage());
+                throw new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Failed to generate receipt PDF.");
+            }
             System.out.println("PDF size: " + pdf.length);
             supabaseStorageUtils.uploadReceiptPDF(
                     timeNow, // use current time for PDF
