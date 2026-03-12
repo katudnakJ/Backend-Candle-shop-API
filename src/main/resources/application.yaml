@@ -43,3 +43,11 @@ supabase:
       check-receipt: ${SUPABASE_SELLER_CHECK_RECEIPT_EXP}
     customer:
       check-qr-payment: ${SUPABASE_USER_CHECK_QR_PAYMENT_EXP}
+
+#      PDF generation configuration
+pdf:
+  key-store:
+    path: ${PDF_KEYSTORE_PATH}
+    password: ${PDF_KEYSTORE_PASSWORD}
+  getFile:
+    expiration: ${PDF_GET_FILE_EXPIRATION}

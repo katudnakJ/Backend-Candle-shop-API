@@ -4,15 +4,18 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
+import com.senior.candleShopProject.feature.order.controller.dto.response.PDFResp;
 import com.senior.candleShopProject.feature.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @Slf4j
@@ -107,4 +110,28 @@ public class OrderController {
         GenericResponse response = orderService.getPaymentSlipByOrderId(userUUID, orderUUID);
         return ResponseEntity.ok(response);
     }
+
+    @PatchMapping("/{orderId}/received")
+    @Operation(summary = "Confirm order received by customer.", description = "ยืนยันการได้รับสินค้าโดยลูกค้า")
+    public ResponseEntity confirmOrderReceived(@RequestAttribute("userId") String userId,
+                                              @PathVariable("orderId") String orderId) throws ShopServiceApiException {
+        log.info("Confirming order received for order {}", orderId);
+        UUID userUUID = UUID.fromString(userId);
+        UUID orderUUID = UUID.fromString(orderId);
+
+        GenericResponse response = orderService.confirmReceipt(userUUID, orderUUID);
+        return ResponseEntity.ok(response);
+        }
+
+        @GetMapping("/{orderId}/receipt")
+        @Operation(summary = "Get receipt PDF for order.", description = "ดึงไฟล์ PDF ใบเสร็จสำหรับออเดอร์")
+        public ResponseEntity<GenericResponse> getReceiptPDF(@RequestAttribute("userId") String userId,
+                                              @PathVariable("orderId") String orderId) throws ShopServiceApiException, IOException {
+            log.info("Getting receipt PDF for order {}", orderId);
+            UUID userUUID = UUID.fromString(userId);
+            UUID orderUUID = UUID.fromString(orderId);
+
+            GenericResponse response = orderService.generateReceiptToPDF(userUUID, orderUUID);
+            return ResponseEntity.ok(response);
+        }
 }

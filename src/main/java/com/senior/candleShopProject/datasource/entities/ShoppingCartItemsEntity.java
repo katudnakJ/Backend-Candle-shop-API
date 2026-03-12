@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -22,8 +23,8 @@ public class ShoppingCartItemsEntity {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "create_at")
-    private Long createAt;
+    @Column(name = "created_at")
+    private Instant createdAt;
 
 //    Relationships
     @ManyToOne(fetch = FetchType.LAZY)

@@ -20,4 +20,8 @@ public class LocalDateTimeUtils {
                 .plusSeconds(expiresInSeconds);
         return dateUtcNow.atZone(ZoneId.of(toTimeZone));
     }
+
+    public static ZonedDateTime convertToTimeZone(ZonedDateTime dateTime, String toTimeZone) {
+        return dateTime.withZoneSameInstant(ZoneId.of(toTimeZone));
+    }
 }

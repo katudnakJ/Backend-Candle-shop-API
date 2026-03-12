@@ -17,7 +17,7 @@ public class Constants {
 
 //    Database
     public static final String DB_SEQUENCE_ORDER_NAME = "order_no_seq";
-    public static final String DB_SEQUENCE_PAYMENT_NO = "receipt_no_seq";
+    public static final String DB_SEQUENCE_PAYMENT_NAME = "receipt_no_seq";
 
 //    Running Number Prefix
     public static final String PREFIX_ORDER_NO = "ORD";
@@ -27,6 +27,7 @@ public class Constants {
     public static final String SUPABASE_QR_PAYMENT_BUCKET_NAME = "qr-payment";
     public static final String SUPABASE_RECEIPT_BUCKET_NAME = "payment-proofs";
     public static final String SUPABASE_PRODUCT_BUCKET_NAME = "attachments";
+    public static final String SUPABASE_RECEIPTS_BUCKET_NAME = "receipts";
 
     //    return key name
     public static final String RESPONSE_KEY_EXP_DATE = "expirationDate";
@@ -38,6 +39,7 @@ public class Constants {
 
 //    Content type
     public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+    public static final String CONTENT_TYPE_PDF = "application/pdf";
 
 //    Shipping
     public static final int SHIPPING_ITEMS_PER_BOX = 100;
@@ -47,6 +49,12 @@ public class Constants {
 //    Shipping Method
     public static final String SHIPPING_METHOD_STANDARD = "STANDARD";
     public static final String SHIPPING_METHOD_YIPPEE = "YIPPEE";
+
+//    PDF
+    public static final String PDF_FILE_NAME_PREFIX = "receipt_";
+    public static final String PDF_SIGN_NAME = "Moji's Candle Shop";
+    public static final String PDF_SIGN_LOCATION = "Thailand";
+    public static final String PDF_SIGN_REASON = "Invoice Digital Signature";
 
 
 }

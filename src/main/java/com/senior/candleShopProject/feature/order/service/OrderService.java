@@ -3,15 +3,13 @@ package com.senior.candleShopProject.feature.order.service;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
-import com.senior.candleShopProject.common.SupabaseService.Dto.SignedImageUrlResp;
+import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
-import com.senior.candleShopProject.common.utils.GetImagePathUtils;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
+import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
 import com.senior.candleShopProject.datasource.entities.SellerEntity;
@@ -20,19 +18,21 @@ import com.senior.candleShopProject.datasource.repo.*;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailByOrderIdResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.PDFResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderByStatusResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderDetailsResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderItemsListResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderStatusChangeResp;
+import com.senior.candleShopProject.feature.order.generator.PDFGenerators;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.senior.candleShopProject.common.utils.CustomizeResponseUtil.ReturnSignedImageWithExp;
 
 @Slf4j
 @Service
@@ -40,7 +40,8 @@ import static com.senior.candleShopProject.common.utils.CustomizeResponseUtil.Re
 public class OrderService {
 
     private final UserCheckTemp userCheckTemp;
-    private final GetImagePathUtils getImagePathUtils;
+    private final SupabaseStorageUtils supabaseStorageUtils;
+    private final PDFGenerators pdfGenerators;
 
     private final OrdersRepo ordersRepo;
     private final CarriersRepo carriersRepo;
@@ -240,14 +241,14 @@ public class OrderService {
         return response;
     }
 
-    public GenericResponse getPaymentSlipByOrderId(UUID user, UUID orderId) throws ShopServiceApiException {
+    public GenericResponse getPaymentSlipByOrderId(UUID userId, UUID orderId) throws ShopServiceApiException {
 
-        UUID customerId = userCheckTemp.getCustomerIdByUserId(user);
+        UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
 
         if (customerId == null)
             throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
 
-        if (!userCheckTemp.isOwnerOfOrder(user, orderId))
+        if (!userCheckTemp.isOwnerOfOrder(userId, orderId))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
 
         PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
@@ -255,10 +256,11 @@ public class OrderService {
         if (payment == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Payment not found.");
 
-        SignedImageUrlResp result = getImagePathUtils.getSignedPaymentProofImage(
+        SignedFileUrlResp result = supabaseStorageUtils.getSignedPaymentProofImage(
                 customerId,
                 payment.getPaymentId(),
-                payment.getPaymentProofPath()
+                payment.getPaymentProofPath(),
+                payment.getCreatedAt()
         );
 
         GenericResponse response = new GenericResponse();
@@ -267,6 +269,88 @@ public class OrderService {
         return response;
     }
 
+    @Transactional
+    public GenericResponse confirmReceipt(UUID userId, UUID orderId) throws ShopServiceApiException {
+
+        UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
+
+        OrdersEntity order = ordersRepo.findById(orderId)
+                .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found."));
+
+        if (customerId == null ||  order.getCustomersEntity().getCustomerId() != customerId)
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission.");
+
+        if (
+                !OrderStatus.validToChangeStatus(order.getOrderStatus(), OrderStatus.ORDER_COMPLETED.getStatusCode())
+        ) throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Only orders with 'TO RECEIVE' status can be confirmed.");
+
+        Instant timeNow = Instant.now();
+        order.setOrderStatus(OrderStatus.ORDER_COMPLETED.getStatusCode());
+        order.setStatusChangedAt(timeNow);
+        order.setCompletedAt(timeNow);
+
+        OrdersEntity newOrder = ordersRepo.save(order);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(setOrderStatusChangeResp(newOrder, OrderStatus.ORDER_COMPLETED));
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
+    }
+
+    @Transactional
+    public GenericResponse generateReceiptToPDF (UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
+
+        PaymentsEntity paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+
+        if (paymentsEntity == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+        if (OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode().equalsIgnoreCase(paymentsEntity.getPaymentStatus()))
+            throw new ShopConflictException(ResultCode.CONFLICT, "Only payment with 'APPROVED' status can generate receipt PDF.");
+
+        IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
+
+        if (receiptInfo == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+        if (!OrderStatus.isValidStatusForGeneratePDF(receiptInfo.getOrderStatus()))
+            throw new ShopConflictException(ResultCode.CONFLICT, "Only orders with 'TO SHIP', 'TO RECEIVE' or 'COMPLETED' status can generate receipt PDF.");
+
+        if (paymentsEntity.getReceiptPath() == null || paymentsEntity.getReceiptPath().isEmpty()) {
+//            no receipt generated for this order then generate
+            List<IReceiptOrderItemResp> orderItemRespList = orderItemsRepo.getOrderItemsForReceipt(orderId);
+
+            if (orderItemRespList == null || orderItemRespList.isEmpty())
+                throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
+
+            paymentsEntity.setReceiptPath(
+                    receiptInfo.getPaymentReceiptNumber() + "." + Constants.CONTENT_TYPE_PDF.split("/")[1]
+            );
+
+            PaymentsEntity newPayment = paymentsRepo.save(paymentsEntity);
+
+            Instant timeNow = Instant.now();
+
+            byte[] pdf;
+            try {
+               pdf = pdfGenerators.generateReceiptPDFWithSignature(receiptInfo, orderItemRespList);
+            }catch (Exception e){
+                log.error("Error generating receipt PDF for order {}: {}", orderId, e.getMessage());
+                throw new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Failed to generate receipt PDF.");
+            }
+            System.out.println("PDF size: " + pdf.length);
+            supabaseStorageUtils.uploadReceiptPDF(
+                    timeNow, // use current time for PDF
+                    pdf,
+                    receiptInfo.getCustomerId(),
+                    receiptInfo.getPaymentId(),
+                    receiptInfo.getPaymentReceiptNumber()
+            );
+            return  getSignedPdfUrlResponse(newPayment, receiptInfo.getCustomerId());
+        }
+        return getSignedPdfUrlResponse(paymentsEntity, receiptInfo.getCustomerId());
+
+    }
 //    Extracted method for business logic
 
     private List<OrderByStatusResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
@@ -291,7 +375,7 @@ public class OrderService {
             orderByStatusResp.setNetAmount(orders.getNetAmount());
             orderByStatusResp.setOrderStatus(orders.getOrderStatus());
             orderByStatusResp.setPaymentStatus(orders.getPaymentStatus());
-            orderByStatusResp.setOrderNo(orders.getOrderNo());
+            orderByStatusResp.setOrderNo(orders.getOrderNumber());
             orderByStatusResp.setAddressLabel(orders.getAddressLabel());
             orderByStatusResp.setTrackingNo(trackingNumbers);
             orderByStatusResp.setDeliveryMethod(orders.getDeliveryMethod());
@@ -326,7 +410,7 @@ public class OrderService {
         orderDetailByStatus.setTotalAmount(orderDetails.getTotalAmount());
         orderDetailByStatus.setNetAmount(orderDetails.getNetAmount());
         orderDetailByStatus.setOrderStatus(orderDetails.getOrderStatus());
-        orderDetailByStatus.setOrderNo(orderDetails.getOrderNo());
+        orderDetailByStatus.setOrderNo(orderDetails.getOrderNumber());
         orderDetailByStatus.setAddressLabel(orderDetails.getAddressLabel());
         orderDetailByStatus.setDeliveryAddress(orderDetails.getDeliveryAddress());
         orderDetailByStatus.setPostcode(orderDetails.getPostcode());
@@ -385,5 +469,24 @@ public class OrderService {
         return Arrays.stream(trackingNumber.split(","))
                 .map(String::trim)
                 .toList();
+    }
+
+    private GenericResponse getSignedPdfUrlResponse(PaymentsEntity paymentsEntity, UUID customerId) throws ShopServiceApiException {
+
+        SignedFileUrlResp signedPdfUrl = supabaseStorageUtils.getSignedReceiptPDFUrl(
+                paymentsEntity.getCreatedAt(),
+                customerId,
+                paymentsEntity.getPaymentId(),
+                paymentsEntity.getReceiptPath()
+        );
+
+        PDFResp pdfResp = new PDFResp();
+        pdfResp.setPdfSignedUrl(signedPdfUrl);
+        pdfResp.setPdfName("receipt_" + paymentsEntity.getReceiptNumber() + Constants.CONTENT_TYPE_PDF.split("/")[1]);
+
+        GenericResponse response = new GenericResponse();
+        response.setData(pdfResp);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
     }
 }

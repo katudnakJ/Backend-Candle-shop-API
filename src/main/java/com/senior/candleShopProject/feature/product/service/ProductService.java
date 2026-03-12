@@ -268,7 +268,7 @@ public class ProductService {
     }
 
     private void uploadProductImagesToStorage(String imagePath, MultipartFile imageData) throws ShopServiceApiException, IOException {
-        supabaseStorageService.uploadImage(
+        supabaseStorageService.uploadFile(
                 Constants.SUPABASE_PRODUCT_BUCKET_NAME,
                 imagePath,
                 processImageData(imageData),
@@ -277,7 +277,7 @@ public class ProductService {
     }
 
     private void deleteProductImagesOutOfStorage(Set<String> imageIdsList) {
-        supabaseStorageService.deleteImage(
+        supabaseStorageService.deleteFiles(
                 Constants.SUPABASE_PRODUCT_BUCKET_NAME,
                 imageIdsList
         );

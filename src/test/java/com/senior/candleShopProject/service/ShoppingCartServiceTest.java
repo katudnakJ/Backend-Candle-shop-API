@@ -129,7 +129,7 @@ class ShoppingCartServiceTest {
         GenericResponse response = shoppingCartService.addShoppingCartItem(userId, addShoppingCartItemReq);
 
         assertNotNull(response);
-        assertThat(response.getStatus()).isEqualTo(ResultCode.CREATED);
+        assertThat(response.getStatus()).isEqualTo(ResultCode.SUCCESS);
 
         verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
         verify(shoppingCartItemsRepo, times(1))
@@ -159,7 +159,7 @@ class ShoppingCartServiceTest {
         GenericResponse response = shoppingCartService.addShoppingCartItem(userId,addShoppingCartItemReq);
 
         assertNotNull(response);
-        assertThat(response.getStatus()).isEqualTo(ResultCode.CREATED);
+        assertThat(response.getStatus()).isEqualTo(ResultCode.SUCCESS);
 
         verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
         verify(shoppingCartItemsRepo, times(1))

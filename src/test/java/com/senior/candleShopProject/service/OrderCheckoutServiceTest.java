@@ -3,6 +3,7 @@ package com.senior.candleShopProject.service;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
+import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.exception.ShopConflictException;
@@ -10,6 +11,7 @@ import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.ProcessImageUtil;
 import com.senior.candleShopProject.common.utils.RunningNumberGenerator;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.ICartItemsForOrderItemsResp;
 import com.senior.candleShopProject.datasource.entities.AddressesEntity;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
@@ -56,6 +58,12 @@ public class OrderCheckoutServiceTest {
     @Mock private AddressesRepo addressesRepo;
 
     @Mock private MultipartFile paymentProof;
+
+    @Mock
+    private UserCheckTemp userCheckTemp;
+
+    @Mock
+    SupabaseStorageUtils supabaseStorageUtils;
 
     @BeforeEach
     void init() {
@@ -112,26 +120,31 @@ public class OrderCheckoutServiceTest {
 
         doNothing().when(shoppingCartItemsRepo).deleteAllById(cartItemUUIDs);
 
+        Optional<OrdersEntity> orderOpt = Optional.of(new OrdersEntity());
+        orderOpt.get().setCustomersEntity(customer);
+
+        when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
+        when(ordersRepo.findById(orderId)).thenReturn(orderOpt);
+
         when(paymentProof.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[] { (byte)0xFF, (byte)0xD8, (byte)0xFF }));
         try (MockedStatic<ProcessImageUtil> mocked = mockStatic(ProcessImageUtil.class)) {
             mocked.when(() -> ProcessImageUtil.processImageData(any(MultipartFile.class)))
                     .thenReturn(new byte[] {1,2,3});
 
-            doNothing().when(supabaseStorageService).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            doNothing().when(supabaseStorageService).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
 
             GenericResponse resp = orderCheckoutService.checkoutOrder(userId, paymentProof, cartItemIds,addressId);
 
             assertNotNull(resp);
             assertEquals(ResultCode.CREATED, resp.getStatus());
 
-            verify(customersRepo, times(1)).findCustomersEntitiesByUsersEntity_UserId(userId);
             verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
             verify(shoppingCartItemsRepo, times(1)).existsByShoppingCartEntity_ShoppingCartId(shoppingCartId);
             verify(ordersRepo, times(1)).save(any(OrdersEntity.class));
             verify(orderItemsRepo, times(1)).saveAll(anyList());
             verify(shoppingCartItemsRepo, times(1)).deleteAllById(cartItemUUIDs);
             verify(paymentsRepo, times(1)).save(any(PaymentsEntity.class));
-            verify(supabaseStorageService, times(1)).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            verify(supabaseStorageUtils, times(1)).uploadPaymentProofImage(any(), any(), any(), any(), anyString());
         }
     }
 
@@ -179,22 +192,27 @@ public class OrderCheckoutServiceTest {
         saved.setReceiptNumber("RCPT-123");
         when(paymentsRepo.save(any(PaymentsEntity.class))).thenReturn(saved);
 
+        Optional<OrdersEntity> orderOpt = Optional.of(new OrdersEntity());
+        orderOpt.get().setCustomersEntity(customer);
+
+        when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
+        when(ordersRepo.findById(orderId)).thenReturn(orderOpt);
+
         when(paymentProof.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[]{1,2,3}));
         try (MockedStatic<ProcessImageUtil> mocked = mockStatic(ProcessImageUtil.class)) {
             mocked.when(() -> ProcessImageUtil.processImageData(any(MultipartFile.class)))
                     .thenReturn(new byte[]{9,8,7});
-            doNothing().when(supabaseStorageService).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            doNothing().when(supabaseStorageService).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
 
             GenericResponse resp = orderCheckoutService.retryPayment(userId, orderId, paymentProof);
             assertNotNull(resp);
             assertEquals(ResultCode.SUCCESS, resp.getStatus());
 
-            verify(customersRepo, times(1)).findCustomersEntitiesByUsersEntity_UserId(userId);
-            verify(ordersRepo, times(1)).existsById(orderId);
+            verify(ordersRepo, times(1)).findById(orderId);
             verify(paymentsRepo, times(1)).existsByOrdersEntity_OrderId(orderId);
             verify(paymentsRepo, times(1)).findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
             verify(paymentsRepo, times(1)).save(any(PaymentsEntity.class));
-            verify(supabaseStorageService, times(1)).uploadImage(anyString(), anyString(), any(byte[].class), anyString());
+            verify(supabaseStorageUtils, times(1)).uploadPaymentProofImage(any(), any(), any(), any(), anyString());
         }
     }
 
@@ -216,12 +234,17 @@ public class OrderCheckoutServiceTest {
         existing.setPaymentStatus(OrderStatus.ORDER_PAYMENT_PENDING.getStatusCode());
         when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(existing);
 
+        Optional<OrdersEntity> orderOpt = Optional.of(new OrdersEntity());
+        orderOpt.get().setCustomersEntity(customer);
+        when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
+        when(ordersRepo.findById(orderId)).thenReturn(orderOpt);
+
         assertThrows(ShopConflictException.class, () ->
                 orderCheckoutService.retryPayment(userId, orderId, paymentProof)
         );
 
-        verify(customersRepo, times(1)).findCustomersEntitiesByUsersEntity_UserId(userId);
-        verify(ordersRepo, times(1)).existsById(orderId);
+        verify(userCheckTemp, times(1)).getCustomerIdByUserId(userId);
+        verify(ordersRepo, times(1)).findById(orderId);
         verify(paymentsRepo, times(1)).existsByOrdersEntity_OrderId(orderId);
         verify(paymentsRepo, times(1)).findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
         verify(paymentsRepo, times(0)).save(any());

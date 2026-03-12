@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.datasource.domain;
+package com.senior.candleShopProject.datasource.domain.address;
 
 public interface IAddressResp {
     String getAddressId();

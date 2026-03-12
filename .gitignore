@@ -39,3 +39,5 @@ build/
 *.pem
 *-key.pem
 *.pfx
+
+*.p12

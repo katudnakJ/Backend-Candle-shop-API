@@ -42,6 +42,9 @@ public class PaymentsEntity {
     @Column(name = "rejection_reason")
     private String rejectionReason;
 
+    @Column(name = "receipt_path")
+    private String receiptPath;
+
 //    Relationships
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="order_id",nullable = false)
