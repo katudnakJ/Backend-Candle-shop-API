@@ -74,7 +74,7 @@ public class ProductController {
                                                             @ParameterObject
                                                              @ModelAttribute UpdateProductReq updateProductReq,
 
-                                                            @RequestPart(value = "imageData",required = false) List<MultipartFile> imagesReqList
+                                                            @RequestPart(value = "imagesData",required = false) List<MultipartFile> imagesReqList
     ) throws ShopServiceApiException, IOException {
         log.info("Update product with id {}", productId);
         UUID userUUID = UUID.fromString(userId);

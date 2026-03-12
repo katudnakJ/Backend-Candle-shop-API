@@ -221,7 +221,6 @@ public class ProductService {
 
 //        and then save Product detail to database
         ProductsEntity productEntity = productsRepo.findProductsEntityByProductId(productId);
-        productEntity.setProductId(productId);
         productEntity.setProductName(updateProductReq.getProductName());
         productEntity.setPrice(updateProductReq.getPrice());
         productEntity.setWeight(updateProductReq.getWeight());
