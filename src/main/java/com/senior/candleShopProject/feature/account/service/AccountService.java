@@ -132,6 +132,9 @@ public class AccountService {
         if(addressOpt == null)
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "User can only delete own address.");
 
+        if (addressOpt.isDefault())
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "User can not delete default address.");
+
         addressesRepo.delete(addressOpt);
 
         GenericResponse response = new GenericResponse();

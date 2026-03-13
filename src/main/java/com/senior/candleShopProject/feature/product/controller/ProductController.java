@@ -6,10 +6,7 @@ import com.senior.candleShopProject.feature.product.controller.dto.request.Creat
 import com.senior.candleShopProject.feature.product.controller.dto.request.UpdateProductReq;
 import com.senior.candleShopProject.feature.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
@@ -75,17 +72,15 @@ public class ProductController {
                                                             @PathVariable(name = "productId") String productId,
 
                                                             @ParameterObject
-                                                             @ModelAttribute CreateNewProductReq updateProductReq,
+                                                             @ModelAttribute UpdateProductReq updateProductReq,
 
-                                                            @RequestPart(value = "images",required = false) List<MultipartFile> imagesReqList,
-
-                                                         @RequestParam("primary_index") Integer primaryIndex
+                                                            @RequestPart(value = "imagesData",required = false) List<MultipartFile> imagesReqList
     ) throws ShopServiceApiException, IOException {
         log.info("Update product with id {}", productId);
         UUID userUUID = UUID.fromString(userId);
         UUID productUUID = UUID.fromString(productId);
 
-        GenericResponse response = productService.updateProduct(userUUID, productUUID, updateProductReq, imagesReqList,primaryIndex);
+        GenericResponse response = productService.updateProduct(userUUID, productUUID, updateProductReq, imagesReqList);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

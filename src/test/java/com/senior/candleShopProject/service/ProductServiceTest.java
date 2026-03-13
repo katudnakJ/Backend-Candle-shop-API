@@ -8,12 +8,14 @@ import com.senior.candleShopProject.common.exception.ShopBadRequestException;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.ProcessImageUtil;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
 import com.senior.candleShopProject.datasource.domain.products.IProductHomeListItemResp;
 import com.senior.candleShopProject.datasource.domain.products.IProductResp;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import com.senior.candleShopProject.feature.product.controller.dto.request.CreateNewProductReq;
+import com.senior.candleShopProject.feature.product.controller.dto.request.UpdateProductReq;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
 import com.senior.candleShopProject.feature.product.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +56,9 @@ public class ProductServiceTest {
 
     @Mock
     private SupabaseStorageService supabaseStorageService;
+
+    @Mock
+    private SupabaseStorageUtils supabaseStorageUtils;
 
     @BeforeEach
     void initTests() {MockitoAnnotations.openMocks(this);
@@ -184,28 +190,33 @@ public class ProductServiceTest {
         UUID userId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
 
-        CreateNewProductReq req = new CreateNewProductReq();
+        UpdateProductReq req = new UpdateProductReq();
         req.setProductName("Candle B");
         req.setPrice(BigDecimal.valueOf(199.0));
         req.setWeight(120.0);
         req.setDescription("Updated desc");
         req.setActive(true);
         req.setFeatured(true);
+        req.setPrimaryIndex(1);
+        req.setDeleteImageIds(new ArrayList<>());
 
         byte[] content = new byte[] { (byte)0xFF, (byte)0xD8, (byte)0xFF };
         MockMultipartFile img1 = new MockMultipartFile("images", "test1.jpg", "image/jpeg", content);
         MockMultipartFile img2 = new MockMultipartFile("images", "test2.jpg", "image/jpeg", content);
         List<MultipartFile> newImages = List.of(img1, img2);
-        int primaryIndex = 1;
 
         ProductsEntity existing = new ProductsEntity();
         existing.setProductId(productId);
-        when(productsRepo.findById(productId)).thenReturn(java.util.Optional.of(existing));
+
+        when(productsRepo.existsById(productId)).thenReturn(true);
+        when(productsRepo.findProductsEntityByProductId(productId)).thenReturn(existing);
 
         ProductImagesResp existImg = new ProductImagesResp();
+        existImg.setProductImgId(UUID.randomUUID());
         existImg.setProductImgPath("old.jpeg");
-        when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(existImg));
+        existImg.setIsPrimary(true);
 
+        when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(existImg));
         when(userCheckTemp.getSellerIdByUserId(userId)).thenReturn(UUID.randomUUID());
         when(productsRepo.save(any(ProductsEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -213,17 +224,13 @@ public class ProductServiceTest {
             mockedProcess.when(() -> ProcessImageUtil.processImageData(any(MultipartFile.class)))
                     .thenReturn(new byte[] { 1, 2, 3 });
 
-            GenericResponse resp = productService.updateProduct(userId, productId, req, newImages, primaryIndex);
+            GenericResponse resp = productService.updateProduct(userId, productId, req, newImages);
 
             assertNotNull(resp);
             assertEquals(ResultCode.SUCCESS, resp.getStatus());
 
-            verify(productsRepo, times(1)).findById(productId);
-            verify(productImagesRepo, times(1)).getProductImagesByProductId(productId);
-            verify(productImagesRepo, times(1)).deleteProductImagesEntitiesByProductsEntity_ProductId(productId);
-            verify(productImagesRepo, times(1)).saveAll(anyList());
-            verify(supabaseStorageService, times(1)).deleteFiles(anyString(), anySet());
-            verify(supabaseStorageService, times(2)).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
+            verify(productsRepo, times(1)).findProductsEntityByProductId(productId);
+            verify(productsRepo, times(1)).save(any(ProductsEntity.class));
         }
     }
 
@@ -232,13 +239,16 @@ public class ProductServiceTest {
         UUID userId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
 
-        CreateNewProductReq req = new CreateNewProductReq();
+        UpdateProductReq req = new UpdateProductReq();
         req.setProductName("Candle B");
         req.setPrice(BigDecimal.valueOf(199.0));
         req.setWeight(120.0);
         req.setDescription("Updated desc");
         req.setActive(true);
         req.setFeatured(true);
+        req.setPrimaryIndex(1);
+        req.setExistIntoPrimary(null);
+        req.setDeleteImageIds(null);
 
         MultipartFile img1 = mock(MultipartFile.class);
         when(img1.isEmpty()).thenReturn(false);
@@ -254,7 +264,7 @@ public class ProductServiceTest {
         when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(Collections.emptyList());
 
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
-            productService.updateProduct(userId, productId, req, List.of(img1), 0);
+            productService.updateProduct(userId, productId, req, List.of(img1));
         });
 
         assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());

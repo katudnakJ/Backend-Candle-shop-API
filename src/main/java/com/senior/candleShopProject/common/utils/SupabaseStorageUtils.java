@@ -134,4 +134,16 @@ public class SupabaseStorageUtils {
 
         return signedFileUrlResp;
     }
+
+//    Product Images
+    public void uploadProductImage(UUID productId, UUID productImgId, MultipartFile imageData) throws IOException {
+        String imagePath = productId + "/" + productImgId + "." + Constants.CONTENT_TYPE_JPEG.split("/")[1];
+
+        supabaseStorageService.uploadFile(
+                Constants.SUPABASE_PRODUCT_BUCKET_NAME,
+                imagePath,
+                processImageData(imageData),
+                Constants.CONTENT_TYPE_JPEG
+        );
+    }
 }

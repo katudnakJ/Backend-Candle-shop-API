@@ -67,4 +67,6 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
             LIMIT :limit OFFSET :offset;
 """, nativeQuery = true)
     List<IProductHomeListItemResp> getAllProductHomeList(@Param("limit") int limit, @Param("offset") int offset);
+
+    ProductsEntity findProductsEntityByProductId(UUID productId);
 }
