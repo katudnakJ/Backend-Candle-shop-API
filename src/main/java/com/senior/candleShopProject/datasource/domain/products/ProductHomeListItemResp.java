@@ -10,5 +10,10 @@ import java.util.List;
 public class ProductHomeListItemResp {
     private List<IProductHomeListItemResp> featuredProducts;
     private List<IProductHomeListItemResp> allProducts;
-    private Integer totalProducts;
+    private int page;
+    private int size;
+    private int startAt;
+    private int endAt;
+    private Long totalProducts;
+    private boolean hasNext;
 }

@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.auth.controller.dto;
+package com.senior.candleShopProject.feature.auth.controller;
 
 import com.senior.candleShopProject.common.LineService.dto.LineProfileData;
 import lombok.Getter;

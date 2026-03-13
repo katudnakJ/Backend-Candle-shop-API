@@ -1,7 +1,5 @@
 package com.senior.candleShopProject.feature.order.controller.dto.response.dto;
 
-import com.senior.candleShopProject.common.OrderStatus;
-import com.senior.candleShopProject.feature.order.controller.dto.response.OrderItemsListResp;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class OrderByStatusResp {
+public class OrderByStatusMappingResp {
     private UUID orderId;
     private Integer totalQuantity;
     private BigDecimal totalAmount;
