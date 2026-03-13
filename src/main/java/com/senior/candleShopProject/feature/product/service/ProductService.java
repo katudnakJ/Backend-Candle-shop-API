@@ -5,10 +5,8 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
-import com.senior.candleShopProject.common.utils.Constants;
-import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
-import com.senior.candleShopProject.common.utils.ImageValidationUtils;
-import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
+import com.senior.candleShopProject.common.utils.*;
+import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.products.IProductHomeListItemResp;
 import com.senior.candleShopProject.datasource.entities.ProductImagesEntity;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
@@ -42,6 +40,7 @@ public class ProductService {
     private final UserCheckTemp userCheckTemp;
     private final SupabaseStorageService supabaseStorageService;
     private final SupabaseStorageUtils supabaseStorageUtils;
+    private final PaginationUtil paginationUtil;
 
     @Value("${supabase.storage.public-image-base-url}")
     private String publicImageBaseUrl;
@@ -86,15 +85,21 @@ public class ProductService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Products not found.");
 
         List<IProductHomeListItemResp> featuredProducts = addPrefixProductImgPath(prepareFeatureProducts);
-        List<IProductHomeListItemResp> allProducts = addPrefixProductImgPath(prepareAllProducts);
+        List<IProductHomeListItemResp> productList = addPrefixProductImgPath(prepareAllProducts);
 
+        Long totalCounts = productsRepo.count();
 
+        PaginationBuildResp pagination = paginationUtil.buildPagination(page, size, totalCounts);
 
         ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
         productHomeListItemResp.setFeaturedProducts((featuredProducts));
-
-        productHomeListItemResp.setAllProducts(addPrefixProductImgPath(allProducts));
-        productHomeListItemResp.setTotalProducts(allProducts.size());
+        productHomeListItemResp.setAllProducts(addPrefixProductImgPath(productList));
+        productHomeListItemResp.setPage(page);
+        productHomeListItemResp.setSize(size);
+        productHomeListItemResp.setStartAt(pagination.getStartAt());
+        productHomeListItemResp.setEndAt(pagination.getEndAt());
+        productHomeListItemResp.setTotalProducts(totalCounts);
+        productHomeListItemResp.setHasNext(pagination.isHasNext());
 
         GenericResponse response = new GenericResponse();
         response.setData(productHomeListItemResp);
@@ -147,7 +152,7 @@ public class ProductService {
     @Transactional
     public GenericResponse updateProduct(UUID userId,UUID productId,
                                          UpdateProductReq updateProductReq,
-                                         List<MultipartFile> productImagesReq) throws ShopServiceApiException, IOException {
+                                         List<MultipartFile> productImagesReq) throws ShopServiceApiException {
 
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
@@ -165,10 +170,8 @@ public class ProductService {
 
         Integer primaryIndex = updateProductReq.getPrimaryIndex();
         List<String> deleteImageIds = updateProductReq.getDeleteImageIds();
-        UUID defaultExistingImageId = null;
-        if (updateProductReq.getExistIntoPrimary() != null) {
-            defaultExistingImageId = UUID.fromString(updateProductReq.getExistIntoPrimary());
 
+        if (updateProductReq.getExistIntoPrimary() != null) {
             if (!productImagesReq.isEmpty())
                 throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "the setting defaultExistingImageId and image is unrelated.");
         } // Exist product image UUID from request
@@ -278,7 +281,7 @@ public class ProductService {
         return productsList;
     }
 
-    private List<ProductImagesEntity> uploadAndCreateProductImagesEntityList(UUID productId, List<MultipartFile> productImagesReq, Integer primaryIndex) throws ShopServiceApiException, IOException {
+    private List<ProductImagesEntity> uploadAndCreateProductImagesEntityList(UUID productId, List<MultipartFile> productImagesReq, Integer primaryIndex) throws IOException {
         List<ProductImagesEntity> productImagesEntities = new ArrayList<>();
         ProductsEntity productEntity = new ProductsEntity();
         productEntity.setProductId(productId);
@@ -303,7 +306,7 @@ public class ProductService {
 
     }
 
-    private void uploadProductImagesToStorage(String imagePath, MultipartFile imageData) throws ShopServiceApiException, IOException {
+    private void uploadProductImagesToStorage(String imagePath, MultipartFile imageData) throws IOException {
         supabaseStorageService.uploadFile(
                 Constants.SUPABASE_PRODUCT_BUCKET_NAME,
                 imagePath,

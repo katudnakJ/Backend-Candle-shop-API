@@ -123,4 +123,6 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     and o.order_id = :orderId;
 """, nativeQuery = true)
     IReceiptInformationResp getReceiptInformationByOrderId(@Param("userId") UUID userId, @Param("orderId") UUID orderId);
+
+    Long countByOrderStatus(String orderStatus);
 }

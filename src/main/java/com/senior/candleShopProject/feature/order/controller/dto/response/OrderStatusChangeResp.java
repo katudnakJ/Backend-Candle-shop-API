@@ -1,7 +1,6 @@
-package com.senior.candleShopProject.feature.order.controller.dto.response.dto;
+package com.senior.candleShopProject.feature.order.controller.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.senior.candleShopProject.common.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
 

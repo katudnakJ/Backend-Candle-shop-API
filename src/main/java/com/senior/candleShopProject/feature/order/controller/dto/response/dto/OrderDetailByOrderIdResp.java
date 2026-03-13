@@ -1,6 +1,5 @@
-package com.senior.candleShopProject.feature.order.controller.dto.response;
+package com.senior.candleShopProject.feature.order.controller.dto.response.dto;
 
-import com.senior.candleShopProject.common.OrderStatus;
 import lombok.Getter;
 import lombok.Setter;
 

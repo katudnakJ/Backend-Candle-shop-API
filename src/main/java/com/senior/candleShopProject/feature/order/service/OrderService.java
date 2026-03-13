@@ -7,8 +7,9 @@ import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
-import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
+import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
+import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
@@ -17,12 +18,13 @@ import com.senior.candleShopProject.datasource.entities.ShipmentEntity;
 import com.senior.candleShopProject.datasource.repo.*;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
-import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailByOrderIdResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.OrderByStatusResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderDetailByOrderIdResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.PDFResp;
-import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderByStatusResp;
-import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderDetailsResp;
-import com.senior.candleShopProject.feature.order.controller.dto.response.OrderItemsListResp;
-import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderStatusChangeResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderByStatusMappingResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailsResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderItemsListResp;
+import com.senior.candleShopProject.feature.order.controller.dto.response.OrderStatusChangeResp;
 import com.senior.candleShopProject.feature.order.generator.PDFGenerators;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,7 @@ public class OrderService {
     private final UserCheckTemp userCheckTemp;
     private final SupabaseStorageUtils supabaseStorageUtils;
     private final PDFGenerators pdfGenerators;
+    private final PaginationUtil paginationUtil;
 
     private final OrdersRepo ordersRepo;
     private final CarriersRepo carriersRepo;
@@ -89,13 +92,20 @@ public class OrderService {
         if (orderItems == null || orderItems.isEmpty())
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order not found.");
 
-        List<OrderByStatusResp> ordersResponse = mapToOrderByStatusResp(order ,orderItems);
+        List<OrderByStatusMappingResp> ordersResponse = mapToOrderByStatusResp(order ,orderItems);
 
-        Map<String, Object> bodyResponse = CustomizeResponseUtil.ReturnBodyWithCount(
-                ordersResponse.size(),
-                ordersResponse,
-                "orders"
-        );
+        Long totalCounts = ordersRepo.countByOrderStatus(status);
+
+        PaginationBuildResp pagination = paginationUtil.buildPagination(page, size, totalCounts);
+
+        OrderByStatusResp bodyResponse = new OrderByStatusResp();
+        bodyResponse.setOrders(ordersResponse);
+        bodyResponse.setPage(page);
+        bodyResponse.setSize(size);
+        bodyResponse.setStartAt(pagination.getStartAt());
+        bodyResponse.setEndAt(pagination.getEndAt());
+        bodyResponse.setTotalOrders(totalCounts);
+        bodyResponse.setHasNext(pagination.isHasNext());
 
         GenericResponse response = new GenericResponse();
         response.setData(bodyResponse);
@@ -353,9 +363,9 @@ public class OrderService {
     }
 //    Extracted method for business logic
 
-    private List<OrderByStatusResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
+    private List<OrderByStatusMappingResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
 
-        List<OrderByStatusResp> responseData = new ArrayList<>();
+        List<OrderByStatusMappingResp> responseData = new ArrayList<>();
 
 //        Group order items by orderId to optimize the mapping process
         Map<UUID, List<IOrderItemListResp>> orderItemsMap = orderItems.stream()
@@ -368,27 +378,27 @@ public class OrderService {
 
             List<String> trackingNumbers = getTrackingNumbers(orders.getTrackingNumber());
 
-            OrderByStatusResp orderByStatusResp = new OrderByStatusResp();
-            orderByStatusResp.setOrderId(orders.getOrderId());
-            orderByStatusResp.setTotalQuantity(orders.getTotalQuantity());
-            orderByStatusResp.setTotalAmount(orders.getTotalAmount());
-            orderByStatusResp.setNetAmount(orders.getNetAmount());
-            orderByStatusResp.setOrderStatus(orders.getOrderStatus());
-            orderByStatusResp.setPaymentStatus(orders.getPaymentStatus());
-            orderByStatusResp.setOrderNo(orders.getOrderNumber());
-            orderByStatusResp.setAddressLabel(orders.getAddressLabel());
-            orderByStatusResp.setTrackingNo(trackingNumbers);
-            orderByStatusResp.setDeliveryMethod(orders.getDeliveryMethod());
-            orderByStatusResp.setRejectionReason(orders.getRejectionReason());
-            orderByStatusResp.setOrderItems(orderItemsListResp);
-            responseData.add(orderByStatusResp);
+            OrderByStatusMappingResp orderByStatusMappingResp = new OrderByStatusMappingResp();
+            orderByStatusMappingResp.setOrderId(orders.getOrderId());
+            orderByStatusMappingResp.setTotalQuantity(orders.getTotalQuantity());
+            orderByStatusMappingResp.setTotalAmount(orders.getTotalAmount());
+            orderByStatusMappingResp.setNetAmount(orders.getNetAmount());
+            orderByStatusMappingResp.setOrderStatus(orders.getOrderStatus());
+            orderByStatusMappingResp.setPaymentStatus(orders.getPaymentStatus());
+            orderByStatusMappingResp.setOrderNo(orders.getOrderNumber());
+            orderByStatusMappingResp.setAddressLabel(orders.getAddressLabel());
+            orderByStatusMappingResp.setTrackingNo(trackingNumbers);
+            orderByStatusMappingResp.setDeliveryMethod(orders.getDeliveryMethod());
+            orderByStatusMappingResp.setRejectionReason(orders.getRejectionReason());
+            orderByStatusMappingResp.setOrderItems(orderItemsListResp);
+            responseData.add(orderByStatusMappingResp);
         });
 
         return responseData;
     }
 
     private List<OrderItemsListResp> mapToOrderItemsListResp(List<IOrderItemListResp> itemsMap) {
-        return itemsMap.stream().map(item -> {;
+        return itemsMap.stream().map(item -> {
             OrderItemsListResp items = new OrderItemsListResp();
             items.setOrderItemId(item.getOrderItemId());
             items.setProductName(item.getProductName());
