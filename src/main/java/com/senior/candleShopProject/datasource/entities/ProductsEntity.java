@@ -15,7 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name="products")
-public class    ProductsEntity {
+public class ProductsEntity {
     @Id
     @GeneratedValue
     @UuidGenerator(style = UuidGenerator.Style.TIME)
@@ -50,7 +50,7 @@ public class    ProductsEntity {
     private Instant productUpdatedDate;
 
     @Column(name = "total_selled")
-    private Integer totalSelled;
+    private Integer totalSold;
 
 //    Relationships
     @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)

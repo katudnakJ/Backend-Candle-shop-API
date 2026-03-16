@@ -8,15 +8,20 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-@Setter
 @Getter
+@Setter
 @AllArgsConstructor
-public class IProductHomeListItemResp {
+public class ProductByOrderIdResp {
     private UUID productId;
     private String productName;
     private BigDecimal price;
+    private double weight;
+    private String description;
+    private String slug;
+    private boolean isActive;
+    private boolean isFeatured;
     private Instant productCreatedDate;
+    private Instant productUpdatedDate;
     private Integer totalSold;
-    private String productSlug;
-    private String productImgPath;
+    private int itemSoldQuantity;
 }
