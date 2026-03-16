@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 public class PaginationUtil {
 
-    public PaginationBuildResp buildPagination(int page, int size, Long totalCounts) {
+    public PaginationBuildResp buildPaginationResp(int page, int size, Long totalCounts) {
 
         if (totalCounts == 0) {
             return new PaginationBuildResp(0, 0, 0L, false);

@@ -11,10 +11,8 @@ import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.orders.*;
-import com.senior.candleShopProject.datasource.entities.OrdersEntity;
-import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
-import com.senior.candleShopProject.datasource.entities.SellerEntity;
-import com.senior.candleShopProject.datasource.entities.ShipmentEntity;
+import com.senior.candleShopProject.datasource.domain.products.ProductByOrderIdResp;
+import com.senior.candleShopProject.datasource.entities.*;
 import com.senior.candleShopProject.datasource.repo.*;
 import com.senior.candleShopProject.feature.order.controller.dto.request.RejectPaymentReq;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
@@ -50,8 +48,9 @@ public class OrderService {
     private final CarriersRepo carriersRepo;
     private final OrderItemsRepo orderItemsRepo;
     private final PaymentsRepo paymentsRepo;
+    private final ProductsRepo productsRepo;
 
-//    Business logic for order management
+    //    Business logic for order management
     public GenericResponse getAllCarriers() {
         GenericResponse response = new GenericResponse();
         response.setData(carriersRepo.findAll());
@@ -96,7 +95,7 @@ public class OrderService {
 
         Long totalCounts = ordersRepo.countByOrderStatus(status);
 
-        PaginationBuildResp pagination = paginationUtil.buildPagination(page, size, totalCounts);
+        PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
 
         OrderByStatusResp bodyResponse = new OrderByStatusResp();
         bodyResponse.setOrders(ordersResponse);
@@ -157,6 +156,26 @@ public class OrderService {
 
         if ( sellerId == null )
             throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+
+        //            Increase total sold of the product when confirm payment
+        List<ProductByOrderIdResp> productIds = productsRepo.getProductsByOrderId(orderId);
+        List<ProductsEntity> productsEntities = new ArrayList<>();
+        productIds.forEach(product -> {
+            ProductsEntity productEntity = new ProductsEntity();
+            productEntity.setProductId(product.getProductId());
+            productEntity.setProductName(product.getProductName());
+            productEntity.setPrice(product.getPrice());
+            productEntity.setWeight(product.getWeight());
+            productEntity.setDescription(product.getDescription());
+            productEntity.setSlug(product.getSlug());
+            productEntity.setActive(product.isActive());
+            productEntity.setFeatured(product.isFeatured());
+            productEntity.setProductCreatedDate(product.getProductCreatedDate());
+            productEntity.setProductUpdatedDate(product.getProductUpdatedDate());
+            productEntity.setTotalSold(product.getTotalSold() + product.getItemSoldQuantity());
+            productsEntities.add(productEntity);
+        });
+        productsRepo.saveAll(productsEntities);
 
         Instant timeNow = Instant.now();
         SellerEntity seller = new SellerEntity();
@@ -279,6 +298,7 @@ public class OrderService {
         return response;
     }
 
+//    Customer confirm when receive the order and change order status to CP.
     @Transactional
     public GenericResponse confirmReceipt(UUID userId, UUID orderId) throws ShopServiceApiException {
 
@@ -361,7 +381,8 @@ public class OrderService {
         return getSignedPdfUrlResponse(paymentsEntity, receiptInfo.getCustomerId());
 
     }
-//    Extracted method for business logic
+
+    //    Extracted method for more readable code and to separate the mapping logic from the main service method
 
     private List<OrderByStatusMappingResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
 
@@ -450,6 +471,7 @@ public class OrderService {
 
         if (!Objects.equals(newStatus.getStatusCode(), OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
             orderEntity.setOrderStatus(newStatus.getStatusCode());
+
 
         orderEntity.setStatusChangedAt(timeNow);
         orderEntity.setPaymentsEntity(payment);

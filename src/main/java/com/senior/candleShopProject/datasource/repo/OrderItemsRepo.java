@@ -3,6 +3,7 @@ package com.senior.candleShopProject.datasource.repo;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
 import com.senior.candleShopProject.datasource.domain.orders.IReceiptOrderItemResp;
 import com.senior.candleShopProject.datasource.entities.OrderItemsEntity;
+import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

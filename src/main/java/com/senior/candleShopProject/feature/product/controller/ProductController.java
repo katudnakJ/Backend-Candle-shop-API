@@ -95,4 +95,15 @@ public class ProductController {
         GenericResponse response = productService.deleteProduct(userUUID, productUUID);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @GetMapping("/search")
+    @Operation(summary = "Search products API.", description = "ค้นหาสินค้าตามคำค้น")
+    public ResponseEntity<GenericResponse> searchProducts(@RequestParam("q") String searchQuery,
+                                                          @RequestParam(value = "page",defaultValue = "0") int page,
+                                                          @RequestParam(value = "size", defaultValue = "10") int size) throws ShopServiceApiException {
+        log.info("Search products with query {}", searchQuery);
+
+        GenericResponse response = productService.searchProducts(searchQuery, page, size);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
