@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import org.springframework.data.domain.Pageable;;
+;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
             is_featured AS isFeature,
             product_created_date AS productCreateDate,
             product_updated_date AS productUpdatedDate,
-            total_selled AS totalSold
+            total_sold AS totalSold
         from products
         where product_id = :productId;
         """, nativeQuery = true)
@@ -38,7 +38,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
               p.product_name as productName,
               p.price as price,
               p.product_created_date as productCreatedDate,
-              p.total_selled as productTotalSold,
+              p.total_sold as totalSold,
               p.slug as productSlug,
               pi.product_img_path as productImgPath
             from products p
@@ -47,9 +47,9 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
             and pi.is_primary = true
             where p.is_featured = :isFeatured
             and p.is_active = true
-            ORDER BY  p.total_selled DESC;
+            ORDER BY  p.total_sold DESC;
     """,nativeQuery = true)
-    List<IProductHomeListItemResp> getProductHomeListItemResp(@Param("isFeatured") Boolean isFeatured);
+    List<IProductHomeListItemResp> getProductHomeListItemByFeature(@Param("isFeatured") Boolean isFeatured);
 
     @Query(value = """
        Select
@@ -57,7 +57,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
               p.product_name as productName,
               p.price as price,
               p.product_created_date as productCreatedDate,
-              p.total_selled as productTotalSold,
+              p.total_sold as totalSold,
               p.slug as productSlug,
               pi.product_img_path as productImgPath
             from products p
@@ -77,7 +77,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
             p.product_name as productName,
             p.price as price,
             p.product_created_date,
-            p.total_selled as productTotalSold,
+            p.total_sold as totalSold,
             p.slug as productSlug,
             pi.product_img_path as productImgPath
         from products p
@@ -104,7 +104,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
                p.is_featured AS isFeature,
                p.product_created_date AS productCreateDate,
                p.product_updated_date AS productUpdatedDate,
-               p.total_selled AS totalSold,
+               p.total_sold AS totalSold,
                oi.quantity as itemSoldQuantity
         from products p
         join order_items oi on p.product_id = oi.product_id

@@ -49,7 +49,7 @@ public class ProductsEntity {
     @Column(name = "product_updated_date")
     private Instant productUpdatedDate;
 
-    @Column(name = "total_selled")
+    @Column(name = "total_sold")
     private Integer totalSold;
 
 //    Relationships

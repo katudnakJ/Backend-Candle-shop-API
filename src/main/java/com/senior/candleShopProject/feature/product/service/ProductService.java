@@ -79,7 +79,7 @@ public class ProductService {
     public GenericResponse getProductHomeListItem(int page, int size) throws ShopServiceApiException {
 
 //      get product from repository
-        List<IProductHomeListItemResp> prepareFeatureProducts = productsRepo.getProductHomeListItemResp(true);
+        List<IProductHomeListItemResp> prepareFeatureProducts = productsRepo.getProductHomeListItemByFeature(true);
         List<IProductHomeListItemResp> prepareAllProducts = productsRepo.getAllProductHomeList(size, page * size);
 
         if (prepareAllProducts.isEmpty())
