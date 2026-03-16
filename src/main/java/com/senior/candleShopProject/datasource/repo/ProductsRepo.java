@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.domain.Pageable;;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,4 +70,25 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
     List<IProductHomeListItemResp> getAllProductHomeList(@Param("limit") int limit, @Param("offset") int offset);
 
     ProductsEntity findProductsEntityByProductId(UUID productId);
+
+    @Query(value = """
+        select p.product_id as productId,
+            p.product_name as productName,
+            p.price as price,
+            p.product_created_date,
+            p.total_selled as productTotalSelled,
+            p.slug as productSlug,
+            pi.product_img_path as productImgPath
+        from products p
+        left join product_images pi
+        on p.product_id = pi.product_id
+        and pi.is_primary = true
+        where LOWER(p.product_name) like LOWER(CONCAT('%', :query, '%'))
+        and p.is_active = true
+        order by p.product_created_date ASC
+        LIMIT :limit OFFSET :offset
+""", nativeQuery = true)
+    List<IProductHomeListItemResp> searchProductsByName(@Param("query") String query, @Param("limit") int limit, @Param("offset") int offset);
+
+    Long countByProductNameContainingIgnoreCase(String query);
 }

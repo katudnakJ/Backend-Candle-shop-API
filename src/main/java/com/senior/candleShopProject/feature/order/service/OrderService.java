@@ -96,7 +96,7 @@ public class OrderService {
 
         Long totalCounts = ordersRepo.countByOrderStatus(status);
 
-        PaginationBuildResp pagination = paginationUtil.buildPagination(page, size, totalCounts);
+        PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
 
         OrderByStatusResp bodyResponse = new OrderByStatusResp();
         bodyResponse.setOrders(ordersResponse);
@@ -361,7 +361,8 @@ public class OrderService {
         return getSignedPdfUrlResponse(paymentsEntity, receiptInfo.getCustomerId());
 
     }
-//    Extracted method for business logic
+
+    //    Extracted method for more readable code and to separate the mapping logic from the main service method
 
     private List<OrderByStatusMappingResp> mapToOrderByStatusResp(List <IOrderByStatusResp> order, List<IOrderItemListResp> orderItems) {
 

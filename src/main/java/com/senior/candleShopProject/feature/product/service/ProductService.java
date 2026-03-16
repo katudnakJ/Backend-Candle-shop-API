@@ -18,6 +18,7 @@ import com.senior.candleShopProject.feature.product.controller.dto.request.Creat
 import com.senior.candleShopProject.feature.product.controller.dto.request.UpdateProductReq;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductDetailResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
+import com.senior.candleShopProject.feature.product.controller.dto.response.ProductsBySearchResp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,7 +90,7 @@ public class ProductService {
 
         Long totalCounts = productsRepo.count();
 
-        PaginationBuildResp pagination = paginationUtil.buildPagination(page, size, totalCounts);
+        PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
 
         ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
         productHomeListItemResp.setFeaturedProducts((featuredProducts));
@@ -270,6 +271,29 @@ public class ProductService {
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }
+
+    public GenericResponse searchProducts(String query, int page, int size) {
+        List<IProductHomeListItemResp> searchResults = productsRepo.searchProductsByName(query, size, page * size);
+
+        Long totalCounts = productsRepo.countByProductNameContainingIgnoreCase(query);
+        PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
+
+        ProductsBySearchResp productHomeListItemResp = new ProductsBySearchResp();
+        productHomeListItemResp.setProducts(addPrefixProductImgPath(searchResults));
+        productHomeListItemResp.setPage(page);
+        productHomeListItemResp.setSize(size);
+        productHomeListItemResp.setStartAt(pagination.getStartAt());
+        productHomeListItemResp.setEndAt(pagination.getEndAt());
+        productHomeListItemResp.setTotalProducts(totalCounts);
+        productHomeListItemResp.setHasNext(pagination.isHasNext());
+
+        GenericResponse response = new GenericResponse();
+        response.setData(productHomeListItemResp);
+        response.setStatus(ResultCode.SUCCESS);
+        return response;
+    }
+
+//    Extract function for more readability and reuse in other function if needed
 
     private List<IProductHomeListItemResp> addPrefixProductImgPath (List<IProductHomeListItemResp> productsList) {
         productsList.forEach(product -> {
