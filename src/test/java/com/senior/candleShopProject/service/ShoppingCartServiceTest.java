@@ -5,6 +5,7 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.IAllItemsShoppingCartResp;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartItemsEntity;
 import com.senior.candleShopProject.datasource.repo.ShoppingCartItemsRepo;
@@ -40,6 +41,9 @@ class ShoppingCartServiceTest {
 
     @Mock
     private ShoppingCartItemsRepo shoppingCartItemsRepo;
+
+    @Mock
+    private PaginationUtil paginationUtil;
 
     private ShoppingCartService shoppingCartService;
 

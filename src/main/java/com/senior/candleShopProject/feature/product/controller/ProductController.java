@@ -29,13 +29,13 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/details/{productId}")
+    @GetMapping("/{productId}")
     @Operation(summary = "Get product details API.", description = "Get product details by product id.")
     public ResponseEntity<GenericResponse> getProductDetailsById(@PathVariable(name = "productId") String productId) throws ShopServiceApiException {
         log.info("Get product details by product id {}", productId);
         UUID productUUID = UUID.fromString(productId);
 
-        GenericResponse response = productService.getProductsById(productUUID);
+        GenericResponse response = productService.getProductDetailById(productUUID);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

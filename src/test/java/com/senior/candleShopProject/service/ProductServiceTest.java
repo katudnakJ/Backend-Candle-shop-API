@@ -7,8 +7,10 @@ import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageServic
 import com.senior.candleShopProject.common.exception.ShopBadRequestException;
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.ProcessImageUtil;
 import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
+import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
 import com.senior.candleShopProject.datasource.repo.ProductsRepo;
 import com.senior.candleShopProject.datasource.domain.products.IProductHomeListItemResp;
@@ -60,12 +62,18 @@ public class ProductServiceTest {
     @Mock
     private SupabaseStorageUtils supabaseStorageUtils;
 
+    @Mock
+    private ProcessImageUtil processImageUtil;
+
+    @Mock
+    private PaginationUtil paginationUtil;
+
     @BeforeEach
     void initTests() {MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testGetProductsById_Success() throws ShopServiceApiException {
+    void testGetProductDetailById_Success() throws ShopServiceApiException {
        UUID productId = UUID.randomUUID();
 
        IProductResp productResp = mock(IProductResp.class);
@@ -76,7 +84,7 @@ public class ProductServiceTest {
        when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(productImagesResp));
 
 
-       GenericResponse response = productService.getProductsById(productId);
+       GenericResponse response = productService.getProductDetailById(productId);
 
        assertNotNull(response);
        assertEquals(response.getStatus(), ResultCode.SUCCESS);
@@ -86,13 +94,13 @@ public class ProductServiceTest {
     }
 
     @Test
-    void testGetProductsById_productNotFound_Throw() throws ShopServiceApiException {
+    void testGetProductDetailById_productNotFound_Throw() throws ShopServiceApiException {
         UUID productId = UUID.randomUUID();
 
         when(productsRepo.getProductById(productId)).thenReturn(null);
 
         ShopDataNotFoundException exception = assertThrows(ShopDataNotFoundException.class, () -> {
-            productService.getProductsById(productId);
+            productService.getProductDetailById(productId);
         });
 
         assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatus());
@@ -103,18 +111,24 @@ public class ProductServiceTest {
 
     @Test
     void testGetProductHomeListItem_Success() throws ShopServiceApiException {
+        int page = 0;
+        int size = 10;
+
+        PaginationBuildResp paginationBuildResp = mock(PaginationBuildResp.class);
+
+        when(paginationUtil.buildPaginationResp(anyInt(), anyInt(), anyLong())).thenReturn(paginationBuildResp);
 
         IProductHomeListItemResp featuredProductResp = mock(IProductHomeListItemResp.class);
         when(productsRepo.getProductHomeListItemByFeature(true)).thenReturn(List.of(featuredProductResp));
-        when(productsRepo.getAllProductHomeList(10, 0)).thenReturn(List.of(featuredProductResp));
+        when(productsRepo.getAllProductHomeList(size, 0)).thenReturn(List.of(featuredProductResp));
 
-        GenericResponse response = productService.getProductHomeListItem(0,10);
+        GenericResponse response = productService.getProductHomeListItem(page,size);
 
         assertNotNull(response);
         assertEquals(ResultCode.SUCCESS, response.getStatus());
 
         verify(productsRepo, times(1)).getProductHomeListItemByFeature(anyBoolean());
-        verify(productsRepo, times(1)).getAllProductHomeList(10,0);
+        verify(productsRepo, times(1)).getAllProductHomeList(size, 0);
     }
 
     @Test

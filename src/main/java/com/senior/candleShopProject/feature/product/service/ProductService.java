@@ -43,13 +43,10 @@ public class ProductService {
     private final SupabaseStorageUtils supabaseStorageUtils;
     private final PaginationUtil paginationUtil;
 
-    @Value("${supabase.storage.public-image-base-url}")
-    private String publicImageBaseUrl;
-
     private final ProductsRepo productsRepo;
     private final ProductImagesRepo productImagesRepo;
 
-    public GenericResponse getProductsById(UUID productId) throws ShopServiceApiException {
+    public GenericResponse getProductDetailById(UUID productId) throws ShopServiceApiException {
 
         IProductResp product = productsRepo.getProductById(productId);
 
@@ -61,7 +58,10 @@ public class ProductService {
         List<ProductImagesResp> productImages = images.stream().map(image -> {
             ProductImagesResp resp = new ProductImagesResp();
             resp.setProductImgId(image.getProductImgId());
-            resp.setProductImgPath(publicImageBaseUrl+image.getProductImgPath());
+            resp.setProductImgPath(supabaseStorageUtils.getProductImageUrl(
+                    productId,
+                    image.getProductImgPath()
+            ));
             resp.setIsPrimary(image.getIsPrimary());
             return resp;
         }).toList();
@@ -93,8 +93,8 @@ public class ProductService {
         PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
 
         ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
-        productHomeListItemResp.setFeaturedProducts((featuredProducts));
-        productHomeListItemResp.setAllProducts(addPrefixProductImgPath(productList));
+        productHomeListItemResp.setFeaturedProducts(featuredProducts);
+        productHomeListItemResp.setAllProducts(productList);
         productHomeListItemResp.setPage(page);
         productHomeListItemResp.setSize(size);
         productHomeListItemResp.setStartAt(pagination.getStartAt());
@@ -298,7 +298,12 @@ public class ProductService {
     private List<IProductHomeListItemResp> addPrefixProductImgPath (List<IProductHomeListItemResp> productsList) {
         productsList.forEach(product -> {
             if(product.getProductImgPath() != null)
-                product.setProductImgPath(publicImageBaseUrl+product.getProductImgPath());
+                product.setProductImgPath(
+                        supabaseStorageUtils.getProductImageUrl(
+                                product.getProductId(),
+                                product.getProductImgPath()
+                        )
+                );
             else
                 product.setProductImgPath(null);
         });
