@@ -39,6 +39,9 @@ public class SupabaseStorageUtils {
     @Value("${pdf.getFile.expiration}")
     private int getPdfFileExp;
 
+    @Value("${supabase.storage.public-image-base-url}")
+    private String publicImageBaseUrl;
+
     public SignedFileUrlResp getSignedPaymentProofImage(UUID customerId, UUID paymentId, String paymentProofPath, Instant createdAt) throws ShopServiceApiException {
 
         String yearPrefix = String.valueOf(createdAt.atZone(ZoneId.of(Constants.TIME_ZONE_BANGKOK)).getYear());
@@ -145,5 +148,13 @@ public class SupabaseStorageUtils {
                 processImageData(imageData),
                 Constants.CONTENT_TYPE_JPEG
         );
+    }
+
+//    get Product Image URL
+    public String getProductImageUrl(UUID productId, String productImagePath){
+        return publicImageBaseUrl
+                + Constants.SUPABASE_PRODUCT_BUCKET_NAME + "/"
+                + productId + "/"
+                + productImagePath;
     }
 }

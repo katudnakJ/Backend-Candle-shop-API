@@ -6,8 +6,11 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
+import com.senior.candleShopProject.common.utils.PaginationUtil;
+import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
+import com.senior.candleShopProject.datasource.domain.products.ProductByOrderIdResp;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
 import com.senior.candleShopProject.datasource.entities.ShipmentEntity;
@@ -35,10 +38,14 @@ public class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
+    @Mock private PaginationUtil paginationUtil;
     @Mock private UserCheckTemp userCheckTemp;
+
     @Mock private OrdersRepo ordersRepo;
     @Mock private OrderItemsRepo orderItemsRepo;
     @Mock private PaymentsRepo paymentsRepo;
+    @Mock private ProductsRepo productsRepo;
+
 
     @BeforeEach
     void init() {
@@ -95,6 +102,9 @@ public class OrderServiceTest {
         when(orderItemsRepo.getOrderItemByOrderIds(eq(List.of(orderId))))
                 .thenReturn(List.of(item));
 
+        PaginationBuildResp paginationBuildResp = mock(PaginationBuildResp.class);
+
+        when(paginationUtil.buildPaginationResp(anyInt(), anyInt(), anyLong())).thenReturn(paginationBuildResp);
         GenericResponse resp = orderService.getOrderByStatus(userId, status, page, size);
 
         assertNotNull(resp);
@@ -145,6 +155,10 @@ public class OrderServiceTest {
         when(userCheckTemp.getSellerIdByUserId(userId)).thenReturn(UUID.randomUUID());
 
         when(ordersRepo.save(any(OrdersEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        PaginationBuildResp paginationBuildResp = mock(PaginationBuildResp.class);
+        when(paginationUtil.buildPaginationResp(anyInt(), anyInt(), anyLong())).thenReturn(paginationBuildResp);
+        when(productsRepo.getProductsByOrderId(eq(orderId))).thenReturn(List.of(mock(ProductByOrderIdResp.class)));
 
         GenericResponse resp = orderService.confirmPayment(userId, orderId);
 
