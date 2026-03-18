@@ -55,7 +55,7 @@ public class SellerService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
 
         if(!usersResp.getIsSeller())
-            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
         ISellerResp seller = sellerRepo.getSellerByUserId(userId);
 
@@ -78,7 +78,7 @@ public class SellerService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
 
         if(!usersResp.getIsSeller())
-            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
         SellerEntity sellerEntity = sellerRepo.getSellerEntitiesByUsersEntity_UserId(userId);
 
@@ -86,7 +86,7 @@ public class SellerService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Seller not found.");
 
         if (sellerEntity.getQrPaymentImgPath() != null)
-            throw new ShopConflictException(ResultCode.CONFLICT, "มี QR Code ในระบบแล้ว","QR code payment already exists.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "มี QR Code ในระบบแล้ว","QR code payment already exists.");
 
         String type = Constants.CONTENT_TYPE_JPEG.split("/")[1];
         UUID genQrPaymentUUID = UUID.randomUUID();
@@ -110,7 +110,7 @@ public class SellerService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
 
         if(!usersResp.getIsSeller())
-            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
 
         SellerEntity sellerEntity = sellerRepo.getSellerEntitiesByUsersEntity_UserId(userId);

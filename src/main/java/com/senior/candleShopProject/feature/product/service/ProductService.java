@@ -123,7 +123,7 @@ public class ProductService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if ( sellerId == null)
-            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่มีสิทธิ์ในการเข้าถึง","You don't have permission to create new product.");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to create new product.");
 
         ImageValidationUtils.validateImages(productImagesReq);
 
@@ -158,7 +158,7 @@ public class ProductService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if (sellerId == null)
-            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่มีสิทธิ์ในการเข้าถึง","You don't have permission to update product.");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to update product.");
 
         if (productId == null)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Product id is missing.");
@@ -190,11 +190,11 @@ public class ProductService {
 
         for (String deleteImageId : deleteImageIds) {
             if (existPrimaryImage.getProductImgId().toString().equals(deleteImageId))
-                throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "ไม่สามารถลบรูปหลักได้ กรุณาเปลี่ยนรูปหลักก่อนลบ","You can't delete primary image. Please set another image to primary before delete.");
+                throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "ไม่สามารถลบรูปหลักได้ กรุณาเปลี่ยนรูปหลักก่อนลบ","User can't delete primary image. Please set another image to primary before delete.");
         }
 
         if ((productImagesReq.size() + allProductImages.size() - deleteImageIds.size()) > 5)
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "จำกัดจำนวนรูปภาพไม่เกิน 5 รูป","You can reupload up to 5 images.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "จำกัดจำนวนรูปภาพไม่เกิน 5 รูป","User can reupload up to 5 images.");
 
         if (!deleteImageIds.isEmpty()) {
             List<UUID> deleteImageIdsUUID = deleteImageIds.stream()
@@ -252,7 +252,7 @@ public class ProductService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if (sellerId == null)
-            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "You don't have permission to delete product.");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission to delete product.");
 
         ProductsEntity existingProduct = productsRepo.findById(productId)
                 .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product doesn't exists."));

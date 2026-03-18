@@ -67,7 +67,7 @@ public class ShoppingCartService {
         UUID shoppingCartId = shoppingCartRepo.getShoppingCartIdByUserId(userId);
 
         if (shoppingCartId == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบตะกร้าสินค้า กรุณาติดต่อเจ้าหน้าที่","Shopping cart not found.");
 
         UUID productId = UUID.fromString(addShoppingCartItemReq.getProductId());
         Optional<ShoppingCartItemsEntity> existCartItems = shoppingCartItemsRepo
@@ -104,7 +104,7 @@ public class ShoppingCartService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบตะกร้าสินค้าของคุณ กรุณาติดต่อเจ้าหน้าที่","Shopping cart not found.");
 
         if (!shoppingCartId.toString().equalsIgnoreCase(deleteShoppingCartItemReq.getShoppingCartId()))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "You don't have permission to delete this item.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission to delete this item.");
 
         shoppingCartItemsRepo.deleteById(shoppingCartItemId);
 

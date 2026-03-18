@@ -138,7 +138,7 @@ public class OrderCheckoutService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
 
         if (!orderOpt.get().getCustomersEntity().getCustomerId().equals(customerId))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "You don't have permission to perform this action.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission to perform this action.");
 
 
         Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof, orderOpt.get().getOrderCreatedAt());

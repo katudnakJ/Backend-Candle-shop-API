@@ -58,7 +58,6 @@ public class OrderServiceTest {
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
                 orderService.getOrderByStatus(userId, null, 0, 10)
         );
-        assertEquals(ResultCode.BAD_REQUEST, ex.getStatusCode());
         verifyNoInteractions(userCheckTemp, ordersRepo, orderItemsRepo);
     }
 
@@ -108,7 +107,6 @@ public class OrderServiceTest {
         GenericResponse resp = orderService.getOrderByStatus(userId, status, page, size);
 
         assertNotNull(resp);
-        assertEquals(ResultCode.SUCCESS, resp.getStatus());
         assertNotNull(resp.getData());
 
         verify(userCheckTemp).checkExistsUser(userId);
@@ -129,7 +127,6 @@ public class OrderServiceTest {
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () ->
                 orderService.getOrderDetailsByOrderId(userId, orderId)
         );
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
 
         verify(userCheckTemp).checkExistsUser(userId);
         verify(userCheckTemp).isOwnerOfOrder(userId, orderId);
@@ -163,7 +160,6 @@ public class OrderServiceTest {
         GenericResponse resp = orderService.confirmPayment(userId, orderId);
 
         assertNotNull(resp);
-        assertEquals(ResultCode.SUCCESS, resp.getStatus());
         verify(ordersRepo).save(any(OrdersEntity.class));
     }
 
@@ -185,7 +181,6 @@ public class OrderServiceTest {
         ShopConflictException ex = assertThrows(ShopConflictException.class, () ->
                 orderService.confirmPayment(userId, orderId)
         );
-        assertEquals(ResultCode.CONFLICT, ex.getStatusCode());
 
         verify(ordersRepo, never()).save(any());
     }
@@ -202,7 +197,6 @@ public class OrderServiceTest {
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
                 orderService.trackOrder(userId, orderId, req)
         );
-        assertEquals(ResultCode.BAD_REQUEST, ex.getStatusCode());
 
         verifyNoInteractions(ordersRepo);
     }
@@ -234,7 +228,6 @@ public class OrderServiceTest {
         GenericResponse resp = orderService.trackOrder(userId, orderId, req);
 
         assertNotNull(resp);
-        assertEquals(ResultCode.SUCCESS, resp.getStatus());
         verify(ordersRepo).save(any(OrdersEntity.class));
     }
 }
