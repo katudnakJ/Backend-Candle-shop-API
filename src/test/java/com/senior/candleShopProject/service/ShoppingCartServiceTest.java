@@ -186,7 +186,7 @@ class ShoppingCartServiceTest {
            shoppingCartService.addShoppingCartItem(userId,addShoppingCartItemReq);
         });
 
-        assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatusCode());
             verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(any(UUID.class));
     }
 
@@ -233,7 +233,7 @@ class ShoppingCartServiceTest {
                 () -> shoppingCartService.deleteShoppingCartItem(userId, req)
         );
 
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
         verify(shoppingCartItemsRepo, times(1)).existsByShoppingCartItemId(shoppingCartItemId);
 
         verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
@@ -260,7 +260,7 @@ class ShoppingCartServiceTest {
                 () -> shoppingCartService.deleteShoppingCartItem(userId, req)
         );
 
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
         verify(shoppingCartItemsRepo, times(1)).existsByShoppingCartItemId(shoppingCartItemId);
         verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
         verifyNoMoreInteractions(shoppingCartRepo, shoppingCartItemsRepo);
@@ -288,7 +288,7 @@ class ShoppingCartServiceTest {
                 () -> shoppingCartService.deleteShoppingCartItem(userId, req)
         );
 
-        assertEquals(ResultCode.FORBIDDEN, ex.getStatus());
+        assertEquals(ResultCode.FORBIDDEN, ex.getStatusCode());
         verify(shoppingCartItemsRepo, times(1)).existsByShoppingCartItemId(shoppingCartItemId);
         verify(shoppingCartRepo, times(1)).getShoppingCartIdByUserId(userId);
         verifyNoMoreInteractions(shoppingCartRepo, shoppingCartItemsRepo);

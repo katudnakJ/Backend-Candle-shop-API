@@ -103,7 +103,7 @@ public class ProductServiceTest {
             productService.getProductDetailById(productId);
         });
 
-        assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, exception.getStatusCode());
 
         verify(productsRepo, times(1)).getProductById(productId);
         verify(productImagesRepo, times(0)).getProductImagesByProductId(productId);
@@ -140,7 +140,7 @@ public class ProductServiceTest {
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
             productService.getProductHomeListItem(0,10);
         });
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
     }
 
     @Test
@@ -194,7 +194,7 @@ public class ProductServiceTest {
             productService.createNewProduct(userId, null, List.of(), -1);
         });
 
-        assertEquals(ResultCode.BAD_REQUEST, ex.getStatus());
+        assertEquals(ResultCode.BAD_REQUEST, ex.getStatusCode());
         verifyNoInteractions(productsRepo);
         verifyNoInteractions(productImagesRepo);
     }
@@ -281,7 +281,7 @@ public class ProductServiceTest {
             productService.updateProduct(userId, productId, req, List.of(img1));
         });
 
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
         verify(productImagesRepo, never()).deleteProductImagesEntitiesByProductsEntity_ProductId(any());
     }
 
@@ -322,7 +322,7 @@ public class ProductServiceTest {
             productService.deleteProduct(userId, productId);
         });
 
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
         verify(productsRepo, never()).delete(any());
     }
 }

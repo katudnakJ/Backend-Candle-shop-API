@@ -32,7 +32,7 @@ public class AccountService {
         IUsersResp userProfile = usersRepo.getUserProfile(userId);
 
         if (userProfile == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานในระบบ กรุณาเข้าสู่ระบบอีกครั้ง", "User not found.");
 
         List<IAddressResp> addressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
 
@@ -46,12 +46,12 @@ public class AccountService {
         IUsersResp userProfile = usersRepo.getUserProfile(userId);
 
         if (userProfile == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานในระบบ กรุณาเข้าสู่ระบบอีกครั้ง", "User not found.");
 
         IAddressResp address = addressesRepo.findAddressesEntitiesByAddressId((addressId));
 
         if (address == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User address not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ที่อยู่นี้ไม่มีอยู่ในระบบ", "User address not found.");
 
         GenericResponse response = new GenericResponse();
         response.setData(address);
@@ -67,7 +67,7 @@ public class AccountService {
         List<IAddressResp> existingAddressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
 
         if (existingAddressList.size() >= 5)
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "User can only have up to 5 addresses.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "คุณสามารถเพิ่มที่อยู่ได้ไม่เกิน 5 ที่อยู่เท่านั้น" , "User can only have up to 5 addresses.");
 
         Optional<IAddressResp> defaultAddress = existingAddressList.stream()
                 .filter(IAddressResp::getIsDefault)
@@ -96,7 +96,7 @@ public class AccountService {
         AddressesEntity addressOpt = addressesRepo.findAddressesEntitiesByAddressId_AndUsersEntity_UserId(addressId,userId);
 
         if(addressOpt == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "User can only update own address.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณสามารถแก้ไขที่อยู่ของตัวเองเท่านั้น" ,"User can only update own address.");
 
         List<IAddressResp> existingAddressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
 
@@ -130,10 +130,10 @@ public class AccountService {
                 .findAddressesEntitiesByAddressId_AndUsersEntity_UserId(addressId,userId);
 
         if(addressOpt == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "User can only delete own address.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณสามารถลบที่อยู่ของตัวเองเท่านั้น" ,"User can only delete own address.");
 
         if (addressOpt.isDefault())
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "User can not delete default address.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "ไม่สามารถลบที่อยู่เริ่มต้นได้" , "User can not delete default address.");
 
         addressesRepo.delete(addressOpt);
 

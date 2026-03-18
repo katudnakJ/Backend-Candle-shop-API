@@ -7,12 +7,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ShopUnAuthorizedException extends ShopServiceApiException {
-    public ShopUnAuthorizedException(Status status) {
-        super(status);
+    public ShopUnAuthorizedException(Status statusCode) {
+        super(statusCode);
     }
 
-    public ShopUnAuthorizedException(Status status, String remark) {
-        super(status, remark);
+    public ShopUnAuthorizedException(Status statusCode, String message) {
+        super(statusCode, null, message);
+    }
+
+    public ShopUnAuthorizedException(Status statusCode, String message, String remark) {
+        super(statusCode, message, remark);
     }
 
 }

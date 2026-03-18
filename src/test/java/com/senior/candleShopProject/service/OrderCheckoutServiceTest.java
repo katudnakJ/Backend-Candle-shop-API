@@ -161,7 +161,7 @@ public class OrderCheckoutServiceTest {
                 orderCheckoutService.checkoutOrder(userId, paymentProof, cartItemIds,addressId)
         );
 
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
         verify(customersRepo, times(1)).findCustomersEntitiesByUsersEntity_UserId(userId);
         verifyNoInteractions(shoppingCartRepo, shoppingCartItemsRepo, ordersRepo, orderItemsRepo, paymentsRepo, supabaseStorageService);
     }

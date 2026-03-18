@@ -58,7 +58,7 @@ public class OrderServiceTest {
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
                 orderService.getOrderByStatus(userId, null, 0, 10)
         );
-        assertEquals(ResultCode.BAD_REQUEST, ex.getStatus());
+        assertEquals(ResultCode.BAD_REQUEST, ex.getStatusCode());
         verifyNoInteractions(userCheckTemp, ordersRepo, orderItemsRepo);
     }
 
@@ -129,7 +129,7 @@ public class OrderServiceTest {
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () ->
                 orderService.getOrderDetailsByOrderId(userId, orderId)
         );
-        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatus());
+        assertEquals(ResultCode.DATA_NOT_FOUND, ex.getStatusCode());
 
         verify(userCheckTemp).checkExistsUser(userId);
         verify(userCheckTemp).isOwnerOfOrder(userId, orderId);
@@ -185,7 +185,7 @@ public class OrderServiceTest {
         ShopConflictException ex = assertThrows(ShopConflictException.class, () ->
                 orderService.confirmPayment(userId, orderId)
         );
-        assertEquals(ResultCode.CONFLICT, ex.getStatus());
+        assertEquals(ResultCode.CONFLICT, ex.getStatusCode());
 
         verify(ordersRepo, never()).save(any());
     }
@@ -202,7 +202,7 @@ public class OrderServiceTest {
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
                 orderService.trackOrder(userId, orderId, req)
         );
-        assertEquals(ResultCode.BAD_REQUEST, ex.getStatus());
+        assertEquals(ResultCode.BAD_REQUEST, ex.getStatusCode());
 
         verifyNoInteractions(ordersRepo);
     }

@@ -129,7 +129,7 @@ public class LoginServiceTest {
                 ShopUnAuthorizedException.class,
                 () -> loginService.userLogin(authHeader, servResp)
         );
-        assertEquals(ResultCode.UNAUTHORIZED, ex.getStatus());
+        assertEquals(ResultCode.UNAUTHORIZED, ex.getStatusCode());
     }
 
     @Test
@@ -146,6 +146,6 @@ public class LoginServiceTest {
                 () -> loginService.userLogin(authHeader, servResp)
         );
 
-        assertEquals(ResultCode.INTERNAL_SERVER_ERROR, ex.getStatus());
+        assertEquals(ResultCode.INTERNAL_SERVER_ERROR, ex.getStatusCode());
     }
 }

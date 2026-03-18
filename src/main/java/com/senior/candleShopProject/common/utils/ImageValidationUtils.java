@@ -18,18 +18,18 @@ public class ImageValidationUtils {
 
     public static void validateImage(MultipartFile imageFile) throws ShopServiceApiException {
         if(imageFile == null || imageFile.isEmpty())
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"File is empty.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "คุณยังไม่ได้เลือกไฟล์รูปภาพ","File is empty.");
 
         if(imageFile.getSize() > maxFileSizeInBytes)
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"File size exceeds the maximum limit of 2MB.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "ขนาดรูปภาพจะต้องมีขนาดไม่เกิน 2 MB","File size exceeds the maximum limit of 2MB.");
 
         if(!allowedExtensions.contains(imageFile.getContentType()))
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Invalid file type. Only JPG and PNG images are allowed.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"รูปภาพจะต้องมีนามสกุลเป็น .jpeg .jpg .png เท่านั้น","Invalid file type. Only JPG and PNG images are allowed.");
     }
 
     public  static void validateImages(List<MultipartFile> images) throws ShopServiceApiException {
         if (images == null || images.isEmpty())
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "No files uploaded.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "กรุณาอัปโหลดรูปภาพก่อน" ,"No files uploaded.");
 
         for (MultipartFile image : images) {
             validateImage(image);
