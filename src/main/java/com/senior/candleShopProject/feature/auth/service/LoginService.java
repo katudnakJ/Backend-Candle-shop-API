@@ -42,13 +42,13 @@ public class LoginService {
         try{
             lineProfileResp = lineLoginService.getLineProfile(authHeader);
         } catch (Exception exception){
-            log.error("Error get Line Profile (LineLoginService.getLineProfile()): {}", exception.getMessage());
+            log.error("Error get Line Profile (LineLoginService.getLineProfile()): {}", exception.getMessage(), exception);
             throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED);
         }
 
         String lineUserId = lineProfileResp.getUserId();
         if(StringUtils.isEmpty(lineUserId))
-            throw new ShopInvalidParamException(ResultCode.INTERNAL_SERVER_ERROR);
+            throw new ShopInvalidParamException(ResultCode.INTERNAL_SERVER_ERROR, "ไม่สามารถดึงข้อมูลโปรไฟล์ได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "Cannot get profile data from Line, please try login again.");
 
         IUsersResp userProfile = usersRepo.getUserProfileByLineId(lineUserId);
 

@@ -8,11 +8,15 @@ import lombok.Setter;
 @Setter
 public class ShopInvalidParamException extends ShopServiceApiException {
 
-    public ShopInvalidParamException(Status status) {
-        super(status);
+    public ShopInvalidParamException(Status statusCode) {
+        super(statusCode);
     }
 
-    public ShopInvalidParamException(Status status, String remark) {
-        super(status, remark);
+    public ShopInvalidParamException(Status statusCode, String remark) {
+        super(statusCode, null,remark);
+    }
+
+    public ShopInvalidParamException(Status statusCode, String message, String remark) {
+        super(statusCode, message, remark);
     }
 }

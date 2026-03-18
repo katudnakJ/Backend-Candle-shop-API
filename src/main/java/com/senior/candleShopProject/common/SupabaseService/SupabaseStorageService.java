@@ -73,12 +73,12 @@ public class SupabaseStorageService {
                 .onStatus(HttpStatusCode::isError, response ->
                         response.bodyToMono(String.class).flatMap(errorBody -> {
                             log.error("Supabase Storage Error: {}", errorBody);
-                            return Mono.error(new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Storage upload failed."));
+                            return Mono.error(new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, null, "Storage upload failed."));
                         }))
                 .bodyToMono(Void.class)
                 .onErrorMap(ex -> {
                     log.error("Upload failed", ex);
-                    return new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Image upload failed");
+                    return new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, null, "Image upload failed");
                 })
                 .block();
     }

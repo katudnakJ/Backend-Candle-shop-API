@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GenericResponse> handleGeneralException(Exception ex) {
-        log.error("General Exception : ",ex.getMessage());
+        log.error("General Exception : {}",ex.getMessage(), ex);
         ex.printStackTrace();
         GenericResponse response = new GenericResponse();
         response.setStatus(ResultCode.INTERNAL_SERVER_ERROR);
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<GenericResponse> handleMissingRequestHeader(MissingRequestHeaderException ex) {
-        log.error("Missing Request Header : {}", ex.getHeaderName());
+        log.error("Missing Request Header : {}", ex.getHeaderName(), ex);
         GenericResponse response = new GenericResponse();
         response.setStatus(ResultCode.UNAUTHORIZED);
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ShopServiceApiException.class)
     public ResponseEntity<GenericResponse> handleShopServiceApiException(ShopServiceApiException ex) {
-        log.error("Service Api Exception : ",ex.getMessage());
+        log.error("Service Api Exception : {} {}",ex.getStatusCode(), ex.getRemark(), ex);
         ex.printStackTrace();
         GenericResponse response = new GenericResponse();
         response.setStatus(ResultCode.SYSTEM_ERROR);
@@ -49,40 +49,40 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ShopInvalidParamException.class)
     public ResponseEntity<GenericResponse> handleShopInvalidParamException(ShopInvalidParamException ex) {
-        log.error("Invalid Param Exception : ",ex.getStatus().getRemark());
+        log.error("Invalid Param Exception : {} {}",ex.getStatusCode().getRemark(), ex.getRemark(), ex);
         GenericResponse response = new GenericResponse();
-        response.setStatus(ex.getStatus());
+        response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ShopForbiddenException.class)
     public ResponseEntity<GenericResponse> handleShopForbiddenException(ShopForbiddenException ex) {
-        log.error("Forbidden Exception : ",ex.getStatus().getRemark());
+        log.error("Forbidden Exception : {} {}",ex.getStatusCode().getRemark(), ex.getRemark(), ex);
         GenericResponse response = new GenericResponse();
-        response.setStatus(ex.getStatus());
+        response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(ShopUnAuthorizedException.class)
     public ResponseEntity<GenericResponse> handleShopUnAuthorizedException(ShopUnAuthorizedException ex) {
-        log.error("Unauthorized Exception : ",ex.getStatus().getRemark());
+        log.error("Unauthorized Exception : {} {}",ex.getStatusCode().getRemark(), ex.getRemark(), ex);
         GenericResponse response = new GenericResponse();
-        response.setStatus(ex.getStatus());
+        response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
 
     @ExceptionHandler(ShopDataNotFoundException.class)
     public ResponseEntity<GenericResponse> handleShopDataNotFoundException(ShopDataNotFoundException ex) {
-        log.error("Data not found Exception : ",ex.getStatus().getRemark());
+        log.error("Data not found Exception : {} {}",ex.getStatusCode().getRemark(), ex.getRemark(), ex);
         GenericResponse response = new GenericResponse();
-        response.setStatus(ex.getStatus());
+        response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public  ResponseEntity<GenericResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
-        log.error("Missing Servlet Request Parameter Exception : ",ex.getMessage());
+        log.error("Missing Servlet Request Parameter Exception : {}",ex.getMessage(), ex);
         GenericResponse response = new GenericResponse();
         response.setStatus(ResultCode.INVALID_PARAMS);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -90,23 +90,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ShopBadRequestException.class)
     public ResponseEntity<GenericResponse> handleShopBadRequestException(ShopBadRequestException ex) {
-        log.error("Bad Request Exception : ",ex.getStatus().getRemark());
+        log.error("Bad Request Exception : {}", ex.getRemark());
         GenericResponse response = new GenericResponse();
-        response.setStatus(ex.getStatus());
+        response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ShopConflictException.class)
     public ResponseEntity<GenericResponse> handleShopConflictException(ShopConflictException ex) {
-        log.error("Conflict Exception : ", ex.getStatus().getRemark());
+        log.error("Conflict Exception : {}", ex.getRemark(), ex);
         GenericResponse response = new GenericResponse();
-        response.setStatus(ex.getStatus());
+        response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<GenericResponse> handleShopUploadSizeExceededException(MaxUploadSizeExceededException ex) {
-        log.error("Max Upload Size Exceeded Exception : ", ex.getMessage());
+        log.error("Max Upload Size Exceeded Exception : {}", ex.getMessage(), ex);
         GenericResponse response = new GenericResponse();
         response.setStatus(ResultCode.FILE_TOO_LARGE);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -145,9 +145,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ShopBadRequestRuntimeExc.class)
     public ResponseEntity<GenericResponse> handleShopBadRequestRuntimeExc(ShopBadRequestRuntimeExc ex) {
-        log.error("Bad Request Runtime Exception : ", ex.getStatus().getRemark());
+        log.error("Bad Request Runtime Exception : {}", ex.getRemark(), ex);
         GenericResponse response = new GenericResponse();
-        response.setStatus(ex.getStatus());
+        response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 

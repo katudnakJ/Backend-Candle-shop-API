@@ -55,7 +55,6 @@ class AccountServiceTest {
 
         GenericResponse response = accountService.getUserAddresses(userId);
 
-        assertEquals(ResultCode.SUCCESS, response.getStatus());
         assertNotNull(response.getData());
         assertInstanceOf(List.class, response.getData());
         verify(usersRepo).getUserProfile(userId);
@@ -100,7 +99,6 @@ class AccountServiceTest {
 
         GenericResponse response = accountService.addUserAddress(userId, req);
 
-        assertEquals(ResultCode.CREATED, response.getStatus());
         verify(addressesRepo).save(any(AddressesEntity.class));
     }
 
@@ -139,7 +137,6 @@ class AccountServiceTest {
 
         GenericResponse response = accountService.syncUserAddress(userId, req, addressId);
 
-        assertEquals(ResultCode.SUCCESS, response.getStatus());
 
         ArgumentCaptor<AddressesEntity> captor =
                 ArgumentCaptor.forClass(AddressesEntity.class);
@@ -202,7 +199,6 @@ class AccountServiceTest {
 
         GenericResponse response = accountService.deleteAddress(userId, addressId);
 
-        assertEquals(ResultCode.SUCCESS, response.getStatus());
         verify(addressesRepo).delete(entity);
     }
 

@@ -18,18 +18,18 @@ public class LineLoginService {
     public LineProfileResp getLineProfile(String token) throws ShopServiceApiException {
 //     Check Token format
         if (token == null || !token.startsWith("Bearer "))
-            throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID," Token format ผิดหรืออาจไม่ได้ส่ง Token");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED," Token format ผิดหรืออาจไม่ได้ส่ง Token");
 
         String accessToken = token.split("Bearer ")[1];
 
         if(lineAPIClient.isTokenExpired(accessToken)
             || lineAPIClient.getVerifyResp(accessToken) == null
         )
-            throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID,"เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED,"ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
 
         LineProfileResp profileResp = lineAPIClient.getProfileResp(accessToken);
         if(profileResp == null)
-            throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID,"ไม่สามารถดึงข้อมูลโปรไฟล์ได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED,"ไม่สามารถดึงข้อมูลโปรไฟล์ได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
 
         return profileResp;
     }

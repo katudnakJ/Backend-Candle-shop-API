@@ -34,30 +34,30 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         if(token == null){
             log.info("token : {}"," token is null");
-            throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
         }
 
         if(jwtUtils.isTokenExpired(token)){
             log.info("token: {}", "token is expired");
-            throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
         }
 
             if(!jwtUtils.validateToken(token)){
                 log.info("token: {}", "token is invalid");
-                throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
             }
 
             String userId = jwtUtils.getUserIdFromToken(token);
 
             if (userId == null){
                 log.info("token: {}", "userId is null");
-                throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
             }
 
             String userRole = jwtUtils.getUserRoleFromToken(token);
             if(userRole == null){
                 log.info("token: {}", "userRole is null");
-                throw new ShopUnAuthorizedException(ResultCode.TOKEN_INVALID, "เซสชันหมดอายุ หรือไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
             }
             request.setAttribute("userId", userId);
             request.setAttribute("userRole", userRole);

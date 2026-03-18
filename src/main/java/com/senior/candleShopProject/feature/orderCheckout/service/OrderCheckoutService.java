@@ -57,12 +57,12 @@ public class OrderCheckoutService {
         Optional<CustomersEntity> customerOpt = customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId);
 
         if(customerOpt.isEmpty())
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
 
         UUID shoppingCartId = shoppingCartRepo.getShoppingCartIdByUserId(userId);
 
         if (!shoppingCartItemsRepo.existsByShoppingCartEntity_ShoppingCartId(shoppingCartId))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission to perform this action.");
 
 
 
@@ -77,10 +77,10 @@ public class OrderCheckoutService {
                 .getCartItemsForOrderItemsByCartIdAndCartItemIdList(shoppingCartId,shoppingCartItemIds);
 
         if (cartItemsForOrderItemsRests.isEmpty())
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart items not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "การสั่งซื้อไม่สำเร็จ เนื่องจากสินค้าถูกลบออกหรือไม่มีอยู่ในตะกร้าแล้ว","Shopping cart items not found.");
 
         if (shoppingCartItemIds.size() != cartItemsForOrderItemsRests.size())
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Some shopping cart items is missing.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "การสั่งซื้อไม่สำเร็จ กรุณาลองอีกครั้ง","Some shopping cart items is missing.");
 
         int totalQuantity = getTotalQuantityFromCartItems(cartItemsForOrderItemsRests);
         BigDecimal totalAmount = getTotalAmountFromCartItems(cartItemsForOrderItemsRests);
@@ -93,7 +93,7 @@ public class OrderCheckoutService {
         OrdersEntity ordersEntity = new OrdersEntity();
 
         AddressesEntity addressesEntity = addressesRepo.findById(addressId)
-                .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Address not found."));
+                .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบที่อยู่นี้ในระบบ กรุณาลองอีกครั้ง","Address not found."));
         OrderShippingAddressEntity orderShippingAddressEntity = getOrderShippingAddressEntity(addressesEntity);
         orderShippingAddressEntity.setOrdersEntity(ordersEntity);
 
@@ -130,7 +130,7 @@ public class OrderCheckoutService {
         UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
 
         if (customerId == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
 
         Optional<OrdersEntity> orderOpt = ordersRepo.findById(orderId);
 
@@ -138,7 +138,7 @@ public class OrderCheckoutService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
 
         if (!orderOpt.get().getCustomersEntity().getCustomerId().equals(customerId))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to perform this action.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission to perform this action.");
 
 
         Status resultCode = upsertPaymentEntity(customerId,orderId,paymentProof, orderOpt.get().getOrderCreatedAt());
@@ -208,7 +208,7 @@ public class OrderCheckoutService {
             paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
             if(!paymentsEntity.getPaymentStatus().equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()))
-                throw new ShopConflictException(ResultCode.CONFLICT, "Status of payment is not rejected. You can't resubmit payment proof.");
+                throw new ShopConflictException(ResultCode.CONFLICT,"ไม่สามารถส่งหลักฐานการชำระเงินซ้ำได้", "Status of payment is not rejected. You can't resubmit payment proof.");
 
             runningNumber = paymentsEntity.getReceiptNumber();
             paymentsEntity.setResubmitAt(Instant.now());

@@ -6,6 +6,7 @@ import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.IAllItemsShoppingCartResp;
@@ -33,12 +34,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ShoppingCartService {
 
-    @Value("${supabase.storage.public-image-base-url}")
-    private String publicImageBaseUrl;
-
     private final ShoppingCartRepo shoppingCartRepo;
 
     private final ShoppingCartItemsRepo shoppingCartItemsRepo;
+    private final SupabaseStorageUtils supabaseStorageUtils;
 
     public GenericResponse getShoppingCart(UUID userId, int page, int size) throws ShopServiceApiException {
 
@@ -68,7 +67,7 @@ public class ShoppingCartService {
         UUID shoppingCartId = shoppingCartRepo.getShoppingCartIdByUserId(userId);
 
         if (shoppingCartId == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบตะกร้าสินค้า กรุณาติดต่อเจ้าหน้าที่","Shopping cart not found.");
 
         UUID productId = UUID.fromString(addShoppingCartItemReq.getProductId());
         Optional<ShoppingCartItemsEntity> existCartItems = shoppingCartItemsRepo
@@ -99,13 +98,13 @@ public class ShoppingCartService {
         UUID shoppingCartItemId = UUID.fromString(deleteShoppingCartItemReq.getShoppingCartItemId());
 
         if(!shoppingCartItemsRepo.existsByShoppingCartItemId(shoppingCartItemId))
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart item is not exists.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "สินค้าถูกลบออกหรือไม่มีอยู่ในตะกร้าแล้ว","Shopping cart item is not exists.");
 
         if (shoppingCartId == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Shopping cart not found.");
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบตะกร้าสินค้าของคุณ กรุณาติดต่อเจ้าหน้าที่","Shopping cart not found.");
 
         if (!shoppingCartId.toString().equalsIgnoreCase(deleteShoppingCartItemReq.getShoppingCartId()))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission to delete this item.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission to delete this item.");
 
         shoppingCartItemsRepo.deleteById(shoppingCartItemId);
 
@@ -130,7 +129,12 @@ public class ShoppingCartService {
             if(cart.getProductImgPath() == null)
                 cartItemsList.setProductImgPath(null);
             else
-                cartItemsList.setProductImgPath(publicImageBaseUrl + cart.getProductImgPath());
+                cartItemsList.setProductImgPath(
+                        supabaseStorageUtils.getProductImageUrl(
+                                cart.getProductId(),
+                                cart.getProductImgPath()
+                        )
+                );
 
             shoppingCartItemsList.add(cartItemsList);
         }

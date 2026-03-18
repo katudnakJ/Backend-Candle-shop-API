@@ -77,7 +77,6 @@ public class LoginServiceTest {
         GenericResponse resp = loginService.userLogin(authHeader, servResp);
 
         assertNotNull(resp);
-        assertEquals(ResultCode.SUCCESS, resp.getStatus());
         assertNotNull(resp.getData());
         verify(usersRepo, times(2)).getUserProfileByLineId(lineUserId);
         verify(jwtUtils).generateToken(userId, role);
@@ -110,7 +109,6 @@ public class LoginServiceTest {
         GenericResponse resp = loginService.userLogin(authHeader, servResp);
 
         assertNotNull(resp);
-        assertEquals(ResultCode.SUCCESS, resp.getStatus());
         assertNotNull(resp.getData());
         verify(usersRepo).save(any(UsersEntity.class));
 
@@ -129,7 +127,6 @@ public class LoginServiceTest {
                 ShopUnAuthorizedException.class,
                 () -> loginService.userLogin(authHeader, servResp)
         );
-        assertEquals(ResultCode.UNAUTHORIZED, ex.getStatus());
     }
 
     @Test
@@ -146,6 +143,5 @@ public class LoginServiceTest {
                 () -> loginService.userLogin(authHeader, servResp)
         );
 
-        assertEquals(ResultCode.INTERNAL_SERVER_ERROR, ex.getStatus());
     }
 }

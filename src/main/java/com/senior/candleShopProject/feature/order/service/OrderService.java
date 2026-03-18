@@ -125,7 +125,7 @@ public class OrderService {
         List<IOrderItemListResp> orderItemsListResp = orderItemsRepo.getOrderItemByOrderIds(List.of(orderId));
 
         if (orderItemsListResp.isEmpty())
-            throw new ShopConflictException(ResultCode.CONFLICT,"Order must contain at least one item.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "คำสั่งซื้อนี้ไม่มีสินค้า","Order must contain at least one item.");
 
         OrderDetailsResp orderDetailsResp = mapToOrderDetailsResp(orderDetails, orderItemsListResp);
 
@@ -155,7 +155,7 @@ public class OrderService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if ( sellerId == null )
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission.");
 
         //            Increase total sold of the product when confirm payment
         List<ProductByOrderIdResp> productIds = productsRepo.getProductsByOrderId(orderId);
@@ -196,7 +196,7 @@ public class OrderService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if( sellerId == null )
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);
             if (order.isEmpty())
@@ -228,12 +228,12 @@ public class OrderService {
         userCheckTemp.checkExistsUser(userId);
 
         if (orderId == null || trackOrderReq.getTrackingNumber().isEmpty())
-            throw new ShopBadRequestException(ResultCode.BAD_REQUEST,"Tracking number is required.");
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "กรุณาใส่หมายเลขพัสดุอย่างน้อย 1 หมายเลข","Tracking number is required.");
 
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if (sellerId == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);
         if (order.isEmpty())
@@ -275,10 +275,10 @@ public class OrderService {
         UUID customerId = userCheckTemp.getCustomerIdByUserId(userId);
 
         if (customerId == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         if (!userCheckTemp.isOwnerOfOrder(userId, orderId))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN,"You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         PaymentsEntity payment = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
@@ -308,7 +308,7 @@ public class OrderService {
                 .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found."));
 
         if (customerId == null ||  order.getCustomersEntity().getCustomerId() != customerId)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "You don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         if (
                 !OrderStatus.validToChangeStatus(order.getOrderStatus(), OrderStatus.ORDER_COMPLETED.getStatusCode())
@@ -366,7 +366,7 @@ public class OrderService {
                pdf = pdfGenerators.generateReceiptPDFWithSignature(receiptInfo, orderItemRespList);
             }catch (Exception e){
                 log.error("Error generating receipt PDF for order {}: {}", orderId, e.getMessage());
-                throw new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "Failed to generate receipt PDF.");
+                throw new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "เกิดข้อผิดพลาดระหว่างการดาวโหลดใบเสร็จ", "Failed to generate receipt PDF.");
             }
             System.out.println("PDF size: " + pdf.length);
             supabaseStorageUtils.uploadReceiptPDF(
