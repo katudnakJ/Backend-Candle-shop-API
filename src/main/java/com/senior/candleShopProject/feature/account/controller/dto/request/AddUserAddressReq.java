@@ -14,7 +14,7 @@ public class AddUserAddressReq {
     @JsonProperty("delivery_address")
     private String deliveryAddress;
 
-    @JsonProperty("postal_code")
+    @JsonProperty("postcode")
     private String postcode;
 
     @JsonProperty("province")
