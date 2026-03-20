@@ -38,35 +38,38 @@ public class SellerController {
 
     @GetMapping("/qr-payment")
     @Operation(summary = "Get QR code payment image API.", description = "Get QR code payment image when seller click the button.")
-    public ResponseEntity getQrCodePayment(@RequestAttribute("userId") String userId) throws ShopServiceApiException{
+    public ResponseEntity getQrCodePayment(@RequestAttribute("userId") String userId,
+                                           @RequestAttribute("isOwner") boolean isOwner) throws ShopServiceApiException{
         log.info("Get QR code payment");
         UUID userUuid = UUID.fromString(userId);
 
-        GenericResponse response = sellerService.getQrCodePayment(userUuid);
+        GenericResponse response = sellerService.getQrCodePayment(userUuid, isOwner);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping(value = "/qr-payment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Add new QR code payment image API.")
     public ResponseEntity addQrCodePayment(@RequestAttribute("userId") String userId,
+                                            @RequestAttribute("isOwner") boolean isOwner,
                                             @RequestPart("imageData") MultipartFile imageData ) throws ShopServiceApiException, IOException {
         log.info("Add QR code payment");
         ImageValidationUtils.validateImage(imageData);
         UUID userUuid = UUID.fromString(userId);
 
-        GenericResponse response = sellerService.addQrCodePayment(userUuid, imageData);
+        GenericResponse response = sellerService.addQrCodePayment(userUuid, imageData, isOwner);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/qr-payment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update QR code payment API.")
     public ResponseEntity syncQrCodePayment(@RequestAttribute("userId") String userId,
+                                            @RequestAttribute("isOwner") boolean isOwner,
                                             @RequestPart("imageData") MultipartFile imageData ) throws ShopServiceApiException, IOException {
         log.info("Sync QR code payment");
         ImageValidationUtils.validateImage(imageData);
         UUID userUuid = UUID.fromString(userId);
 
-        GenericResponse response = sellerService.syncQrCodePayment(userUuid, imageData);
+        GenericResponse response = sellerService.syncQrCodePayment(userUuid, imageData, isOwner);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

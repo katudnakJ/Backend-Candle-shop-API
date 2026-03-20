@@ -72,14 +72,14 @@ public class LoginServiceTest {
         when(usersRepo.getUserProfileByLineId(eq(lineUserId))).thenReturn(userProfile);
         when(userProfile.getUserId()).thenReturn(userId);
         when(userProfile.getUserRole()).thenReturn(role);
-        when(jwtUtils.generateToken(userId, role)).thenReturn(rawToken);
+        when(jwtUtils.generateToken(userId, role, false)).thenReturn(rawToken);
 
         GenericResponse resp = loginService.userLogin(authHeader, servResp);
 
         assertNotNull(resp);
         assertNotNull(resp.getData());
         verify(usersRepo, times(2)).getUserProfileByLineId(lineUserId);
-        verify(jwtUtils).generateToken(userId, role);
+        verify(jwtUtils).generateToken(userId, role, false);
 
         Cookie cookie = servResp.getCookie("access_token");
         assertNotNull(cookie);
@@ -104,7 +104,7 @@ public class LoginServiceTest {
                 .thenReturn(userProfile);
         when(userProfile.getUserId()).thenReturn(userId);
         when(userProfile.getUserRole()).thenReturn(role);
-        when(jwtUtils.generateToken(userId, role)).thenReturn(rawToken);
+        when(jwtUtils.generateToken(userId, role, false)).thenReturn(rawToken);
 
         GenericResponse resp = loginService.userLogin(authHeader, servResp);
 

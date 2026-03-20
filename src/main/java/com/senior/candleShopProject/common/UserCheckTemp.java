@@ -2,8 +2,6 @@ package com.senior.candleShopProject.common;
 
 import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.datasource.entities.CustomersEntity;
-import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.CustomersRepo;
 import com.senior.candleShopProject.datasource.repo.OrdersRepo;
 import com.senior.candleShopProject.datasource.repo.SellerRepo;
@@ -36,7 +34,7 @@ public class UserCheckTemp{
     }
 
     public UUID getSellerIdByUserId(UUID userId){
-        return sellerRepo.getSellerByUserId(userId)
+        return sellerRepo.getQrPaymentImagePath(userId)
                 .getSellerId();
     }
 

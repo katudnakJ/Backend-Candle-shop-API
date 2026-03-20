@@ -15,6 +15,7 @@ import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
 import com.senior.candleShopProject.datasource.entities.CustomersEntity;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import com.senior.candleShopProject.datasource.entities.UsersEntity;
+import com.senior.candleShopProject.datasource.repo.SellerRepo;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
 import com.senior.candleShopProject.feature.auth.controller.UserLoginResponse;
 import io.micrometer.common.util.StringUtils;
@@ -35,6 +36,7 @@ public class LoginService {
     private final LineLoginService lineLoginService;
 
     private final UsersRepo usersRepo;
+    private final SellerRepo sellerRepo;
 
     public GenericResponse userLogin(String authHeader, HttpServletResponse servResp) throws ShopServiceApiException {
 //        LineService
@@ -60,7 +62,12 @@ public class LoginService {
         userProfile = usersRepo.getUserProfileByLineId(lineUserId);
         UUID userId = userProfile.getUserId();
         String userRole = userProfile.getUserRole();
-        String token = jwtUtils.generateToken(userId, userRole);
+
+        boolean isOwner = false;
+        if (userProfile.getIsSeller())
+            isOwner = sellerRepo.getIsOwnerByUserId(userId);
+
+        String token = jwtUtils.generateToken(userId, userRole, isOwner);
 
 //        set cookie
         CookieUtils.addAccessTokenToCookie(servResp, token);
@@ -69,6 +76,7 @@ public class LoginService {
         UserLoginResponse userLoginResponse = new UserLoginResponse();
         userLoginResponse.setUserId(userId.toString());
         userLoginResponse.setUserRole(userRole);
+        userLoginResponse.setOwner(isOwner);
 
         LineProfileData lineProfileData = new LineProfileData();
         lineProfileData.setDisplayName(lineProfileResp.getDisplayName());

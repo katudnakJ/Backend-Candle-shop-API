@@ -27,7 +27,7 @@ public class JwtUtils {
     }
 
 //    Generate token by using userId
-    public String generateToken(UUID userId, String userRole) {
+    public String generateToken(UUID userId, String userRole, boolean isOwner) {
         String userIdString = userId.toString();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtAccessExpirationTime);
@@ -35,8 +35,9 @@ public class JwtUtils {
         return Jwts.builder()
                 .subject(userIdString)
                 .claim("role",userRole)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .claim("isOwner", isOwner)
+                .issuedAt(now)
+                .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -59,6 +60,16 @@ public class JwtUtils {
                 .parseSignedClaims(token)
                 .getPayload();
         return claims.get("role", String.class);
+    }
+
+//    Extract isOwner From Token
+    public boolean extractIsOwnerFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("isOwner", Boolean.class);
     }
 
 //    Validate Token
@@ -92,4 +103,6 @@ public class JwtUtils {
     public String getUserRoleFromToken(String token) {
         return extractUserRoleFromToken(token);
     }
+
+    public boolean getIsOwnerFromToken(String token) {return extractIsOwnerFromToken(token);}
 }

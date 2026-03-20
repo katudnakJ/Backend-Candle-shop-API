@@ -6,7 +6,9 @@ import com.senior.candleShopProject.common.exception.ShopDataNotFoundException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
+import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
+import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.IAllItemsShoppingCartResp;
@@ -35,9 +37,10 @@ import java.util.UUID;
 public class ShoppingCartService {
 
     private final ShoppingCartRepo shoppingCartRepo;
-
     private final ShoppingCartItemsRepo shoppingCartItemsRepo;
+
     private final SupabaseStorageUtils supabaseStorageUtils;
+    private final PaginationUtil paginationUtil;
 
     public GenericResponse getShoppingCart(UUID userId, int page, int size) throws ShopServiceApiException {
 
@@ -50,11 +53,19 @@ public class ShoppingCartService {
             return response;
         }
 
+        Long totalItems = shoppingCartRepo.countByShoppingCartId(iShoppingCartResps.get(0).getShoppingCartId());
+
         List<ShoppingCartItemsList> shoppingCartItemsList = getShoppingCartItemsList(iShoppingCartResps);
+
+        PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalItems);
 
         ShoppingCartResp shoppingCartResp = new ShoppingCartResp();
         shoppingCartResp.setShoppingCartId(iShoppingCartResps.get(0).getShoppingCartId());
         shoppingCartResp.setCartItems(shoppingCartItemsList);
+        shoppingCartResp.setStartAt(pagination.getStartAt());
+        shoppingCartResp.setEndAt(pagination.getEndAt());
+        shoppingCartResp.setTotalItems(pagination.getTotalItems());
+        shoppingCartResp.setHasNext(pagination.isHasNext());
 
         GenericResponse response = new GenericResponse();
         response.setData(shoppingCartResp);
