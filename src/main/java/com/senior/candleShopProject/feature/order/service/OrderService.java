@@ -335,7 +335,7 @@ public class OrderService {
         if (paymentsEntity == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");
 
-        if (OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode().equalsIgnoreCase(paymentsEntity.getPaymentStatus()))
+        if (!OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode().equalsIgnoreCase(paymentsEntity.getPaymentStatus()))
             throw new ShopConflictException(ResultCode.CONFLICT, "Only payment with 'APPROVED' status can generate receipt PDF.");
 
         IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
@@ -369,13 +369,17 @@ public class OrderService {
                 throw new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, "เกิดข้อผิดพลาดระหว่างการดาวโหลดใบเสร็จ", "Failed to generate receipt PDF.");
             }
             System.out.println("PDF size: " + pdf.length);
-            supabaseStorageUtils.uploadReceiptPDF(
-                    timeNow, // use current time for PDF
-                    pdf,
-                    receiptInfo.getCustomerId(),
-                    receiptInfo.getPaymentId(),
-                    receiptInfo.getPaymentReceiptNumber()
-            );
+            try {
+                supabaseStorageUtils.uploadReceiptPDF(
+                        timeNow, // use current time for PDF
+                        pdf,
+                        receiptInfo.getCustomerId(),
+                        receiptInfo.getPaymentId(),
+                        receiptInfo.getPaymentReceiptNumber()
+                );
+            }catch (Exception e){
+                throw new ShopServiceApiException(ResultCode.INTERNAL_SERVER_ERROR, null, "Failed to upload receipt PDF.");
+            }
             return  getSignedPdfUrlResponse(newPayment, receiptInfo.getCustomerId());
         }
         return getSignedPdfUrlResponse(paymentsEntity, receiptInfo.getCustomerId());

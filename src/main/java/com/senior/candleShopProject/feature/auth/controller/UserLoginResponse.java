@@ -9,5 +9,6 @@ import lombok.Setter;
 public class UserLoginResponse {
     private String userId;
     private String userRole;
+    private boolean isOwner;
     private LineProfileData lineProfile = new LineProfileData();
 }

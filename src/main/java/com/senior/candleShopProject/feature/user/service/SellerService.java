@@ -48,7 +48,11 @@ public class SellerService {
         return response;
     }
 
-    public GenericResponse getQrCodePayment (UUID userId) throws ShopServiceApiException {
+    public GenericResponse getQrCodePayment (UUID userId, boolean isOwner) throws ShopServiceApiException {
+
+        if (!isOwner)
+            throw new ShopForbiddenException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+
         IUsersResp usersResp = usersRepo.getUserProfile(userId);
 
         if(usersResp == null)
@@ -57,21 +61,31 @@ public class SellerService {
         if(!usersResp.getIsSeller())
             throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
-        ISellerResp seller = sellerRepo.getSellerByUserId(userId);
-
-        SignedFileUrlResp result = supabaseStorageUtils.getSignedQrPaymentImage(
-                seller.getSellerId(),
-                seller.getQrPaymentImgPath()
-        );
-
         GenericResponse response = new GenericResponse();
-        response.setData(result);
-        response.setStatus(ResultCode.SUCCESS);
-        return response;
+
+            ISellerResp seller = sellerRepo.getQrPaymentImagePath(userId);
+
+            if(seller.getQrPaymentImgPath() == null || seller.getQrPaymentImgPath().isEmpty()) {
+                response.setData(null);
+                response.setStatus(ResultCode.SUCCESS);
+                return response;
+
+            }
+            SignedFileUrlResp result = supabaseStorageUtils.getSignedQrPaymentImage(
+                    seller.getSellerId(),
+                    seller.getQrPaymentImgPath()
+            );
+            response.setData(result);
+            response.setStatus(ResultCode.SUCCESS);
+            return response;
     }
 
     @Transactional
-    public GenericResponse addQrCodePayment(UUID userId, MultipartFile imageData) throws ShopServiceApiException, IOException {
+    public GenericResponse addQrCodePayment(UUID userId, MultipartFile imageData, boolean isOwner) throws ShopServiceApiException, IOException {
+
+        if (!isOwner)
+            throw new ShopForbiddenException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+
         IUsersResp usersResp = usersRepo.getUserProfile(userId);
 
         if (usersResp == null)
@@ -103,7 +117,11 @@ public class SellerService {
     }
 
     @Transactional
-    public GenericResponse syncQrCodePayment(UUID userId, MultipartFile imageData) throws ShopServiceApiException, IOException {
+    public GenericResponse syncQrCodePayment(UUID userId, MultipartFile imageData, boolean isOwner) throws ShopServiceApiException, IOException {
+
+        if (!isOwner)
+            throw new ShopForbiddenException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+
         IUsersResp usersResp = usersRepo.getUserProfile(userId);
 
         if (usersResp == null)

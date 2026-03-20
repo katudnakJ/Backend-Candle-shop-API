@@ -23,6 +23,9 @@ public class SellerEntity {
     @Column(name = "qr_payment_img_path")
     private String qrPaymentImgPath;
 
+    @Column(name = "is_owner")
+    private Boolean isOwner;
+
 //    Relationships
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

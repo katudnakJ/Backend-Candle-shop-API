@@ -92,14 +92,14 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
         o.total_amount as orderTotalAmount,
         o.net_amount as orderNetAmount,
         o.order_status as orderStatus,
-        ad.recipient_first_name as sellerFirstName,
-        ad.recipient_last_name as sellerLastName,
-        ad.recipient_phone as sellerPhone,
-        ad.delivery_address as sellerDeliveryAddress,
-        ad.postcode as sellerPostcode,
-        ad.province as sellerProvince,
-        ad.district as sellerDistrict,
-        ad.sub_district as sellerSubDistrict,
+        sad.sellerFirstName,
+        sad.sellerLastName,
+        sad.sellerPhone,
+        sad.sellerDeliveryAddress,
+        sad.sellerPostcode,
+        sad.sellerProvince,
+        sad.sellerDistrict,
+        sad.sellerSubDistrict,
         c.customer_id as customerId,
         osa.recipient_first_name as customerFirstName,
         osa.recipient_last_name as customerLastName,
@@ -113,8 +113,23 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     join payments p on o.order_id = p.order_id
     join customers c on c.customer_id = o.customer_id
     join users u on u.user_id = c.user_id
-    left join seller s on s.seller_id = p.seller_id
-    left join addresses ad on s.user_id = ad.user_id
+    CROSS JOIN (
+    SELECT
+        ad.recipient_first_name AS sellerFirstName,
+        ad.recipient_last_name AS sellerLastName,
+        ad.recipient_phone AS sellerPhone,
+        ad.delivery_address AS sellerDeliveryAddress,
+        ad.postcode AS sellerPostcode,
+        ad.province AS sellerProvince,
+        ad.district AS sellerDistrict,
+        ad.sub_district AS sellerSubDistrict
+      FROM addresses ad
+      JOIN seller s ON s.user_id = ad.user_id
+      WHERE s.is_owner = true
+      AND ad.is_default = true
+      LIMIT 1
+    ) sad
+    left join addresses ad on u.user_id = ad.user_id
     and ad.is_default = true
     left join order_shipping_address osa on osa.order_id = o.order_id
     where p.payment_status = 'AP'

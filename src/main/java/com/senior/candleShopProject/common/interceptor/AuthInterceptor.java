@@ -59,8 +59,13 @@ public class AuthInterceptor implements HandlerInterceptor {
                 log.info("token: {}", "userRole is null");
                 throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
             }
+
+            boolean isOwner = jwtUtils.getIsOwnerFromToken(token);
+
             request.setAttribute("userId", userId);
             request.setAttribute("userRole", userRole);
+            request.setAttribute("isOwner", isOwner);
+
             return true;
         }
 }

@@ -14,4 +14,8 @@ import java.util.UUID;
 public class ShoppingCartResp {
     private UUID shoppingCartId;
     private List<ShoppingCartItemsList> cartItems = new ArrayList<>();
+    int startAt;
+    int endAt;
+    Long totalItems;
+    boolean hasNext;
 }

@@ -56,12 +56,20 @@ public class ProductService {
         List<ProductImagesResp> images = productImagesRepo.getProductImagesByProductId(productId);
 
         List<ProductImagesResp> productImages = images.stream().map(image -> {
+
+            String imageUrl;
+            if (image.getProductImgPath() != null) {
+                imageUrl = supabaseStorageUtils.getProductImageUrl(
+                        productId,
+                        image.getProductImgPath()
+                );
+            } else {
+                imageUrl = null;
+            }
+
             ProductImagesResp resp = new ProductImagesResp();
             resp.setProductImgId(image.getProductImgId());
-            resp.setProductImgPath(supabaseStorageUtils.getProductImageUrl(
-                    productId,
-                    image.getProductImgPath()
-            ));
+            resp.setProductImgPath(imageUrl);
             resp.setIsPrimary(image.getIsPrimary());
             return resp;
         }).toList();

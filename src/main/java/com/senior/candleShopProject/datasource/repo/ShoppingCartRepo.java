@@ -49,4 +49,6 @@ public interface ShoppingCartRepo extends JpaRepository<ShoppingCartEntity, UUID
     );
 """, nativeQuery = true)
     UUID getShoppingCartIdByUserId(@Param("userId") UUID userId);
+
+    Long countByShoppingCartId(UUID shoppingCartId);
 }

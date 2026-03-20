@@ -1,7 +1,6 @@
 package com.senior.candleShopProject.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
-import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
 import com.senior.candleShopProject.common.SupabaseService.SupabaseStorageService;
 import com.senior.candleShopProject.common.exception.*;
@@ -77,7 +76,7 @@ public class SellerServiceTest {
         when(usersRepo.getUserProfile(userId)).thenReturn(null);
 
         assertThrows(ShopDataNotFoundException.class, () -> {
-            sellerService.getQrCodePayment(userId);
+            sellerService.getQrCodePayment(userId, true);
         });
     }
 
@@ -91,7 +90,7 @@ public class SellerServiceTest {
         when(user.getIsSeller()).thenReturn(false);
 
         assertThrows(ShopForbiddenException.class, () -> {
-            sellerService.getQrCodePayment(userId);
+            sellerService.getQrCodePayment(userId, true);
         });
     }
 
@@ -109,14 +108,14 @@ public class SellerServiceTest {
         when(usersRepo.getUserProfile(userId)).thenReturn(user);
         when(user.getIsSeller()).thenReturn(true);
 
-        when(sellerRepo.getSellerByUserId(userId)).thenReturn(seller);
+        when(sellerRepo.getQrPaymentImagePath(userId)).thenReturn(seller);
         when(seller.getSellerId()).thenReturn(sellerId);
         when(seller.getQrPaymentImgPath()).thenReturn("qr.jpg");
 
         when(supabaseStorageUtils.getSignedQrPaymentImage(eq(sellerId), eq("qr.jpg"))).thenReturn(result);
         when(supabaseStorageUtils.getSignedQrPaymentImage(any(), any())).thenReturn(result);
 
-        GenericResponse response = sellerService.getQrCodePayment(userId);
+        GenericResponse response = sellerService.getQrCodePayment(userId, true);
 
         assertNotNull(response.getData());
 
@@ -138,7 +137,7 @@ public class SellerServiceTest {
 
         when(usersRepo.getUserProfile(userId)).thenReturn(null);
         assertThrows(ShopDataNotFoundException.class, () -> {
-            sellerService.addQrCodePayment(userId, multipartFile);
+            sellerService.addQrCodePayment(userId, multipartFile, true);
         });
     }
 
@@ -159,7 +158,7 @@ public class SellerServiceTest {
         when(user.getIsSeller()).thenReturn(false);
 
         assertThrows(ShopForbiddenException.class, () -> {
-            sellerService.addQrCodePayment(userId, multipartFile);
+            sellerService.addQrCodePayment(userId, multipartFile, true);
         });
     }
 
@@ -181,7 +180,7 @@ public class SellerServiceTest {
         when(sellerRepo.getSellerEntitiesByUsersEntity_UserId(userId)).thenReturn(null);
 
         assertThrows(ShopDataNotFoundException.class, () -> {
-            sellerService.addQrCodePayment(userId, multipartFile);
+            sellerService.addQrCodePayment(userId, multipartFile, true);
         });
     }
 
@@ -206,7 +205,7 @@ public class SellerServiceTest {
         when(sellerEntity.getQrPaymentImgPath()).thenReturn("exists.jpg");
 
         assertThrows(ShopBadRequestException.class, () -> {
-            sellerService.addQrCodePayment(userId, multipartFile);
+            sellerService.addQrCodePayment(userId, multipartFile, true);
         });
     }
 
@@ -240,7 +239,7 @@ public class SellerServiceTest {
 
 
 
-        GenericResponse resp = sellerService.addQrCodePayment(userId, multipartFile);
+        GenericResponse resp = sellerService.addQrCodePayment(userId, multipartFile, true);
 
         verify(supabaseStorageUtils, times(1)).uploadQrPaymentImage(sellerEntity, multipartFile);
     }
@@ -259,7 +258,7 @@ public class SellerServiceTest {
 
         when(usersRepo.getUserProfile(userId)).thenReturn(null);
         assertThrows(ShopDataNotFoundException.class, () -> {
-            sellerService.syncQrCodePayment(userId, multipartFile);
+            sellerService.syncQrCodePayment(userId, multipartFile, true);
         });
     }
 
@@ -281,7 +280,7 @@ public class SellerServiceTest {
         when(user.getIsSeller()).thenReturn(false);
 
         assertThrows(ShopForbiddenException.class, () -> {
-            sellerService.syncQrCodePayment(userId, multipartFile);
+            sellerService.syncQrCodePayment(userId, multipartFile, true);
         });
     }
 
@@ -303,7 +302,7 @@ public class SellerServiceTest {
         when(sellerRepo.getSellerEntitiesByUsersEntity_UserId(userId)).thenReturn(null);
 
         assertThrows(ShopDataNotFoundException.class, () -> {
-            sellerService.syncQrCodePayment(userId, multipartFile);
+            sellerService.syncQrCodePayment(userId, multipartFile, true);
         });
     }
 
@@ -335,6 +334,6 @@ public class SellerServiceTest {
         when(sellerRepo.findById(any())).thenReturn(Optional.of(sellerEntity));
         when(sellerRepo.save(any())).thenReturn(sellerEntity);
 
-        GenericResponse resp = sellerService.syncQrCodePayment(userId, multipartFile);
+        GenericResponse resp = sellerService.syncQrCodePayment(userId, multipartFile, true);
     }
 }

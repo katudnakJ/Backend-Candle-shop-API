@@ -13,13 +13,20 @@ import java.util.UUID;
 public interface SellerRepo extends JpaRepository<SellerEntity, UUID> {
 
     @Query(value = """
-    select seller_id AS sellerId,
-        qr_payment_img_path AS qrPaymentImgPath
-    from seller
-    where user_id = :userId
-""",nativeQuery = true)
-    ISellerResp getSellerByUserId(@Param(value = "userId") UUID userId);
+        select s.seller_id AS sellerId,
+            s.qr_payment_img_path AS qrPaymentImgPath
+        from seller s
+        where s.is_owner = true;
+""", nativeQuery = true)
+    ISellerResp getQrPaymentImagePath(@Param(value = "userId") UUID userId);
 
     SellerEntity getSellerEntitiesByUsersEntity_UserId(UUID usersEntityUserId);
+
+    @Query(value = """
+        select s.is_owner
+        from seller s
+        where s.user_id = :userId
+""", nativeQuery = true)
+    Boolean getIsOwnerByUserId(@Param(value = "userId") UUID userId);
 
 }

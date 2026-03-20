@@ -7,6 +7,7 @@ import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
+import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.shoppingCart.IAllItemsShoppingCartResp;
 import com.senior.candleShopProject.datasource.entities.ShoppingCartItemsEntity;
 import com.senior.candleShopProject.datasource.repo.ShoppingCartItemsRepo;
@@ -94,6 +95,9 @@ class ShoppingCartServiceTest {
 
         doReturn(List.of(iShoppingCartResp))
                 .when(shoppingCartRepo).getAllItemsFromShoppingCartByUserId(eq(userId), anyInt(), anyInt());
+
+        when(paginationUtil.buildPaginationResp(eq(page), eq(size), anyLong()))
+                .thenReturn(mock(PaginationBuildResp.class));
 
         GenericResponse response = shoppingCartService.getShoppingCart(userId, page, size);
 
