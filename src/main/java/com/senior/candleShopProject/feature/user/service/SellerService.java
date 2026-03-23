@@ -51,7 +51,7 @@ public class SellerService {
     public GenericResponse getQrCodePayment (UUID userId, boolean isOwner) throws ShopServiceApiException {
 
         if (!isOwner)
-            throw new ShopForbiddenException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
         IUsersResp usersResp = usersRepo.getUserProfile(userId);
 
@@ -84,7 +84,7 @@ public class SellerService {
     public GenericResponse addQrCodePayment(UUID userId, MultipartFile imageData, boolean isOwner) throws ShopServiceApiException, IOException {
 
         if (!isOwner)
-            throw new ShopForbiddenException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
         IUsersResp usersResp = usersRepo.getUserProfile(userId);
 
@@ -120,7 +120,7 @@ public class SellerService {
     public GenericResponse syncQrCodePayment(UUID userId, MultipartFile imageData, boolean isOwner) throws ShopServiceApiException, IOException {
 
         if (!isOwner)
-            throw new ShopForbiddenException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
         IUsersResp usersResp = usersRepo.getUserProfile(userId);
 

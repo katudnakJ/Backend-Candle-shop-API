@@ -131,7 +131,7 @@ public class ProductService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if ( sellerId == null)
-            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to create new product.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to create new product.");
 
         ImageValidationUtils.validateImages(productImagesReq);
 
@@ -166,7 +166,7 @@ public class ProductService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if (sellerId == null)
-            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to update product.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to update product.");
 
         if (productId == null)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Product id is missing.");
@@ -260,7 +260,7 @@ public class ProductService {
         UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
         if (sellerId == null)
-            throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission to delete product.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission to delete product.");
 
         ProductsEntity existingProduct = productsRepo.findById(productId)
                 .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product doesn't exists."));

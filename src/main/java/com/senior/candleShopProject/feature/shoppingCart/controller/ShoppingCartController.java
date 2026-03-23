@@ -1,9 +1,7 @@
 package com.senior.candleShopProject.feature.shoppingCart.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
-import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
-import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.feature.shoppingCart.controller.dto.request.AddShoppingCartItemReq;
 import com.senior.candleShopProject.feature.shoppingCart.controller.dto.request.DeleteShoppingCartItemReq;
 import com.senior.candleShopProject.feature.shoppingCart.service.ShoppingCartService;
