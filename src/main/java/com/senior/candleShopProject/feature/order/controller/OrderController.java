@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class OrderController {
 
     @Operation(summary = "Get all carriers.", description = "ดึงข้อมูลผู้ให้บริการขนส่งทั้งหมด")
     @GetMapping("/carriers")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> getAllCarriers(@RequestAttribute("userId") String userId) {
         log.info("Getting all carriers");
 
@@ -38,6 +40,7 @@ public class OrderController {
 
     @Operation(summary = "Get order by status.", description = "ดึงข้อมูลออเดอร์ตามสถานะ")
     @GetMapping()
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> getOrderByStatus(@RequestAttribute("userId") String userId,
                                                             @RequestParam(value ="status") String status,
                                                             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -51,6 +54,7 @@ public class OrderController {
 
     @Operation(summary = "Get order details by order id.", description = "ดึงข้อมูลรายละเอียดออเดอร์ตามรหัสออเดอร์")
     @GetMapping("/{orderId}")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> getOrderDetailsByOrderId(@RequestAttribute("userId") String userId,
                                                                    @PathVariable("orderId") String orderId) throws ShopServiceApiException {
         log.info("Getting order details by order id: {}", orderId);
@@ -63,6 +67,7 @@ public class OrderController {
 
     @Operation(summary = "Confirm payment for order by seller.", description = "ยืนยันการชำระเงินสำหรับออเดอร์โดยผู้ขาย")
     @PatchMapping("/{orderId}/confirm")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity confirmPayment(@RequestAttribute("userId") String userId,
                                          @PathVariable("orderId") String orderId) throws ShopServiceApiException {
         log.info("Confirming payment for order {}", orderId);
@@ -75,6 +80,7 @@ public class OrderController {
 
     @Operation(summary = "Reject payment for order by seller.", description = "ปฏิเสธการชำระเงินสำหรับออเดอร์โดยผู้ขาย")
     @PatchMapping("/{orderId}/reject")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity rejectPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable ("orderId") String orderId,
                                         @RequestBody RejectPaymentReq rejectPaymentReq) throws ShopServiceApiException {
@@ -88,6 +94,7 @@ public class OrderController {
 
     @Operation(summary = "Add tracking number for order.", description = "ใส่เลขพัสดุสำหรับออเดอร์โดยผู้ขาย")
     @PatchMapping("/{orderId}/track")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity trackOrder(@RequestAttribute("userId") String userId,
                                      @PathVariable ("orderId") String orderId,
                                      @RequestBody TrackOrderReq trackOrderReq) throws ShopServiceApiException {
@@ -101,6 +108,7 @@ public class OrderController {
 
     @GetMapping("/{orderId}/payment-proof")
     @Operation(summary = "Get signed URL for payment proof image.", description = "ดึง URL สำหรับรูปภาพหลักฐานการชำระเงิน")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> getPaymentProofImage(@RequestAttribute("userId") String userId,
                                         @PathVariable("orderId") String orderId) throws ShopServiceApiException {
         log.info("Getting payment proof image for order {}", orderId);
@@ -113,6 +121,7 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/received")
     @Operation(summary = "Confirm order received by customer.", description = "ยืนยันการได้รับสินค้าโดยลูกค้า")
+    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
     public ResponseEntity confirmOrderReceived(@RequestAttribute("userId") String userId,
                                               @PathVariable("orderId") String orderId) throws ShopServiceApiException {
         log.info("Confirming order received for order {}", orderId);
@@ -125,6 +134,7 @@ public class OrderController {
 
         @GetMapping("/{orderId}/receipt")
         @Operation(summary = "Get receipt PDF for order.", description = "ดึงไฟล์ PDF ใบเสร็จสำหรับออเดอร์")
+        @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
         public ResponseEntity<GenericResponse> getReceiptPDF(@RequestAttribute("userId") String userId,
                                               @PathVariable("orderId") String orderId) throws ShopServiceApiException, IOException {
             log.info("Getting receipt PDF for order {}", orderId);

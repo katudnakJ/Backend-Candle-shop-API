@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,7 @@ public class SellerController {
 
     @GetMapping("/orders/count")
     @Operation(summary = "Get order count by status API.", description = "Using for seller's home page.")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity getSellerOrderCount(@RequestParam(value = "status", required = true) String status) throws ShopServiceApiException {
         log.info("Get seller order count by status {}", status);
         GenericResponse response = sellerService.getSellerOrderCountByStatus(status);
@@ -38,6 +40,7 @@ public class SellerController {
 
     @GetMapping("/qr-payment")
     @Operation(summary = "Get QR code payment image API.", description = "Get QR code payment image when seller click the button.")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity getQrCodePayment(@RequestAttribute("userId") String userId,
                                            @RequestAttribute("isOwner") boolean isOwner) throws ShopServiceApiException{
         log.info("Get QR code payment");
@@ -49,6 +52,7 @@ public class SellerController {
 
     @PostMapping(value = "/qr-payment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Add new QR code payment image API.")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity addQrCodePayment(@RequestAttribute("userId") String userId,
                                             @RequestAttribute("isOwner") boolean isOwner,
                                             @RequestPart("imageData") MultipartFile imageData ) throws ShopServiceApiException, IOException {
@@ -62,6 +66,7 @@ public class SellerController {
 
     @PutMapping(value = "/qr-payment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update QR code payment API.")
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity syncQrCodePayment(@RequestAttribute("userId") String userId,
                                             @RequestAttribute("isOwner") boolean isOwner,
                                             @RequestPart("imageData") MultipartFile imageData ) throws ShopServiceApiException, IOException {

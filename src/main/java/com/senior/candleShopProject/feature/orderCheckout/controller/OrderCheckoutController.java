@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +28,7 @@ public class OrderCheckoutController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Checkout order API.")
+    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
     public ResponseEntity checkoutOrder(@RequestAttribute("userId") String userId,
                                         @RequestParam("image_data") MultipartFile imageData,
                                         @RequestParam("shopping_cart_item_ids") List<String> shoppingCartItemIds,
@@ -42,6 +44,7 @@ public class OrderCheckoutController {
 
     @PutMapping(value = "/{orderId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Retry payment for order API.", description = "Retry payment when payment is rejected.")
+    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
     public ResponseEntity retryPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable("orderId") String orderId,
                                         @RequestParam("image_data") MultipartFile imageData) throws ShopServiceApiException, IOException {

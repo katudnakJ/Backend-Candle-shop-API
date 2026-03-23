@@ -3,7 +3,6 @@ package com.senior.candleShopProject.service.auth;
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.LineService.LineLoginService;
 import com.senior.candleShopProject.common.LineService.dto.LineProfileResp;
-import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.exception.ShopUnAuthorizedException;
 import com.senior.candleShopProject.common.utils.CookieUtils;

@@ -103,7 +103,7 @@ public class OrderService {
         bodyResponse.setSize(size);
         bodyResponse.setStartAt(pagination.getStartAt());
         bodyResponse.setEndAt(pagination.getEndAt());
-        bodyResponse.setTotalOrders(totalCounts);
+        bodyResponse.setTotalOrders(pagination.getTotalItems());
         bodyResponse.setHasNext(pagination.isHasNext());
 
         GenericResponse response = new GenericResponse();

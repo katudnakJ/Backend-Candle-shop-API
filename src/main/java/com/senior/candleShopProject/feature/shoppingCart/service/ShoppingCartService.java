@@ -53,7 +53,7 @@ public class ShoppingCartService {
             return response;
         }
 
-        Long totalItems = shoppingCartRepo.countByShoppingCartId(iShoppingCartResps.get(0).getShoppingCartId());
+        long totalItems = shoppingCartItemsRepo.countByShoppingCartEntity_ShoppingCartId(iShoppingCartResps.get(0).getShoppingCartId());
 
         List<ShoppingCartItemsList> shoppingCartItemsList = getShoppingCartItemsList(iShoppingCartResps);
 

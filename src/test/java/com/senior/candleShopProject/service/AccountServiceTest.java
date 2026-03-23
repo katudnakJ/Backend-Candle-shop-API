@@ -49,7 +49,6 @@ class AccountServiceTest {
     void getUserAddress_success_whenUserAndAddressExist() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
 
-        when(usersRepo.getUserProfile(userId)).thenReturn(userProfile);
         when(addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId))
                 .thenReturn(List.of(addressResp));
 
@@ -57,20 +56,20 @@ class AccountServiceTest {
 
         assertNotNull(response.getData());
         assertInstanceOf(List.class, response.getData());
-        verify(usersRepo).getUserProfile(userId);
         verify(addressesRepo).findAddressesEntitiesByUsersEntity_UserId(userId);
     }
 
     @Test
-    void getUserAddress_throw_whenUserNotFound() {
+    void getUserAddress_throw_whenUserNotFound() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
 
-        when(usersRepo.getUserProfile(userId)).thenReturn(null);
+        doThrow(ShopDataNotFoundException.class).when(userCheckTemp).checkExistsUser(userId);
 
         assertThrows(ShopDataNotFoundException.class,
                 () -> accountService.getUserAddresses(userId));
 
-        verify(usersRepo).getUserProfile(userId);
+        verify(userCheckTemp).checkExistsUser(userId);
+        verify(usersRepo, never()).getUserProfile(any());
         verifyNoInteractions(addressesRepo);
     }
 

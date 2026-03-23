@@ -17,7 +17,7 @@ import com.senior.candleShopProject.datasource.entities.ShoppingCartEntity;
 import com.senior.candleShopProject.datasource.entities.UsersEntity;
 import com.senior.candleShopProject.datasource.repo.SellerRepo;
 import com.senior.candleShopProject.datasource.repo.UsersRepo;
-import com.senior.candleShopProject.feature.auth.controller.UserLoginResponse;
+import com.senior.candleShopProject.feature.auth.controller.dto.UserLoginResponse;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

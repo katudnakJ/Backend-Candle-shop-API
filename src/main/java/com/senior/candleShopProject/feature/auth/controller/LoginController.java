@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.auth.controller.dto;
+package com.senior.candleShopProject.feature.auth.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
