@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.Map;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -149,6 +151,15 @@ public class GlobalExceptionHandler {
         GenericResponse response = new GenericResponse();
         response.setStatus(ex.getStatusCode());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
+    public ResponseEntity<?> handleAuthDenied() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "status", ResultCode.UNAUTHORIZED,
+                "message", "คุณไม่มีสิทธิ์ในการเข้าถึง"
+                ,"remark", "User does not have permission to access this resource"
+        ));
     }
 
 }

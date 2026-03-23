@@ -27,7 +27,7 @@ public class UserCheckTemp{
 
     public void checkExistsUser(UUID userId) throws ShopServiceApiException {
          if (!usersRepo.existsById(userId))
-             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ");
+             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานในระบบ กรุณาเข้าสู่ระบบอีกครั้ง", "User not found.");
     }
     public UUID getCustomerIdByUserId(UUID userId) throws ShopDataNotFoundException {
         return customersRepo.findCustomersEntitiesByUsersEntity_UserId(userId).get().getCustomerId();

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class AccountController {
 
     @GetMapping("/address")
     @Operation(summary = "Get Account, address API.", description = "Get user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> getUserAddresses(@RequestAttribute("userId") String userId) throws ShopServiceApiException {
         log.info("Get user address by user id {}", userId);
 
@@ -37,6 +39,7 @@ public class AccountController {
 
     @GetMapping("/address/{addressId}")
     @Operation(summary = "Get Account, address API", description = "Get user address by address id.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> getUserAddressesByAddressId(@RequestAttribute("userId") String userId,
                                                                        @PathVariable("addressId") String addressId) throws ShopServiceApiException {
         log.info("Get user address by user address id {}", userId);
@@ -50,6 +53,7 @@ public class AccountController {
 
     @PostMapping("/address")
     @Operation(summary = "Add user address API.", description = "Add new user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> addUserAddress(@RequestAttribute("userId") String userId,
                                                           @Valid @RequestBody AddUserAddressReq addUserAddressReq) throws ShopServiceApiException {
         log.info("Add user address by user id {}", userId);
@@ -62,6 +66,7 @@ public class AccountController {
 
     @PutMapping("/address/{addressId}")
     @Operation(summary = "Sync user address API.", description = "Update user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> syncUserAddress(@RequestAttribute("userId") String userId,
                                                           @RequestBody AddUserAddressReq syncUserAddressReq,
                                                            @PathVariable("addressId") String addressId) throws ShopServiceApiException {
@@ -76,6 +81,7 @@ public class AccountController {
 
     @DeleteMapping  ("/address/{addressId}")
     @Operation(summary = "Delete user address API.", description = "Delete user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> deleteUserAddress(@RequestAttribute("userId") String userId,
                                                            @PathVariable("addressId") String addressId) throws ShopServiceApiException {
         log.info("Delete user address by user id {}", userId);

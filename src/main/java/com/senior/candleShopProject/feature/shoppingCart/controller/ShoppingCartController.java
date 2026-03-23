@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class ShoppingCartController {
 
     @GetMapping()
     @Operation(summary = "Get shopping cart API.", description = "Get shopping cart with all items.")
+    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
     public ResponseEntity getShoppingCart(@RequestAttribute("userId") String userId,
                                           @RequestParam(value = "page", defaultValue = "0") int page,
                                           @RequestParam(value = "size", defaultValue = "10") int size) throws ShopServiceApiException {
@@ -39,6 +41,7 @@ public class ShoppingCartController {
 
     @PostMapping()
     @Operation(summary = "Add shopping cart item API.", description = "Add items list to shopping cart.")
+    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
     public ResponseEntity addShoppingCartItem(@RequestAttribute("userId") String userId,
                                                      @RequestBody AddShoppingCartItemReq addShoppingCartItemReq) throws ShopServiceApiException {
         log.info("Add shopping cart item by user id.");
@@ -51,6 +54,7 @@ public class ShoppingCartController {
 
     @DeleteMapping()
     @Operation(summary = "Delete shopping cart item API.", description = "Delete items list from shopping cart.")
+    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
     public ResponseEntity deleteShoppingCartItem(@RequestAttribute("userId") String userId,
                                                  @RequestBody DeleteShoppingCartItemReq deleteShoppingCartItemReq) throws ShopServiceApiException {
         log.info("Delete shopping cart item by user id.");

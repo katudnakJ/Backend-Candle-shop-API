@@ -29,10 +29,8 @@ public class AccountService {
     private final UserCheckTemp userCheckTemp;
 
     public GenericResponse getUserAddresses(UUID userId) throws ShopServiceApiException {
-        IUsersResp userProfile = usersRepo.getUserProfile(userId);
 
-        if (userProfile == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานในระบบ กรุณาเข้าสู่ระบบอีกครั้ง", "User not found.");
+        userCheckTemp.checkExistsUser(userId);
 
         List<IAddressResp> addressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
 
@@ -43,10 +41,8 @@ public class AccountService {
     }
 
     public GenericResponse getUserAddressByAddressId(UUID userId,UUID addressId) throws ShopServiceApiException {
-        IUsersResp userProfile = usersRepo.getUserProfile(userId);
 
-        if (userProfile == null)
-            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานในระบบ กรุณาเข้าสู่ระบบอีกครั้ง", "User not found.");
+        userCheckTemp.checkExistsUser(userId);
 
         IAddressResp address = addressesRepo.findAddressesEntitiesByAddressId((addressId));
 

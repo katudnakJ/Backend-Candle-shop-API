@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.auth.controller.dto;
+package com.senior.candleShopProject.feature.auth.controller;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
