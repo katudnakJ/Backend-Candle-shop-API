@@ -27,7 +27,7 @@ public class ShoppingCartController {
     private final ShoppingCartService shoppingCartService;
 
     @GetMapping()
-    @Operation(summary = "Get shopping cart API.", description = "Get shopping cart with all items.")
+    @Operation(summary = "Get shopping cart with items API.", description = "Get shopping cart with all items.")
     @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
     public ResponseEntity getShoppingCart(@RequestAttribute("userId") String userId,
                                           @RequestParam(value = "page", defaultValue = "0") int page,

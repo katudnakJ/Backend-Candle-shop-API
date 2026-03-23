@@ -107,7 +107,7 @@ public class ProductService {
         productHomeListItemResp.setSize(size);
         productHomeListItemResp.setStartAt(pagination.getStartAt());
         productHomeListItemResp.setEndAt(pagination.getEndAt());
-        productHomeListItemResp.setTotalProducts(totalCounts);
+        productHomeListItemResp.setTotalProducts(pagination.getTotalItems());
         productHomeListItemResp.setHasNext(pagination.isHasNext());
 
         GenericResponse response = new GenericResponse();
@@ -292,7 +292,7 @@ public class ProductService {
         productHomeListItemResp.setSize(size);
         productHomeListItemResp.setStartAt(pagination.getStartAt());
         productHomeListItemResp.setEndAt(pagination.getEndAt());
-        productHomeListItemResp.setTotalProducts(totalCounts);
+        productHomeListItemResp.setTotalProducts(pagination.getTotalItems());
         productHomeListItemResp.setHasNext(pagination.isHasNext());
 
         GenericResponse response = new GenericResponse();

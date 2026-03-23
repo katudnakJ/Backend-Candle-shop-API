@@ -30,4 +30,6 @@ public interface ShoppingCartItemsRepo extends JpaRepository<ShoppingCartItemsEn
         and sci.shopping_cart_item_id in :cartItemIdList;
 """,nativeQuery = true)
     List<ICartItemsForOrderItemsResp> getCartItemsForOrderItemsByCartIdAndCartItemIdList(UUID shoppingCartId, List<UUID> cartItemIdList);
+
+    Long countByShoppingCartEntity_ShoppingCartId(UUID shoppingCartId);
 }

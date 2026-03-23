@@ -31,6 +31,19 @@ public class AuthFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path != null && (
+                path.equals("/v1/login") ||
+                        path.startsWith("/v1/login/") ||
+                        path.startsWith("/v3/api-docs") ||
+                        path.startsWith("/swagger-ui") ||
+                        path.equals("/swagger-ui.html") ||
+                        path.startsWith("/webjars")
+        );
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //      CORS Preflight Request Handling
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
@@ -45,6 +58,7 @@ public class AuthFilter extends OncePerRequestFilter {
             if(token == null){
                 log.warn("token : {}"," token is null");
                 unauthorized(response);
+                return;
             }
 
             if(jwtUtils.isTokenExpired(token)){
@@ -79,7 +93,7 @@ public class AuthFilter extends OncePerRequestFilter {
             var auth = new UsernamePasswordAuthenticationToken(
                     principal,
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    List.of(new SimpleGrantedAuthority(role))
             );
 
             SecurityContextHolder.getContext().setAuthentication(auth);
