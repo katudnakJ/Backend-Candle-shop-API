@@ -1,6 +1,7 @@
 package com.senior.candleShopProject.datasource.domain.orders;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public interface IOrderByStatusResp {
@@ -9,6 +10,7 @@ public interface IOrderByStatusResp {
     BigDecimal getTotalAmount();
     BigDecimal getNetAmount();
     String getOrderStatus();
+    Instant getOrderCreatedAt();
     String getPaymentStatus();
     String getOrderNumber();
     String getAddressLabel();

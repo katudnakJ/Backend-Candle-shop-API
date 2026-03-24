@@ -48,18 +48,12 @@ public class SellerService {
         return response;
     }
 
-    public GenericResponse getQrCodePayment (UUID userId, boolean isOwner) throws ShopServiceApiException {
-
-        if (!isOwner)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+    public GenericResponse getQrCodePayment (UUID userId) throws ShopServiceApiException {
 
         IUsersResp usersResp = usersRepo.getUserProfile(userId);
 
         if(usersResp == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
-
-        if(!usersResp.getIsSeller())
-            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
         GenericResponse response = new GenericResponse();
 
@@ -92,7 +86,7 @@ public class SellerService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
 
         if(!usersResp.getIsSeller())
-            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
         SellerEntity sellerEntity = sellerRepo.getSellerEntitiesByUsersEntity_UserId(userId);
 
@@ -128,7 +122,7 @@ public class SellerService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "ไม่พบผู้ใช้งานนี้ในระบบ","User not found.");
 
         if(!usersResp.getIsSeller())
-            throw new ShopForbiddenException(ResultCode.INVALID_PARAMS, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission.");
 
 
         SellerEntity sellerEntity = sellerRepo.getSellerEntitiesByUsersEntity_UserId(userId);

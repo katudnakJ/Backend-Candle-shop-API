@@ -7,6 +7,7 @@ import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
+import com.senior.candleShopProject.common.utils.LocalDateTimeUtils;
 import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
@@ -410,6 +411,9 @@ public class OrderService {
             orderByStatusMappingResp.setNetAmount(orders.getNetAmount());
             orderByStatusMappingResp.setOrderStatus(orders.getOrderStatus());
             orderByStatusMappingResp.setPaymentStatus(orders.getPaymentStatus());
+            orderByStatusMappingResp.setOrderCreatedAt(
+                    LocalDateTimeUtils.convertInstantToTimeZone(orders.getOrderCreatedAt(), Constants.TIME_ZONE_BANGKOK).toInstant()
+            );
             orderByStatusMappingResp.setOrderNo(orders.getOrderNumber());
             orderByStatusMappingResp.setAddressLabel(orders.getAddressLabel());
             orderByStatusMappingResp.setTrackingNo(trackingNumbers);

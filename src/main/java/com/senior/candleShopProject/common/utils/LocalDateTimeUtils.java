@@ -1,6 +1,5 @@
 package com.senior.candleShopProject.common.utils;
 
-import jakarta.annotation.Nullable;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
@@ -23,5 +22,9 @@ public class LocalDateTimeUtils {
 
     public static ZonedDateTime convertToTimeZone(ZonedDateTime dateTime, String toTimeZone) {
         return dateTime.withZoneSameInstant(ZoneId.of(toTimeZone));
+    }
+
+    public static ZonedDateTime convertInstantToTimeZone(Instant dateTime, String toTimeZone) {
+        return dateTime.atZone(ZoneId.of(toTimeZone));
     }
 }

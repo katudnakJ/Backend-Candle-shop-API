@@ -40,13 +40,12 @@ public class SellerController {
 
     @GetMapping("/qr-payment")
     @Operation(summary = "Get QR code payment image API.", description = "Get QR code payment image when seller click the button.")
-    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
-    public ResponseEntity getQrCodePayment(@RequestAttribute("userId") String userId,
-                                           @RequestAttribute("isOwner") boolean isOwner) throws ShopServiceApiException{
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
+    public ResponseEntity getQrCodePayment(@RequestAttribute("userId") String userId) throws ShopServiceApiException{
         log.info("Get QR code payment");
         UUID userUuid = UUID.fromString(userId);
 
-        GenericResponse response = sellerService.getQrCodePayment(userUuid, isOwner);
+        GenericResponse response = sellerService.getQrCodePayment(userUuid);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
