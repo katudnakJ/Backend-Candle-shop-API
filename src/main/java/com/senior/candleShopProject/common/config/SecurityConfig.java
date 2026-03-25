@@ -17,11 +17,14 @@ public class SecurityConfig {
     private final AuthFilter authFilter;
 
     @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http){
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception { // เพิ่ม throws Exception
 
         return http
+                .cors(org.springframework.security.config.Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers(
                                 "/v1/login",
                                 "/v1/login/**",
