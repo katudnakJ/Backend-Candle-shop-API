@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ public class OrderByStatusMappingResp {
     private BigDecimal totalAmount;
     private BigDecimal netAmount;
     private String orderStatus;
+    private Instant orderCreatedAt;
     private String paymentStatus;
     private String orderNo;
     private String addressLabel;

@@ -63,25 +63,25 @@ public class AuthFilter extends OncePerRequestFilter {
 
             if(jwtUtils.isTokenExpired(token)){
                 log.warn("token: {}", "token is expired");
-                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "Token is expired or invalid.");
             }
 
             if(!jwtUtils.validateToken(token)){
                 log.warn("token: {}", "token is invalid");
-                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "Token is expired or invalid.");
             }
 
             String userId = jwtUtils.getUserIdFromToken(token);
 
             if (userId == null){
                 log.warn("token: {}", "userId is null");
-                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "Token is expired or invalid.");
             }
 
             String userRole = jwtUtils.getUserRoleFromToken(token);
             if(userRole == null){
                 log.warn("token: {}", "userRole is null");
-                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                throw new ShopUnAuthorizedException(ResultCode.UNAUTHORIZED, "ไม่สามารถยืนยันตัวตนได้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "Token is expired or invalid.");
             }
 
             boolean isOwner = jwtUtils.getIsOwnerFromToken(token);

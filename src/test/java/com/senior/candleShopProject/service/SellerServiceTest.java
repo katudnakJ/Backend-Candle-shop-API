@@ -76,21 +76,7 @@ public class SellerServiceTest {
         when(usersRepo.getUserProfile(userId)).thenReturn(null);
 
         assertThrows(ShopDataNotFoundException.class, () -> {
-            sellerService.getQrCodePayment(userId, true);
-        });
-    }
-
-    @Test
-    void testGetQrCodePayment_UserNotSeller() {
-        UUID userId = UUID.randomUUID();
-
-        IUsersResp user = mock(IUsersResp.class);
-
-        when(usersRepo.getUserProfile(userId)).thenReturn(user);
-        when(user.getIsSeller()).thenReturn(false);
-
-        assertThrows(ShopForbiddenException.class, () -> {
-            sellerService.getQrCodePayment(userId, true);
+            sellerService.getQrCodePayment(userId);
         });
     }
 
@@ -115,7 +101,7 @@ public class SellerServiceTest {
         when(supabaseStorageUtils.getSignedQrPaymentImage(eq(sellerId), eq("qr.jpg"))).thenReturn(result);
         when(supabaseStorageUtils.getSignedQrPaymentImage(any(), any())).thenReturn(result);
 
-        GenericResponse response = sellerService.getQrCodePayment(userId, true);
+        GenericResponse response = sellerService.getQrCodePayment(userId);
 
         assertNotNull(response.getData());
 

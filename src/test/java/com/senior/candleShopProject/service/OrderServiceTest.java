@@ -6,6 +6,7 @@ import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
+import com.senior.candleShopProject.common.utils.LocalDateTimeUtils;
 import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
@@ -26,6 +27,7 @@ import org.springframework.boot.test.context.TestComponent;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,6 +71,7 @@ public class OrderServiceTest {
         UUID orderId = UUID.randomUUID();
         int page = 0;
         int size = 10;
+        Instant mockNow = Instant.now();
 
         doNothing().when(userCheckTemp).checkExistsUser(userId);
         when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
@@ -85,6 +88,7 @@ public class OrderServiceTest {
         when(orderRow.getTrackingNumber()).thenReturn("TRK1");
         when(orderRow.getDeliveryMethod()).thenReturn(Constants.SHIPPING_METHOD_STANDARD);
         when(orderRow.getRejectionReason()).thenReturn(null);
+        when(orderRow.getOrderCreatedAt()).thenReturn(mockNow);
 
         when(ordersRepo.getOrderByCustIdStatus(eq(customerId), eq(status), eq(false), eq(size), eq(page * size)))
                 .thenReturn(List.of(orderRow));
