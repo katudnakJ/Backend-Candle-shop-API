@@ -14,4 +14,7 @@ public class PDFResp {
 
     @JsonProperty("pdf_name")
     private String pdfName;
+
+    @JsonProperty("expires_at")
+    private String expiresAt;
 }

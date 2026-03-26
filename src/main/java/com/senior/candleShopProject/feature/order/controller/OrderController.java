@@ -42,13 +42,14 @@ public class OrderController {
     @GetMapping()
     @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity<GenericResponse> getOrderByStatus(@RequestAttribute("userId") String userId,
+                                                            @RequestAttribute("userRole") String userRole,
                                                             @RequestParam(value ="status") String status,
                                                             @RequestParam(value = "page", defaultValue = "0") int page,
                                                             @RequestParam(value = "size", defaultValue = "10") int size) throws ShopServiceApiException {
         log.info("Getting order by status for status: {}", status);
         UUID userUUID = UUID.fromString(userId);
 
-        GenericResponse response = orderService.getOrderByStatus(userUUID, status, page, size);
+        GenericResponse response = orderService.getOrderByStatus(userUUID, userRole, status, page, size);
         return ResponseEntity.ok(response);
     }
 
@@ -96,13 +97,14 @@ public class OrderController {
     @PatchMapping("/{orderId}/track")
     @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
     public ResponseEntity trackOrder(@RequestAttribute("userId") String userId,
+                                     @RequestAttribute("userRole") String userRole,
                                      @PathVariable ("orderId") String orderId,
                                      @RequestBody TrackOrderReq trackOrderReq) throws ShopServiceApiException {
         log.info("Tracking order {}",orderId);
         UUID userUUID = UUID.fromString(userId);
         UUID orderUUID = UUID.fromString(orderId);
 
-        GenericResponse response = orderService.trackOrder(userUUID,orderUUID, trackOrderReq);
+        GenericResponse response = orderService.trackOrder(userUUID,userRole, orderUUID, trackOrderReq);
         return ResponseEntity.ok(response);
     }
 

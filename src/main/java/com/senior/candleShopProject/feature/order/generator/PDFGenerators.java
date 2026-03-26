@@ -131,7 +131,7 @@ public class PDFGenerators {
         text(content, bold, "รายการสินค้า", 11, MARGIN + 30, y);
         textRightAligned(content, bold, "จำนวน", 11, 380, y);
         textRightAligned(content, bold, "ราคาต่อหน่วย", 11, 470, y);
-        textRightAligned(content, bold, "ยอดรวม", 11, 550, y);
+        textRightAligned(content, bold, "ยอดรวม(บาท)", 11, 550, y);
 
         y -= 10;
         drawLine(content, MARGIN, y, PAGE_WIDTH - (MARGIN * 2));
@@ -166,12 +166,12 @@ public class PDFGenerators {
         text(content, bold, "รวมเป็นเงิน", 12, 380, y + 50);
         textRightAligned(content, reg, String.format("%,.0f", info.getOrderTotalAmount()), 12, 550, y + 50);
 
-        text(content, bold, "ค่าจัดส่ง (standard)", 12, 380, y + 30);
+        text(content, bold, "ค่าจัดส่ง", 12, 380, y + 30);
         float shipping = info.getOrderNetAmount().subtract(info.getOrderTotalAmount()).floatValue();
         textRightAligned(content, reg, String.format("%,.0f", shipping), 12, 550, y + 30);
 
         drawGrayBackground(content, 370, y - 5, 190, 25);
-        text(content, bold, "รวมราคาสุทธิ", 13, 380, y);
+        text(content, bold, "รวมราคาสุทธิ(บาท)", 13, 380, y);
         textRightAligned(content, bold, String.format("%,.0f", info.getOrderNetAmount()), 13, 550, y);
     }
 

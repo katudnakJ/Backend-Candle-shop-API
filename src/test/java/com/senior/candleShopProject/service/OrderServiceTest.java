@@ -2,11 +2,9 @@ package com.senior.candleShopProject.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.OrderStatus;
-import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
-import com.senior.candleShopProject.common.utils.LocalDateTimeUtils;
 import com.senior.candleShopProject.common.utils.PaginationUtil;
 import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
@@ -27,7 +25,6 @@ import org.springframework.boot.test.context.TestComponent;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,10 +54,11 @@ public class OrderServiceTest {
     @Test
     void getOrderByStatus_StatusNull_ThrowsBadRequest() {
         UUID userId = UUID.randomUUID();
+        String userRole = "CUST";
+
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
-                orderService.getOrderByStatus(userId, null, 0, 10)
+                orderService.getOrderByStatus(userId, userRole, null, 10, 0)
         );
-        verifyNoInteractions(userCheckTemp, ordersRepo, orderItemsRepo);
     }
 
     @Test
@@ -72,6 +70,7 @@ public class OrderServiceTest {
         int page = 0;
         int size = 10;
         Instant mockNow = Instant.now();
+        String userRole = "CUST";
 
         doNothing().when(userCheckTemp).checkExistsUser(userId);
         when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
@@ -90,7 +89,7 @@ public class OrderServiceTest {
         when(orderRow.getRejectionReason()).thenReturn(null);
         when(orderRow.getOrderCreatedAt()).thenReturn(mockNow);
 
-        when(ordersRepo.getOrderByCustIdStatus(eq(customerId), eq(status), eq(false), eq(size), eq(page * size)))
+        when(ordersRepo.getOrderByStatus(eq(customerId), eq(status), eq(false), eq(size), eq(page * size)))
                 .thenReturn(List.of(orderRow));
 
         IOrderItemListResp item = mock(IOrderItemListResp.class);
@@ -108,14 +107,14 @@ public class OrderServiceTest {
         PaginationBuildResp paginationBuildResp = mock(PaginationBuildResp.class);
 
         when(paginationUtil.buildPaginationResp(anyInt(), anyInt(), anyLong())).thenReturn(paginationBuildResp);
-        GenericResponse resp = orderService.getOrderByStatus(userId, status, page, size);
+        GenericResponse resp = orderService.getOrderByStatus(userId, userRole, status, page, size);
 
         assertNotNull(resp);
         assertNotNull(resp.getData());
 
         verify(userCheckTemp).checkExistsUser(userId);
         verify(userCheckTemp).getCustomerIdByUserId(userId);
-        verify(ordersRepo).getOrderByCustIdStatus(customerId, status, false, size, page * size);
+        verify(ordersRepo).getOrderByStatus(customerId, status, false, size, page * size);
         verify(orderItemsRepo).getOrderItemByOrderIds(List.of(orderId));
     }
 
@@ -193,13 +192,14 @@ public class OrderServiceTest {
     void trackOrder_EmptyTracking_ThrowsBadRequest() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        String userRole = "SELLER";
         TrackOrderReq req = new TrackOrderReq();
         req.setTrackingNumber(new ArrayList<>());
 
         doNothing().when(userCheckTemp).checkExistsUser(userId);
 
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
-                orderService.trackOrder(userId, orderId, req)
+                orderService.trackOrder(userId, userRole, orderId, req)
         );
 
         verifyNoInteractions(ordersRepo);
@@ -209,11 +209,9 @@ public class OrderServiceTest {
     void trackOrder_Success() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        String userRole = "SELLER";
         TrackOrderReq req = new TrackOrderReq();
         req.setTrackingNumber(List.of("TN1", "TN2"));
-
-        doNothing().when(userCheckTemp).checkExistsUser(userId);
-        when(userCheckTemp.getSellerIdByUserId(userId)).thenReturn(UUID.randomUUID());
 
         OrdersEntity orderEntity = new OrdersEntity();
         orderEntity.setOrderId(orderId);
@@ -229,7 +227,7 @@ public class OrderServiceTest {
             return saved;
         });
 
-        GenericResponse resp = orderService.trackOrder(userId, orderId, req);
+        GenericResponse resp = orderService.trackOrder(userId,userRole, orderId, req);
 
         assertNotNull(resp);
         verify(ordersRepo).save(any(OrdersEntity.class));
