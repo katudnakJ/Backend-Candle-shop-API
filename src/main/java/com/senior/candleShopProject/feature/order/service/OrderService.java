@@ -59,7 +59,7 @@ public class OrderService {
         return response;
     }
 
-    public GenericResponse getOrderByStatus(UUID userId, String status, int page, int size) throws ShopServiceApiException {
+    public GenericResponse getOrderByStatus(UUID userId,String userRole, String status, int page, int size) throws ShopServiceApiException {
 
         if (status == null || status.isEmpty())
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Status is required.");
@@ -72,13 +72,39 @@ public class OrderService {
         if (!validStatus)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Invalid order status.");
 
-        List<IOrderByStatusResp> order = ordersRepo.getOrderByCustIdStatus(
-                customerId,
-                status,
-                (userCheckTemp.getSellerIdByUserId(userId) != null),
-                size,
-                page * size
-        );
+
+        List<IOrderByStatusResp> order ;
+        Long totalCounts;
+
+        if ( status.equalsIgnoreCase(OrderStatus.ORDER_PAYMENT_PENDING.getStatusCode())){
+            if (userRole.equalsIgnoreCase(Constants.ROLE_SELLER)){
+                order = ordersRepo.getOrderByStatusPDSeller(
+                        size,
+                        page * size
+                );
+                totalCounts = ordersRepo.countByOrderStatusAndOrderStatusNot(
+                        status,
+                        OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()
+                );
+            }else{
+                order = ordersRepo.getOrderByStatusPDCustomer(
+                        customerId,
+                        size,
+                        page * size
+                );
+                totalCounts = ordersRepo.countByOrderStatusAndCustomersEntity_CustomerId(status, customerId);
+            }
+        }else{
+            order = ordersRepo.getOrderByStatus(
+                    customerId,
+                    status,
+                    (userRole.equalsIgnoreCase(Constants.ROLE_SELLER)),
+                    size,
+                    page * size
+            );
+            totalCounts = ordersRepo.countByOrderStatus(status);
+        }
+
         if (order == null || order.isEmpty()){
             GenericResponse response = new GenericResponse();
             response.setData(null);
@@ -93,8 +119,6 @@ public class OrderService {
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND,"Order not found.");
 
         List<OrderByStatusMappingResp> ordersResponse = mapToOrderByStatusResp(order ,orderItems);
-
-        Long totalCounts = ordersRepo.countByOrderStatus(status);
 
         PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
 
@@ -225,15 +249,14 @@ public class OrderService {
         return getGenericResponse(orderEntity, newStatus, timeNow, payment);
     }
 
-    public GenericResponse trackOrder(UUID userId, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
+    public GenericResponse trackOrder(UUID userId,String userRole, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
         userCheckTemp.checkExistsUser(userId);
 
         if (orderId == null || trackOrderReq.getTrackingNumber().isEmpty())
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "กรุณาใส่หมายเลขพัสดุอย่างน้อย 1 หมายเลข","Tracking number is required.");
 
-        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
 
-        if (sellerId == null)
+        if (!userRole.equalsIgnoreCase(Constants.ROLE_SELLER))
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);

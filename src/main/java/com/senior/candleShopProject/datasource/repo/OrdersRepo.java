@@ -46,12 +46,96 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
         ORDER BY o.created_at ASC
         LIMIT :limit OFFSET :offset;
        """, nativeQuery = true)
-    List<IOrderByStatusResp> getOrderByCustIdStatus(@Param("customerId") UUID customerId,
-                                                    @Param("status") String status,
-                                                    @Param("isSeller") Boolean isSeller,
-                                                    @Param("limit") int limit,
-                                                    @Param("offset") int offset
+    List<IOrderByStatusResp> getOrderByStatus(@Param("customerId") UUID customerId,
+                                              @Param("status") String status,
+                                              @Param("isSeller") Boolean isSeller,
+                                              @Param("limit") int limit,
+                                              @Param("offset") int offset
     );
+
+    @Query(value = """
+
+            SELECT * FROM (
+      select o.order_id as orderId,
+            o.total_quantity as totalQuantity,
+            o.total_amount as totalAmount,
+            o.net_amount as netAmount,
+            o.order_status as orderStatus,
+            o.created_at as orderCreatedAt,
+            pm.payment_status as paymentStatus,
+            o.order_number as orderNumber,
+            osa.address_label as addressLabel,
+            sm.tracking_number as trackingNumber,
+            sm.delivery_method as deliveryMethod,
+            pm.rejection_reason as rejectionReason,
+            1 as priority
+      from orders o
+      left join order_shipping_address osa
+      on o.order_id = osa.order_id
+      left join payments pm on pm.order_id = o.order_id
+      left join shipment sm on sm.order_id = o.order_id
+        where o.customer_id = :customerId
+        and o.order_status = 'PD'
+        and pm.payment_status = 'RJ'
+
+        UNION ALL
+
+        select o.order_id as orderId,
+            o.total_quantity as totalQuantity,
+            o.total_amount as totalAmount,
+            o.net_amount as netAmount,
+            o.order_status as orderStatus,
+            o.created_at as orderCreatedAt,
+            pm.payment_status as paymentStatus,
+            o.order_number as orderNumber,
+            osa.address_label as addressLabel,
+            sm.tracking_number as trackingNumber,
+            sm.delivery_method as deliveryMethod,
+            pm.rejection_reason as rejectionReason,
+            2 as priority
+        from orders o
+        left join order_shipping_address osa
+        on o.order_id = osa.order_id
+        left join payments pm on pm.order_id = o.order_id
+        left join shipment sm on sm.order_id = o.order_id
+        where o.customer_id = :customerId
+        and o.order_status = 'PD'
+        and pm.payment_status != 'RJ'
+    )   AS CombinedOrdersStatusPD
+        ORDER BY priority ASC,
+        orderCreatedAt ASC
+        LIMIT :limit OFFSET :offset;
+""", nativeQuery = true)
+    List<IOrderByStatusResp> getOrderByStatusPDCustomer(@Param("customerId") UUID customerId,
+                                                        @Param("limit") int limit,
+                                                        @Param("offset") int offset);
+
+    @Query(value = """
+            select o.order_id as orderId,
+                  o.total_quantity as totalQuantity,
+                  o.total_amount as totalAmount,
+                  o.net_amount as netAmount,
+                  o.order_status as orderStatus,
+                  o.created_at as orderCreatedAt,
+                  pm.payment_status as paymentStatus,
+                  o.order_number as orderNumber,
+                  osa.address_label as addressLabel,
+                  sm.tracking_number as trackingNumber,
+                  sm.delivery_method as deliveryMethod,
+                  pm.rejection_reason as rejectionReason
+            from orders o
+            left join order_shipping_address osa
+            on o.order_id = osa.order_id
+            left join payments pm on pm.order_id = o.order_id
+            left join shipment sm on sm.order_id = o.order_id
+        where o.order_status = 'PD'
+        and pm.payment_status != 'RJ'
+        ORDER BY o.created_at ASC
+        LIMIT :limit OFFSET :offset;
+       """, nativeQuery = true)
+    List<IOrderByStatusResp> getOrderByStatusPDSeller(@Param("limit") int limit,
+                                                        @Param("offset") int offset);
+
 
     @Query(value = """
        select o.order_id as orderId,
@@ -141,4 +225,8 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     IReceiptInformationResp getReceiptInformationByOrderId(@Param("userId") UUID userId, @Param("orderId") UUID orderId);
 
     Long countByOrderStatus(String orderStatus);
+
+    Long countByOrderStatusAndOrderStatusNot(String orderStatus, String orderStatus1);
+
+    Long countByOrderStatusAndCustomersEntity_CustomerId(String status, UUID customerId);
 }
