@@ -522,7 +522,8 @@ public class OrderService {
 
         PDFResp pdfResp = new PDFResp();
         pdfResp.setPdfSignedUrl(signedPdfUrl);
-        pdfResp.setPdfName("receipt_" + paymentsEntity.getReceiptNumber() + Constants.CONTENT_TYPE_PDF.split("/")[1]);
+        pdfResp.setPdfName("receipt_" + paymentsEntity.getReceiptPath());
+        pdfResp.setExpiresAt(signedPdfUrl.getExpiresAt().toString());
 
         GenericResponse response = new GenericResponse();
         response.setData(pdfResp);
