@@ -139,7 +139,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
 
     @Query(value = """
        select o.order_id as orderId,
-             o.total_quantity as totalQauntity,
+             o.total_quantity as totalQuantity,
              o.total_amount as totalAmount,
              o.net_amount as netAmount,
              o.order_status as orderStatus,

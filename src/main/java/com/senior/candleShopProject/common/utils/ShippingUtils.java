@@ -24,22 +24,21 @@ public class ShippingUtils {
                     );
 
             return (roundedPrice.multiply(Constants.SHIPPING_PRICE_MORE_THAN_10))
-                            .add(
+                            .add(remainder.equals(BigDecimal.ZERO) ?
+                                     BigDecimal.ZERO :
                                     isLessThan10(remainder.intValue()) ?
-                                            Constants.SHIPPING_PRICE_LESS_THAN_10 :
-                                            (remainder != BigDecimal.ZERO ?
+                                            Constants.SHIPPING_PRICE_NOT_MORE_THAN_10 :
                                                     Constants.SHIPPING_PRICE_MORE_THAN_10
-                                                    : BigDecimal.ZERO)
                             );
         }
         return isLessThan10(totalQuantity) ?
-                Constants.SHIPPING_PRICE_LESS_THAN_10
+                Constants.SHIPPING_PRICE_NOT_MORE_THAN_10
                 : Constants.SHIPPING_PRICE_MORE_THAN_10;
 
     }
 
     private static boolean isLessThan10(int quantity) {
-        return quantity < 10;
+        return quantity <= 10;
     }
 
 }
