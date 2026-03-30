@@ -82,10 +82,7 @@ public class OrderService {
                         size,
                         page * size
                 );
-                totalCounts = ordersRepo.countByOrderStatusAndOrderStatusNot(
-                        status,
-                        OrderStatus.ORDER_PAYMENT_REJECTED.getStatusCode()
-                );
+                totalCounts = ordersRepo.countOrdersPDAndPaymentStatusNotRJ();
             }else{
                 order = ordersRepo.getOrderByStatusPDCustomer(
                         customerId,

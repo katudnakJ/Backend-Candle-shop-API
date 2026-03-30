@@ -226,7 +226,16 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
 
     Long countByOrderStatus(String orderStatus);
 
-    Long countByOrderStatusAndOrderStatusNot(String orderStatus, String orderStatus1);
+
+    @Query(value = """
+       select count(*)
+       from orders o
+       left join payments p
+       on o.order_id = p.order_id
+       where p.payment_status != 'RJ'
+       and o.order_status = 'PD';
+       """, nativeQuery = true)
+    Long countOrdersPDAndPaymentStatusNotRJ();
 
     Long countByOrderStatusAndCustomersEntity_CustomerId(String status, UUID customerId);
 }
