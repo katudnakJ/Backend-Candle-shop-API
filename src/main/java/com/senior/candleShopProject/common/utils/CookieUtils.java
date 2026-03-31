@@ -13,10 +13,16 @@ public class CookieUtils {
 
     private static Integer cookieExpirationTime;
 
+    private static String allowDomain;
+
     @Value("${JWT_ACCESS_EXPIRATION_TIME}")
     public void setCookieExpireTime(Integer expireTime) {
         CookieUtils.cookieExpirationTime = expireTime;
     }
+
+    @Value("${app.cors.allowed-origins}")
+    private static String cookieDomain;
+
 
     public static void addAccessTokenToCookie(HttpServletResponse response, String accessToken) {
         Cookie cookie = new Cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken);
@@ -44,6 +50,7 @@ public class CookieUtils {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
+        cookie.setDomain(cookieDomain);
 
         response.addCookie(cookie);
     }

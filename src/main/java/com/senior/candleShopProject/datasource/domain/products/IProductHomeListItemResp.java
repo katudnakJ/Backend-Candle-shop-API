@@ -19,4 +19,5 @@ public class IProductHomeListItemResp {
     private Integer totalSold;
     private String productSlug;
     private String productImgPath;
+    private boolean isActive;
 }
