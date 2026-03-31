@@ -112,6 +112,8 @@ public class ProductServiceTest {
     void testGetProductHomeListItem_Success() throws ShopServiceApiException {
         int page = 0;
         int size = 10;
+        String userRole = "CUST";
+        boolean isSeller = false;
 
         PaginationBuildResp paginationBuildResp = mock(PaginationBuildResp.class);
 
@@ -119,24 +121,24 @@ public class ProductServiceTest {
 
         IProductHomeListItemResp featuredProductResp = mock(IProductHomeListItemResp.class);
         when(productsRepo.getProductHomeListItemByFeature(true)).thenReturn(List.of(featuredProductResp));
-        when(productsRepo.getAllProductHomeList(size, 0)).thenReturn(List.of(featuredProductResp));
+        when(productsRepo.getAllProductHomeList(isSeller ,size, 0)).thenReturn(List.of(featuredProductResp));
 
-        GenericResponse response = productService.getProductHomeListItem(page,size);
+        GenericResponse response = productService.getProductHomeListItem( userRole, page,size);
 
         assertNotNull(response);
 
         verify(productsRepo, times(1)).getProductHomeListItemByFeature(anyBoolean());
-        verify(productsRepo, times(1)).getAllProductHomeList(size, 0);
+        verify(productsRepo, times(1)).getAllProductHomeList( isSeller, size, 0);
     }
 
     @Test
     void testGetProductHomeListItem_DataNotFound() throws ShopServiceApiException {
 
-        when(productsRepo.getAllProductHomeList(0,10)).thenReturn(Collections.emptyList());
+        when(productsRepo.getAllProductHomeList(false, 0,10)).thenReturn(Collections.emptyList());
         when(productsRepo.getProductHomeListItemByFeature(anyBoolean())).thenReturn(Collections.emptyList());
 
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
-            productService.getProductHomeListItem(0,10);
+            productService.getProductHomeListItem( "CUST",0,10);
         });
     }
 
@@ -175,7 +177,6 @@ public class ProductServiceTest {
             assertNotNull(resp);
             assertNotNull(resp.getData());
 
-            verify(userCheckTemp, times(1)).getSellerIdByUserId(userId);
             verify(productsRepo, times(1)).save(any(ProductsEntity.class));
             verify(productImagesRepo, times(1)).saveAll(anyList());
             verify(supabaseStorageService, times(2)).uploadFile(anyString(), anyString(), any(byte[].class), anyString());
@@ -226,7 +227,6 @@ public class ProductServiceTest {
         existImg.setIsPrimary(true);
 
         when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(List.of(existImg));
-        when(userCheckTemp.getSellerIdByUserId(userId)).thenReturn(UUID.randomUUID());
         when(productsRepo.save(any(ProductsEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         try (MockedStatic<ProcessImageUtil> mockedProcess = mockStatic(ProcessImageUtil.class)) {
@@ -282,8 +282,6 @@ public class ProductServiceTest {
     void testDeleteProduct_Success() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
-
-        when(userCheckTemp.getSellerIdByUserId(userId)).thenReturn(UUID.randomUUID());
 
         ProductsEntity existing = new ProductsEntity();
         existing.setProductId(productId);

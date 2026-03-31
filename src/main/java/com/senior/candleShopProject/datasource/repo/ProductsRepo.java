@@ -38,14 +38,16 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
               p.product_created_date as productCreatedDate,
               p.total_sold as totalSold,
               p.slug as productSlug,
-              pi.product_img_path as productImgPath
+              pi.product_img_path as productImgPath,
+              p.is_active as isActive
             from products p
             left join product_images pi
             on p.product_id = pi.product_id
             and pi.is_primary = true
             where p.is_featured = :isFeatured
             and p.is_active = true
-            ORDER BY  p.total_sold DESC;
+            ORDER BY  p.total_sold DESC
+            LIMIT 5;
     """,nativeQuery = true)
     List<IProductHomeListItemResp> getProductHomeListItemByFeature(@Param("isFeatured") Boolean isFeatured);
 
@@ -57,16 +59,17 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
               p.product_created_date as productCreatedDate,
               p.total_sold as totalSold,
               p.slug as productSlug,
-              pi.product_img_path as productImgPath
+              pi.product_img_path as productImgPath,
+              p.is_active as isActive
             from products p
             left join product_images pi
             on p.product_id = pi.product_id
             and pi.is_primary = true
-            where p.is_active = true
+            where ( :isSeller = true or p.is_active = true)
             ORDER BY  p.product_created_date ASC
             LIMIT :limit OFFSET :offset;
 """, nativeQuery = true)
-    List<IProductHomeListItemResp> getAllProductHomeList(@Param("limit") int limit, @Param("offset") int offset);
+    List<IProductHomeListItemResp> getAllProductHomeList(@Param("isSeller") boolean isSeller , @Param("limit") int limit, @Param("offset") int offset);
 
     ProductsEntity findProductsEntityByProductId(UUID productId);
 
@@ -77,17 +80,20 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
             p.product_created_date,
             p.total_sold as totalSold,
             p.slug as productSlug,
-            pi.product_img_path as productImgPath
+            pi.product_img_path as productImgPath,
+            p.is_active as isActive
         from products p
         left join product_images pi
         on p.product_id = pi.product_id
         and pi.is_primary = true
         where LOWER(p.product_name) like LOWER(CONCAT('%', :query, '%'))
-        and p.is_active = true
+        and ( :isSeller = true or p.is_active = true)
         order by p.product_created_date ASC
         LIMIT :limit OFFSET :offset
 """, nativeQuery = true)
-    List<IProductHomeListItemResp> searchProductsByName(@Param("query") String query, @Param("limit") int limit, @Param("offset") int offset);
+    List<IProductHomeListItemResp> searchProductsByName(
+           @Param("isSeller") boolean isSeller, @Param("query") String query, @Param("limit") int limit, @Param("offset") int offset
+    );
 
     Long countByProductNameContainingIgnoreCase(String query);
 
@@ -107,7 +113,12 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
         from products p
         join order_items oi on p.product_id = oi.product_id
         join orders o on oi.order_id = o.order_id
-        where oi.order_id = :orderId;
+        where oi.order_id = :orderId
+        and ( :isSeller = true or p.is_active = true);
 """,nativeQuery = true)
     List<ProductByOrderIdResp> getProductsByOrderId(@Param("orderId") UUID orderId);
+
+    Long countProductsEntityByIsActive(boolean isActive);
+
+    Long countByProductNameContainingIgnoreCaseAndIsActiveTrue(String query);
 }

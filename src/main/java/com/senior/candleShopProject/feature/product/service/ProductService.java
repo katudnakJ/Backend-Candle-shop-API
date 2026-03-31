@@ -8,6 +8,7 @@ import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.*;
 import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.products.IProductHomeListItemResp;
+import com.senior.candleShopProject.datasource.domain.products.ProductManagementResp;
 import com.senior.candleShopProject.datasource.entities.ProductImagesEntity;
 import com.senior.candleShopProject.datasource.entities.ProductsEntity;
 import com.senior.candleShopProject.datasource.repo.ProductImagesRepo;
@@ -84,34 +85,57 @@ public class ProductService {
         return response;
     }
 
-    public GenericResponse getProductHomeListItem(int page, int size) throws ShopServiceApiException {
+    public GenericResponse getProductHomeListItem(String userRole,int page, int size) throws ShopServiceApiException {
 
-//      get product from repository
-        List<IProductHomeListItemResp> prepareFeatureProducts = productsRepo.getProductHomeListItemByFeature(true);
-        List<IProductHomeListItemResp> prepareAllProducts = productsRepo.getAllProductHomeList(size, page * size);
+        boolean isSeller = userRole.equalsIgnoreCase(Constants.ROLE_SELLER);
+        List<IProductHomeListItemResp> prepareAllProducts = productsRepo.getAllProductHomeList(isSeller ,size, page * size);
 
         if (prepareAllProducts.isEmpty())
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Products not found.");
 
-        List<IProductHomeListItemResp> featuredProducts = addPrefixProductImgPath(prepareFeatureProducts);
         List<IProductHomeListItemResp> productList = addPrefixProductImgPath(prepareAllProducts);
 
-        Long totalCounts = productsRepo.count();
-
-        PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
-
-        ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
-        productHomeListItemResp.setFeaturedProducts(featuredProducts);
-        productHomeListItemResp.setAllProducts(productList);
-        productHomeListItemResp.setPage(page);
-        productHomeListItemResp.setSize(size);
-        productHomeListItemResp.setStartAt(pagination.getStartAt());
-        productHomeListItemResp.setEndAt(pagination.getEndAt());
-        productHomeListItemResp.setTotalProducts(pagination.getTotalItems());
-        productHomeListItemResp.setHasNext(pagination.isHasNext());
-
         GenericResponse response = new GenericResponse();
-        response.setData(productHomeListItemResp);
+
+        if (userRole.equalsIgnoreCase(Constants.ROLE_CUSTOMER)){
+            List<IProductHomeListItemResp> prepareFeatureProducts = productsRepo.getProductHomeListItemByFeature(true);
+
+            List<IProductHomeListItemResp> featuredProducts = addPrefixProductImgPath(prepareFeatureProducts);
+
+            Long totalCounts = productsRepo.countProductsEntityByIsActive(true);
+
+            PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
+
+            ProductHomeListItemResp productHomeListItemResp = new ProductHomeListItemResp();
+            productHomeListItemResp.setFeaturedProducts(featuredProducts);
+            productHomeListItemResp.setAllProducts(productList);
+            productHomeListItemResp.setPage(page);
+            productHomeListItemResp.setSize(size);
+            productHomeListItemResp.setStartAt(pagination.getStartAt());
+            productHomeListItemResp.setEndAt(pagination.getEndAt());
+            productHomeListItemResp.setTotalProducts(pagination.getTotalItems());
+            productHomeListItemResp.setHasNext(pagination.isHasNext());
+
+            response.setData(productHomeListItemResp);
+
+        }else if (userRole.equalsIgnoreCase(Constants.ROLE_SELLER)){
+
+            Long totalCounts = productsRepo.count();
+
+            PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
+
+            ProductManagementResp productManagementResp = new ProductManagementResp();
+            productManagementResp.setAllProducts(productList);
+            productManagementResp.setPage(page);
+            productManagementResp.setSize(size);
+            productManagementResp.setStartAt(pagination.getStartAt());
+            productManagementResp.setEndAt(pagination.getEndAt());
+            productManagementResp.setTotalProducts(pagination.getTotalItems());
+            productManagementResp.setHasNext(pagination.isHasNext());
+
+            response.setData(productManagementResp);
+        }
+
         response.setStatus(ResultCode.SUCCESS);
         return response;
 
@@ -127,11 +151,6 @@ public class ProductService {
                 || primaryIndex < 0
                 || productImagesReq.size() <= primaryIndex
         )throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "เกิดข้อผิดพลาดในการเพิ่มสินค้า กรุณาลองใหม่อีกครั้ง","Request body is missing or invalid primary index.");
-
-        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
-
-        if ( sellerId == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to create new product.");
 
         ImageValidationUtils.validateImages(productImagesReq);
 
@@ -162,11 +181,6 @@ public class ProductService {
     public GenericResponse updateProduct(UUID userId,UUID productId,
                                          UpdateProductReq updateProductReq,
                                          List<MultipartFile> productImagesReq) throws ShopServiceApiException {
-
-        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
-
-        if (sellerId == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission to update product.");
 
         if (productId == null)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Product id is missing.");
@@ -257,11 +271,6 @@ public class ProductService {
         if (productId == null)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Product id is missing.");
 
-        UUID sellerId = userCheckTemp.getSellerIdByUserId(userId);
-
-        if (sellerId == null)
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้", "User don't have permission to delete product.");
-
         ProductsEntity existingProduct = productsRepo.findById(productId)
                 .orElseThrow(() -> new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product doesn't exists."));
 
@@ -280,11 +289,28 @@ public class ProductService {
         return response;
     }
 
-    public GenericResponse searchProducts(String query, int page, int size) {
-        List<IProductHomeListItemResp> searchResults = productsRepo.searchProductsByName(query, size, page * size);
+    public GenericResponse searchProducts(String userRole, String query, int page, int size) {
 
-        Long totalCounts = productsRepo.countByProductNameContainingIgnoreCase(query);
-        PaginationBuildResp pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
+        boolean isSeller = userRole.equalsIgnoreCase(Constants.ROLE_SELLER);
+        List<IProductHomeListItemResp> searchResults = productsRepo.searchProductsByName(
+                isSeller, query, size, page * size
+        );
+
+        Long totalCounts;
+        PaginationBuildResp pagination;
+
+        if (searchResults.isEmpty()){
+            GenericResponse response = new GenericResponse();
+            response.setData(new ArrayList<>());
+            response.setStatus(ResultCode.SUCCESS);
+            return response;
+        }else if ( userRole.equalsIgnoreCase(Constants.ROLE_CUSTOMER) ){
+            totalCounts = productsRepo.countByProductNameContainingIgnoreCaseAndIsActiveTrue(query);
+            pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
+        }else{
+            totalCounts = productsRepo.countByProductNameContainingIgnoreCase(query);
+            pagination = paginationUtil.buildPaginationResp(page, size, totalCounts);
+        }
 
         ProductsBySearchResp productHomeListItemResp = new ProductsBySearchResp();
         productHomeListItemResp.setProducts(addPrefixProductImgPath(searchResults));
