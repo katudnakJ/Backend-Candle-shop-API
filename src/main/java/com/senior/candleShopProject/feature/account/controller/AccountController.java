@@ -27,7 +27,7 @@ public class AccountController {
 
     @GetMapping("/address")
     @Operation(summary = "Get Account, address API.", description = "Get user address.")
-    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('DEVELOP')")
     public ResponseEntity<GenericResponse> getUserAddresses(@RequestAttribute("userId") String userId) throws ShopServiceApiException {
         log.info("Get user address by user id {}", userId);
 
@@ -81,7 +81,7 @@ public class AccountController {
 
     @DeleteMapping  ("/address/{addressId}")
     @Operation(summary = "Delete user address API.", description = "Delete user address.")
-    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('DEVELOPER')")
     public ResponseEntity<GenericResponse> deleteUserAddress(@RequestAttribute("userId") String userId,
                                                            @PathVariable("addressId") String addressId) throws ShopServiceApiException {
         log.info("Delete user address by user id {}", userId);

@@ -28,7 +28,7 @@ public class OrderCheckoutController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Checkout order API.")
-    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUST') or hasRole('DEVELOPER')")
     public ResponseEntity checkoutOrder(@RequestAttribute("userId") String userId,
                                         @RequestParam("image_data") MultipartFile imageData,
                                         @RequestParam("shopping_cart_item_ids") List<String> shoppingCartItemIds,
@@ -44,7 +44,7 @@ public class OrderCheckoutController {
 
     @PutMapping(value = "/{orderId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Retry payment for order API.", description = "Retry payment when payment is rejected.")
-    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUST') or hasRole('DEVELOPER')")
     public ResponseEntity retryPayment(@RequestAttribute("userId") String userId,
                                         @PathVariable("orderId") String orderId,
                                         @RequestParam("image_data") MultipartFile imageData) throws ShopServiceApiException, IOException {

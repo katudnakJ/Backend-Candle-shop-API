@@ -24,7 +24,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AccountService {
 
-    private final UsersRepo usersRepo;
     private final AddressesRepo addressesRepo;
     private final UserCheckTemp userCheckTemp;
 

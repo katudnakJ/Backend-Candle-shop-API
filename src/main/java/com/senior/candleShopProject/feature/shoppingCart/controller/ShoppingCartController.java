@@ -26,7 +26,7 @@ public class ShoppingCartController {
 
     @GetMapping()
     @Operation(summary = "Get shopping cart with items API.", description = "Get shopping cart with all items.")
-    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUST') or hasRole('DEVELOPER')")
     public ResponseEntity getShoppingCart(@RequestAttribute("userId") String userId,
                                           @RequestParam(value = "page", defaultValue = "0") int page,
                                           @RequestParam(value = "size", defaultValue = "10") int size) throws ShopServiceApiException {
@@ -39,7 +39,7 @@ public class ShoppingCartController {
 
     @PostMapping()
     @Operation(summary = "Add shopping cart item API.", description = "Add items list to shopping cart.")
-    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUST') or hasRole('DEVELOPER')")
     public ResponseEntity addShoppingCartItem(@RequestAttribute("userId") String userId,
                                                      @RequestBody AddShoppingCartItemReq addShoppingCartItemReq) throws ShopServiceApiException {
         log.info("Add shopping cart item by user id.");
@@ -52,7 +52,7 @@ public class ShoppingCartController {
 
     @DeleteMapping()
     @Operation(summary = "Delete shopping cart item API.", description = "Delete items list from shopping cart.")
-    @PreAuthorize("hasRole('CUST') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('CUST') or hasRole('DEVELOPER')")
     public ResponseEntity deleteShoppingCartItem(@RequestAttribute("userId") String userId,
                                                  @RequestBody DeleteShoppingCartItemReq deleteShoppingCartItemReq) throws ShopServiceApiException {
         log.info("Delete shopping cart item by user id.");

@@ -1,13 +1,12 @@
 package com.senior.candleShopProject.datasource.repo;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
-import com.senior.candleShopProject.datasource.domain.orders.IOrderDetailByOrderIdResp;
-import com.senior.candleShopProject.datasource.domain.orders.IReceiptInformationResp;
+import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -240,4 +239,48 @@ select p.payment_id as paymentId,
     Long countOrdersPDAndPaymentStatusNotRJ();
 
     Long countByOrderStatusAndCustomersEntity_CustomerId(String status, UUID customerId);
+
+    @Query("SELECT NEW com.senior.candleShopProject.datasource.domain.orders.ReportOrderOfRangeResp(" +
+            "CAST(SUM( CASE " +
+            "       WHEN o.totalAmount < 0 THEN 0 " +
+            "       ELSE o.totalAmount " +
+            "    END ) as BIGDECIMAL ), " +
+            "COUNT(o.orderId)) " +
+            "FROM OrdersEntity o " +
+            "WHERE o.orderCreatedAt >= :startOfMonthFirstDay " +
+            "AND o.orderCreatedAt < :nextMonthFirstDay")
+    ReportOrderOfRangeResp findReportByRange(
+            @Param("startOfMonthFirstDay") Instant startOfMonthFirstDay,
+            @Param("nextMonthFirstDay") Instant nextMonthFirstDay
+    );
+
+    @Query(value = """
+       select count(*) as totalNewCustomerThisMonth
+       from users u
+       WHERE u.created_at >= :startOfMonthFirstDay
+       AND u.created_at < :nextMonthFirstDay
+    """, nativeQuery = true)
+    Long countNewCustomerThisMonth(
+            @Param("startOfMonthFirstDay") Instant startOfMonthFirstDay,
+            @Param("nextMonthFirstDay") Instant nextMonthFirstDay
+    );
+
+    @Query(value = """
+        select oi.product_id as productId,
+            oi.product_name_at_purchase as productName,
+            SUM(oi.quantity) as totalQuantitySales
+        from orders o
+        join order_items oi on o.order_id = oi.order_id
+        where o.created_at < :nextMonthFirstDay
+        and o.created_at >= :startOfMonthFirstDay
+        group by oi.product_id, oi.product_name_at_purchase
+        order by totalQuantitySales DESC
+        limit :limit;
+""", nativeQuery = true)
+    List<IReportTopSellingProductsResp> findTopSellingProductsByRange(
+            @Param("startOfMonthFirstDay") Instant startOfMonthFirstDay,
+            @Param("nextMonthFirstDay") Instant nextMonthFirstDay,
+            @Param("limit") int limit
+    );
+
 }

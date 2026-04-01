@@ -11,7 +11,7 @@ public class Constants {
     public static final String LINE_TOKEN_GET_PROFILE_URL = "/v2/profile";
 
 //    Role
-    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_DEVELOPER = "DEVELOPER";
     public static final String ROLE_SELLER = "SELLER";
     public static final String ROLE_CUSTOMER = "CUST";
 
@@ -36,6 +36,7 @@ public class Constants {
 //  Date
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String TIME_ZONE_BANGKOK = "Asia/Bangkok";
+    public static final String TIME_ZONE_UTC = "UTC";
 
 //    Content type
     public static final String CONTENT_TYPE_JPEG = "image/jpeg";
@@ -56,5 +57,8 @@ public class Constants {
     public static final String PDF_SIGN_LOCATION = "Thailand";
     public static final String PDF_SIGN_REASON = "Invoice Digital Signature";
 
-
+//  Trend for report
+    public static final String TREND_INCREASE = "INCREASE";
+    public static final String TREND_DECREASE = "DECREASE";
+    public static final String TREND_STABLE = "STABLE";
 }
