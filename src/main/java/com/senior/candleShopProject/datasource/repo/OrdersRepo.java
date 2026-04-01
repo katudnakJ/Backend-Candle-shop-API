@@ -171,7 +171,7 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
     boolean existsByOrderIdAndCustomersEntity_UsersEntity_UserId(UUID orderId, UUID userId);
 
     @Query(value ="""
-    select p.payment_id as paymentId,
+select p.payment_id as paymentId,
         p.receipt_number as paymentReceiptNumber,
         o.order_number as orderNumber,
         o.total_amount as orderTotalAmount,
@@ -214,15 +214,17 @@ public interface OrdersRepo extends JpaRepository<OrdersEntity, UUID> {
       AND ad.is_default = true
       LIMIT 1
     ) sad
-    left join addresses ad on u.user_id = ad.user_id
-    and ad.is_default = true
     left join order_shipping_address osa on osa.order_id = o.order_id
     where p.payment_status = 'AP'
     and o.order_status in ('TS','TR','CP')
-    and u.user_id = :userId
+    and (
+      :isSeller = true
+      or u.user_id = :userId
+    )
     and o.order_id = :orderId;
 """, nativeQuery = true)
-    IReceiptInformationResp getReceiptInformationByOrderId(@Param("userId") UUID userId, @Param("orderId") UUID orderId);
+    IReceiptInformationResp getReceiptInformationByOrderId(
+            @Param("isSeller") boolean isSeller, @Param("userId") UUID userId, @Param("orderId") UUID orderId);
 
     Long countByOrderStatus(String orderStatus);
 

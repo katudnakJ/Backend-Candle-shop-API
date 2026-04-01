@@ -349,7 +349,7 @@ public class OrderService {
     }
 
     @Transactional
-    public GenericResponse generateReceiptToPDF (UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
+    public GenericResponse generateReceiptToPDF (String userRole, UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
 
         PaymentsEntity paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
@@ -359,7 +359,12 @@ public class OrderService {
         if (!OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode().equalsIgnoreCase(paymentsEntity.getPaymentStatus()))
             throw new ShopConflictException(ResultCode.CONFLICT, "Only payment with 'APPROVED' status can generate receipt PDF.");
 
-        IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
+        boolean isSeller = userRole.equalsIgnoreCase(Constants.ROLE_SELLER);
+
+        if (!isSeller && !userCheckTemp.isOwnerOfOrder(userId, orderId))
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึงออเดอร์นี้", "User don't have permission.");
+
+        IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(isSeller, userId, orderId);
 
         if (receiptInfo == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");

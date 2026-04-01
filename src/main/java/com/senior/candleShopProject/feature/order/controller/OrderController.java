@@ -137,13 +137,15 @@ public class OrderController {
         @GetMapping("/{orderId}/receipt")
         @Operation(summary = "Get receipt PDF for order.", description = "ดึงไฟล์ PDF ใบเสร็จสำหรับออเดอร์")
         @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
-        public ResponseEntity<GenericResponse> getReceiptPDF(@RequestAttribute("userId") String userId,
+        public ResponseEntity<GenericResponse> getReceiptPDF(
+                                              @RequestAttribute("userId") String userId,
+                                              @RequestAttribute("userRole") String userRole,
                                               @PathVariable("orderId") String orderId) throws ShopServiceApiException, IOException {
             log.info("Getting receipt PDF for order {}", orderId);
             UUID userUUID = UUID.fromString(userId);
             UUID orderUUID = UUID.fromString(orderId);
 
-            GenericResponse response = orderService.generateReceiptToPDF(userUUID, orderUUID);
+            GenericResponse response = orderService.generateReceiptToPDF(userRole, userUUID, orderUUID);
             return ResponseEntity.ok(response);
         }
 }
