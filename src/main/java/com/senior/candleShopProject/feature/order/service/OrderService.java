@@ -27,6 +27,7 @@ import com.senior.candleShopProject.feature.order.controller.dto.response.OrderS
 import com.senior.candleShopProject.feature.order.generator.PDFGenerators;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -157,6 +158,10 @@ public class OrderService {
         return response;
     }
 
+    @CacheEvict(
+            value = "monthlyReportCache",
+            key = "T(String).format('%s-%02d-%d', #userRole, #month, #year)"
+    )
     public GenericResponse confirmPayment(String userRole,UUID userId, UUID orderId) throws  ShopServiceApiException {
 
         userCheckTemp.checkExistsUser(userId);
@@ -213,6 +218,10 @@ public class OrderService {
 
     }
 
+    @CacheEvict(
+            value = "monthlyReportCache",
+            key = "T(String).format('%s-%02d-%d', #userRole, #month, #year)"
+    )
     public GenericResponse rejectPayment(UUID userId,UUID orderId, RejectPaymentReq rejectPaymentReq ) throws  ShopServiceApiException {
 
         userCheckTemp.checkExistsUser(userId);
@@ -247,6 +256,10 @@ public class OrderService {
         return getGenericResponse(orderEntity, newStatus, timeNow, payment);
     }
 
+    @CacheEvict(
+            value = "monthlyReportCache",
+            key = "T(String).format('%s-%02d-%d', #userRole, #month, #year)"
+    )
     public GenericResponse trackOrder(UUID userId, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
         userCheckTemp.checkExistsUser(userId);
 
@@ -317,6 +330,10 @@ public class OrderService {
     }
 
 //    Customer confirm when receive the order and change order status to CP.
+    @CacheEvict(
+            value = "monthlyReportCache",
+            key = "T(String).format('%s-%02d-%d', #userRole, #month, #year)"
+    )
     @Transactional
     public GenericResponse confirmReceipt(UUID userId, UUID orderId) throws ShopServiceApiException {
 

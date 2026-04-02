@@ -33,14 +33,11 @@ public class ReportService {
 
     @Cacheable(
             value = "monthlyReportCache",
-            key = "T(String).format('%s-%d-%d', #userRole, #month, #year)",
-            condition = "#month != null && #year != null"
+            key = "T(String).format('%s-%02d-%d', #userRole, #month, #year)",
+            condition = "#month >= 1 && #month <= 12 && #year > 2000 && #month != T(java.time.LocalDate).now().getMonthValue()"
     )
     @Transactional(readOnly = true)
-    public GenericResponse getMonthlyReport(String userRole, int month, int year) throws ShopServiceApiException {
-
-        if ( userRole.equalsIgnoreCase(Constants.ROLE_SELLER) )
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้","You don't have permission to access this resource.");
+    public GenericResponse getMonthlyReport(int month, int year) throws ShopServiceApiException {
 
 //        Total Sales for this month
         RangeOfMonthResp rangeOfMonthResp = ReportUtils.getRangeOfMonthUTC(month, year);
