@@ -1,4 +1,5 @@
 package com.senior.candleShopProject.datasource.repo;
+import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -245,11 +246,34 @@ select p.payment_id as paymentId,
             "       WHEN o.totalAmount < 0 THEN 0 " +
             "       ELSE o.totalAmount " +
             "    END ) as BIGDECIMAL ), " +
+            "COUNT(o.orderId), " +
+            "COUNT(CASE WHEN o.orderStatus = 'TS' THEN 1 END)," +
+            "COUNT(CASE WHEN o.orderStatus = 'TR' THEN 1 END)," +
+            "COUNT(CASE WHEN o.orderStatus = 'CP' THEN 1 END)) " +
+            "FROM OrdersEntity o " +
+            "JOIN PaymentsEntity p ON o.orderId = p.ordersEntity.orderId " +
+            "AND p.paymentStatus = 'AP'" +
+            "WHERE o.orderCreatedAt >= :startOfMonthFirstDay " +
+            "AND o.orderCreatedAt < :nextMonthFirstDay " +
+            "AND o.orderStatus IN ('TS', 'TR', 'CP') ")
+    ReportOrderOfRangeResp findReportByRange(
+            @Param("startOfMonthFirstDay") Instant startOfMonthFirstDay,
+            @Param("nextMonthFirstDay") Instant nextMonthFirstDay
+    );
+
+    @Query("SELECT NEW com.senior.candleShopProject.datasource.domain.orders.ReportOfRangeLastMonthResp(" +
+            "CAST(SUM( CASE " +
+            "       WHEN o.totalAmount < 0 THEN 0 " +
+            "       ELSE o.totalAmount " +
+            "    END ) as BIGDECIMAL ), " +
             "COUNT(o.orderId)) " +
             "FROM OrdersEntity o " +
+            "JOIN PaymentsEntity p ON o.orderId = p.ordersEntity.orderId " +
+            "AND p.paymentStatus = 'AP'" +
             "WHERE o.orderCreatedAt >= :startOfMonthFirstDay " +
-            "AND o.orderCreatedAt < :nextMonthFirstDay")
-    ReportOrderOfRangeResp findReportByRange(
+            "AND o.orderCreatedAt < :nextMonthFirstDay " +
+            "AND o.orderStatus IN ('TS', 'TR', 'CP') ")
+    ReportOfRangeLastMonthResp findReportByRangeLastMonth(
             @Param("startOfMonthFirstDay") Instant startOfMonthFirstDay,
             @Param("nextMonthFirstDay") Instant nextMonthFirstDay
     );
@@ -282,5 +306,4 @@ select p.payment_id as paymentId,
             @Param("nextMonthFirstDay") Instant nextMonthFirstDay,
             @Param("limit") int limit
     );
-
 }

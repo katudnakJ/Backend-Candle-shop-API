@@ -8,6 +8,7 @@ import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.ReportUtils;
 import com.senior.candleShopProject.common.utils.dto.RangeOfMonthResp;
 import com.senior.candleShopProject.datasource.domain.orders.IReportTopSellingProductsResp;
+import com.senior.candleShopProject.datasource.domain.orders.ReportOfRangeLastMonthResp;
 import com.senior.candleShopProject.datasource.domain.orders.ReportOrderOfRangeResp;
 import com.senior.candleShopProject.datasource.repo.OrdersRepo;
 import com.senior.candleShopProject.feature.report.controller.dto.response.dto.MonthlyReportResp;
@@ -53,7 +54,7 @@ public class ReportService {
 
 //        Total Sales last month
         RangeOfMonthResp rangeOfLastMonthResp = ReportUtils.getRangeOfMonthUTC(month-1, year);
-        ReportOrderOfRangeResp reportByRangeLastMonth = ordersRepo.findReportByRange(
+        ReportOfRangeLastMonthResp reportByRangeLastMonth = ordersRepo.findReportByRangeLastMonth(
                 rangeOfLastMonthResp.getStartDate(),
                 rangeOfLastMonthResp.getEndDate()
         );
@@ -124,19 +125,22 @@ public class ReportService {
         MonthlyReportResp monthlyReportResp = new MonthlyReportResp();
         monthlyReportResp.setTotalSalesThisMonth(reportByRangeThisMonth.getTotalSales());
         monthlyReportResp.setTotalOrdersThisMonth(reportByRangeThisMonth.getTotalOrderCount());
-        monthlyReportResp.setPercentageChangeOrder(percentageChangeOrder);
+        monthlyReportResp.setTotalTSOrders(reportByRangeThisMonth.getTotalTSOrders());
+        monthlyReportResp.setTotalTROrders(reportByRangeThisMonth.getTotalTROrders());
+        monthlyReportResp.setTotalCPOrders(reportByRangeThisMonth.getTotalCPOrders());
+        monthlyReportResp.setOrdersPercentageChange(percentageChangeOrder);
         monthlyReportResp.setOrderTrend(
                 determineTrend(percentageChangeOrder)
         );
 
         monthlyReportResp.setAovThisMonth(totalAOVThisMonth);
-        monthlyReportResp.setPercentageChangeAOV(percentageChangeAOV);
+        monthlyReportResp.setAovPercentageChange(percentageChangeAOV);
         monthlyReportResp.setAovTrend(
                 determineTrend(percentageChangeAOV)
         );
 
         monthlyReportResp.setTotalNewCustomersThisMonth(totalNewCustomerThisMonth);
-        monthlyReportResp.setPercentageNewCustomersThisMonth(percentageChangeNewCustomer);
+        monthlyReportResp.setNewCustomersPercentageChange(percentageChangeNewCustomer);
         monthlyReportResp.setNewCustomerTrend(
                 determineTrend(percentageChangeNewCustomer)
         );
