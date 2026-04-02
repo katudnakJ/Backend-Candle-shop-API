@@ -116,7 +116,10 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
         where oi.order_id = :orderId
         and ( :isSeller = true or p.is_active = true);
 """,nativeQuery = true)
-    List<ProductByOrderIdResp> getProductsByOrderId(@Param("orderId") UUID orderId);
+    List<ProductByOrderIdResp> getProductsByOrderId(
+            @Param("isSeller") boolean isSeller,
+            @Param("orderId") UUID orderId
+    );
 
     Long countProductsEntityByIsActive(boolean isActive);
 

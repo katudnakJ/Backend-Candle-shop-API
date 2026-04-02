@@ -141,6 +141,8 @@ public class OrderServiceTest {
     void confirmPayment_PDtoTS_Success() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        String userRole = "SELLER";
+        boolean isSeller = true;
 
         doNothing().when(userCheckTemp).checkExistsUser(userId);
 
@@ -158,9 +160,9 @@ public class OrderServiceTest {
 
         PaginationBuildResp paginationBuildResp = mock(PaginationBuildResp.class);
         when(paginationUtil.buildPaginationResp(anyInt(), anyInt(), anyLong())).thenReturn(paginationBuildResp);
-        when(productsRepo.getProductsByOrderId(eq(orderId))).thenReturn(List.of(mock(ProductByOrderIdResp.class)));
+        when(productsRepo.getProductsByOrderId(eq(isSeller), eq(orderId))).thenReturn(List.of(mock(ProductByOrderIdResp.class)));
 
-        GenericResponse resp = orderService.confirmPayment(userId, orderId);
+        GenericResponse resp = orderService.confirmPayment(userRole, userId, orderId);
 
         assertNotNull(resp);
         verify(ordersRepo).save(any(OrdersEntity.class));
@@ -170,6 +172,7 @@ public class OrderServiceTest {
     void confirmPayment_InvalidTransition_ThrowsConflict() throws ShopServiceApiException {
         UUID userId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        String userRole = "SELLER";
 
         doNothing().when(userCheckTemp).checkExistsUser(userId);
 
@@ -182,7 +185,7 @@ public class OrderServiceTest {
         when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(payment);
 
         ShopConflictException ex = assertThrows(ShopConflictException.class, () ->
-                orderService.confirmPayment(userId, orderId)
+                orderService.confirmPayment(userRole, userId, orderId)
         );
 
         verify(ordersRepo, never()).save(any());
@@ -199,7 +202,7 @@ public class OrderServiceTest {
         doNothing().when(userCheckTemp).checkExistsUser(userId);
 
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () ->
-                orderService.trackOrder(userId, userRole, orderId, req)
+                orderService.trackOrder(userId, orderId, req)
         );
 
         verifyNoInteractions(ordersRepo);
@@ -227,7 +230,7 @@ public class OrderServiceTest {
             return saved;
         });
 
-        GenericResponse resp = orderService.trackOrder(userId,userRole, orderId, req);
+        GenericResponse resp = orderService.trackOrder(userId, orderId, req);
 
         assertNotNull(resp);
         verify(ordersRepo).save(any(OrdersEntity.class));

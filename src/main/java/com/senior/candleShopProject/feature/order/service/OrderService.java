@@ -157,7 +157,7 @@ public class OrderService {
         return response;
     }
 
-    public GenericResponse confirmPayment(UUID userId, UUID orderId) throws  ShopServiceApiException {
+    public GenericResponse confirmPayment(String userRole,UUID userId, UUID orderId) throws  ShopServiceApiException {
 
         userCheckTemp.checkExistsUser(userId);
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);
@@ -180,7 +180,8 @@ public class OrderService {
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission.");
 
         //            Increase total sold of the product when confirm payment
-        List<ProductByOrderIdResp> productIds = productsRepo.getProductsByOrderId(orderId);
+        boolean isSeller = userRole.equalsIgnoreCase(Constants.ROLE_SELLER);
+        List<ProductByOrderIdResp> productIds = productsRepo.getProductsByOrderId(isSeller, orderId);
         List<ProductsEntity> productsEntities = new ArrayList<>();
         productIds.forEach(product -> {
             ProductsEntity productEntity = new ProductsEntity();
@@ -246,15 +247,11 @@ public class OrderService {
         return getGenericResponse(orderEntity, newStatus, timeNow, payment);
     }
 
-    public GenericResponse trackOrder(UUID userId,String userRole, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
+    public GenericResponse trackOrder(UUID userId, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
         userCheckTemp.checkExistsUser(userId);
 
         if (orderId == null || trackOrderReq.getTrackingNumber().isEmpty())
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "กรุณาใส่หมายเลขพัสดุอย่างน้อย 1 หมายเลข","Tracking number is required.");
-
-
-        if (!userRole.equalsIgnoreCase(Constants.ROLE_SELLER))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);
         if (order.isEmpty())
@@ -349,7 +346,7 @@ public class OrderService {
     }
 
     @Transactional
-    public GenericResponse generateReceiptToPDF (UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
+    public GenericResponse generateReceiptToPDF (String userRole, UUID userId, UUID orderId) throws ShopServiceApiException, IOException {
 
         PaymentsEntity paymentsEntity = paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
 
@@ -359,7 +356,12 @@ public class OrderService {
         if (!OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode().equalsIgnoreCase(paymentsEntity.getPaymentStatus()))
             throw new ShopConflictException(ResultCode.CONFLICT, "Only payment with 'APPROVED' status can generate receipt PDF.");
 
-        IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(userId, orderId);
+        boolean isSeller = userRole.equalsIgnoreCase(Constants.ROLE_SELLER);
+
+        if (!isSeller && !userCheckTemp.isOwnerOfOrder(userId, orderId))
+            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึงออเดอร์นี้", "User don't have permission.");
+
+        IReceiptInformationResp receiptInfo = ordersRepo.getReceiptInformationByOrderId(isSeller, userId, orderId);
 
         if (receiptInfo == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Order not found.");

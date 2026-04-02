@@ -12,6 +12,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import java.text.Normalizer;
 
 import java.io.*;
 import java.security.KeyStore;
@@ -73,7 +74,10 @@ public class PDFGenerators {
         content.beginText();
         content.setFont(font, fontSize);
         content.newLineAtOffset(x, y);
-        content.showText(text != null ? text : "");
+
+        String normalizedText = Normalizer.normalize(text != null ? text : "", Normalizer.Form.NFC);
+
+        content.showText(text != null ? normalizedText : "");
         content.endText();
     }
 
