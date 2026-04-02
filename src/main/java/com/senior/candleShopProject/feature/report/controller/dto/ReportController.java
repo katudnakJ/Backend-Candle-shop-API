@@ -26,12 +26,12 @@ public class ReportController {
     @GetMapping("/dashboard")
     @Operation(summary = "Get report data for dashboard", description = "Get report data for making dashboard")
     @PreAuthorize(value = "hasAnyRole('DEVELOPER', 'SELLER')")
-    public ResponseEntity<GenericResponse> getDashboardReportData(
+    public ResponseEntity<GenericResponse> getDashboardReportData(@RequestAttribute("userRole") String userRole,
                                                   @RequestParam("month") int month,
                                                   @RequestParam("year") int year) throws ShopServiceApiException {
 
         log.info("Received request to get dashboard report data for month: {}, year: {}", month, year);
-        GenericResponse response = reportService.getMonthlyReport( month, year);
+        GenericResponse response = reportService.getMonthlyReport(userRole, month, year);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

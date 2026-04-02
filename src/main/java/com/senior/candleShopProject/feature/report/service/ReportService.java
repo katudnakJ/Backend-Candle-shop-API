@@ -45,11 +45,13 @@ public class ReportService {
 
     @Cacheable(
             value = "monthlyReportCache",
-            key = "T(String).format('%s-%02d-%d', #userRole, #month, #year)",
-            condition = "#month >= 1 && #month <= 12 && #year > 2000 && #month != T(java.time.LocalDate).now().getMonthValue()"
+            key = "#userRole + '-' + #month + '-' + #year",
+            condition = "#month >= 1 && #month <= 12 && #year > 2000 && " +
+                    "(#year != T(java.time.LocalDate).now().getYear() || " +
+                    "#month != T(java.time.LocalDate).now().getMonthValue())"
     )
     @Transactional(readOnly = true)
-    public GenericResponse getMonthlyReport(int month, int year) throws ShopServiceApiException {
+    public GenericResponse getMonthlyReport(String userRole, int month, int year) throws ShopServiceApiException {
 
 //        Total Sales for this month
         RangeOfMonthResp rangeOfMonthResp = ReportUtils.getRangeOfMonthUTC(month, year);

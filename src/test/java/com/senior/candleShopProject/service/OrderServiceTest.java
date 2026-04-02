@@ -2,14 +2,18 @@ package com.senior.candleShopProject.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.OrderStatus;
+import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.PaginationUtil;
+import com.senior.candleShopProject.common.utils.SupabaseStorageUtils;
 import com.senior.candleShopProject.common.utils.dto.PaginationBuildResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
+import com.senior.candleShopProject.datasource.domain.orders.IReceiptInformationResp;
 import com.senior.candleShopProject.datasource.domain.products.ProductByOrderIdResp;
+import com.senior.candleShopProject.datasource.entities.CustomersEntity;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
 import com.senior.candleShopProject.datasource.entities.ShipmentEntity;
@@ -25,6 +29,7 @@ import org.springframework.boot.test.context.TestComponent;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +44,7 @@ public class OrderServiceTest {
 
     @Mock private PaginationUtil paginationUtil;
     @Mock private UserCheckTemp userCheckTemp;
+    @Mock private SupabaseStorageUtils supabaseStorageUtils;
 
     @Mock private OrdersRepo ordersRepo;
     @Mock private OrderItemsRepo orderItemsRepo;
@@ -234,5 +240,144 @@ public class OrderServiceTest {
 
         assertNotNull(resp);
         verify(ordersRepo).save(any(OrdersEntity.class));
+    }
+
+    @Test
+    void getPaymentSlipByOrderId_Success() throws ShopServiceApiException {
+        UUID userId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+
+        when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
+        when(userCheckTemp.isOwnerOfOrder(userId, orderId)).thenReturn(true);
+
+        PaymentsEntity payment = new PaymentsEntity();
+        payment.setPaymentId(UUID.randomUUID());
+        payment.setPaymentProofPath("proof.jpg");
+        when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(payment);
+
+        SignedFileUrlResp signed = mock(SignedFileUrlResp.class);
+        when(supabaseStorageUtils.getSignedPaymentProofImage(eq(customerId), any(), anyString(), any())).thenReturn(signed);
+
+        GenericResponse resp = orderService.getPaymentSlipByOrderId(userId, orderId);
+
+        assertNotNull(resp);
+        assertEquals(com.senior.candleShopProject.common.ResultCode.SUCCESS, resp.getStatus());
+        verify(paymentsRepo).findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+    }
+
+    @Test
+    void getPaymentSlipByOrderId_PaymentNotFound_Throws() throws ShopServiceApiException {
+        UUID userId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+
+        when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
+        when(userCheckTemp.isOwnerOfOrder(userId, orderId)).thenReturn(true);
+
+        when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(null);
+
+        ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () ->
+                orderService.getPaymentSlipByOrderId(userId, orderId)
+        );
+
+        verify(paymentsRepo).findPaymentsEntitiesByOrdersEntity_OrderId(orderId);
+    }
+
+    @Test
+    void confirmReceipt_Success() throws ShopServiceApiException {
+        UUID userId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+
+        when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
+
+        OrdersEntity order = new OrdersEntity();
+        order.setOrderId(orderId);
+        CustomersEntity cust = new CustomersEntity();
+        cust.setCustomerId(customerId);
+        order.setCustomersEntity(cust);
+        order.setOrderStatus(OrderStatus.ORDER_TO_RECIEVE.getStatusCode());
+
+        when(ordersRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(ordersRepo.save(any(OrdersEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        GenericResponse resp = orderService.confirmReceipt(userId, orderId);
+
+        assertNotNull(resp);
+        assertEquals(com.senior.candleShopProject.common.ResultCode.SUCCESS, resp.getStatus());
+        verify(ordersRepo).save(any(OrdersEntity.class));
+    }
+
+    @Test
+    void confirmReceipt_Forbidden_Throws() throws ShopServiceApiException {
+        UUID userId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+
+        when(userCheckTemp.getCustomerIdByUserId(userId)).thenReturn(customerId);
+
+        OrdersEntity order = new OrdersEntity();
+        order.setOrderId(orderId);
+        CustomersEntity cust = new CustomersEntity();
+        cust.setCustomerId(UUID.randomUUID()); // different id
+        order.setCustomersEntity(cust);
+
+        when(ordersRepo.findById(orderId)).thenReturn(Optional.of(order));
+
+        ShopForbiddenException ex = assertThrows(ShopForbiddenException.class, () ->
+                orderService.confirmReceipt(userId, orderId)
+        );
+
+        verify(ordersRepo, never()).save(any());
+    }
+
+    @Test
+    void generateReceiptToPDF_Success() throws Exception {
+        String userRole = "SELLER";
+        UUID userId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        PaymentsEntity payment = new PaymentsEntity();
+        payment.setPaymentStatus(OrderStatus.ORDER_PAYMENT_APPROVED.getStatusCode());
+        payment.setReceiptPath("receipt.pdf");
+        payment.setPaymentId(UUID.randomUUID());
+        payment.setCreatedAt(Instant.now());
+
+        when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(payment);
+
+        IReceiptInformationResp receiptInfo = mock(IReceiptInformationResp.class);
+        when(receiptInfo.getOrderStatus()).thenReturn(OrderStatus.ORDER_TO_SHIP.getStatusCode());
+        when(ordersRepo.getReceiptInformationByOrderId(true, userId, orderId)).thenReturn(receiptInfo);
+
+        SignedFileUrlResp signed = mock(SignedFileUrlResp.class);
+
+        when(signed.getExpiresAt()).thenReturn(ZonedDateTime.now());
+        when(signed.getSignedFileUrl()).thenReturn("https://test.com/receipt.pdf"); // เผื่อใช้ด้วย
+
+        when(supabaseStorageUtils.getSignedReceiptPDFUrl(any(), any(), any(), anyString()))
+                .thenReturn(signed);
+
+        GenericResponse resp = orderService.generateReceiptToPDF(userRole, userId, orderId);
+
+        assertNotNull(resp);
+        assertEquals(com.senior.candleShopProject.common.ResultCode.SUCCESS, resp.getStatus());
+    }
+
+    @Test
+    void generateReceiptToPDF_InvalidState_Throws() throws Exception {
+        String userRole = "CUST";
+        UUID userId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        PaymentsEntity payment = new PaymentsEntity();
+        payment.setPaymentStatus(OrderStatus.ORDER_PAYMENT_PENDING.getStatusCode());
+        when(paymentsRepo.findPaymentsEntitiesByOrdersEntity_OrderId(orderId)).thenReturn(payment);
+
+        ShopConflictException ex = assertThrows(ShopConflictException.class, () ->
+                orderService.generateReceiptToPDF(userRole, userId, orderId)
+        );
+
+        verify(ordersRepo, never()).getReceiptInformationByOrderId(anyBoolean(), any(), any());
     }
 }

@@ -147,7 +147,10 @@
 							<artifactId>lombok</artifactId>
 						</path>
 					</annotationProcessorPaths>
-				</configuration>
+                    <source>23</source>
+                    <target>23</target>
+<!--                    <compilerArgs>&#45;&#45;enable-preview</compilerArgs>-->
+                </configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.asciidoctor</groupId>

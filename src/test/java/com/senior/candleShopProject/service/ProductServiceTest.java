@@ -314,4 +314,55 @@ public class ProductServiceTest {
 
         verify(productsRepo, never()).delete(any());
     }
+
+    @Test
+    void testSearchProducts_Success() {
+        String userRole = "CUST";
+        String query = "candle";
+        int page = 0;
+        int size = 10;
+
+        IProductHomeListItemResp item = mock(IProductHomeListItemResp.class);
+        UUID pid = UUID.randomUUID();
+        when(item.getProductId()).thenReturn(pid);
+        when(item.getProductImgPath()).thenReturn("img.jpg");
+
+        when(productsRepo.searchProductsByName(eq(false), eq(query), eq(size), eq(page * size)))
+                .thenReturn(List.of(item));
+
+        when(productsRepo.countByProductNameContainingIgnoreCaseAndIsActiveTrue(eq(query))).thenReturn(10L);
+
+
+        PaginationBuildResp pagination = mock(PaginationBuildResp.class);
+        when(pagination.getStartAt()).thenReturn(1);
+        when(pagination.getEndAt()).thenReturn(10);
+        when(pagination.getTotalItems()).thenReturn(10L);
+        when(pagination.isHasNext()).thenReturn(false);
+
+        when(paginationUtil.buildPaginationResp(page, size, 10L)).thenReturn(pagination);
+
+        GenericResponse resp = productService.searchProducts(userRole, query, page, size);
+
+        assertNotNull(resp);
+        assertEquals(ResultCode.SUCCESS, resp.getStatus());
+        verify(productsRepo).searchProductsByName(false, query, size, page * size);
+    }
+
+    @Test
+    void testSearchProducts_EmptyResults() {
+        String userRole = "CUST";
+        String query = "notfound";
+        int page = 0;
+        int size = 10;
+
+        when(productsRepo.searchProductsByName(eq(false), eq(query), eq(size), eq(page * size)))
+                .thenReturn(Collections.emptyList());
+
+        GenericResponse resp = productService.searchProducts(userRole, query, page, size);
+
+        assertNotNull(resp);
+        assertEquals(ResultCode.SUCCESS, resp.getStatus());
+        assertTrue(resp.getData() instanceof List);
+        verify(productsRepo).searchProductsByName(false, query, size, page * size);
+    }
 }
