@@ -70,12 +70,13 @@ public class OrderController {
     @PatchMapping("/{orderId}/confirm")
     @PreAuthorize("hasRole('SELLER') or hasRole('DEVELOPER')")
     public ResponseEntity confirmPayment(@RequestAttribute("userId") String userId,
+                                         @RequestAttribute("userRole") String userRole,
                                          @PathVariable("orderId") String orderId) throws ShopServiceApiException {
         log.info("Confirming payment for order {}", orderId);
         UUID userUUID = UUID.fromString(userId);
         UUID orderUUID = UUID.fromString(orderId);
 
-        GenericResponse response = orderService.confirmPayment(userUUID, orderUUID);
+        GenericResponse response = orderService.confirmPayment(userRole, userUUID, orderUUID);
         return ResponseEntity.ok(response);
     }
 
@@ -97,14 +98,13 @@ public class OrderController {
     @PatchMapping("/{orderId}/track")
     @PreAuthorize("hasRole('SELLER') or hasRole('DEVELOPER')")
     public ResponseEntity trackOrder(@RequestAttribute("userId") String userId,
-                                     @RequestAttribute("userRole") String userRole,
                                      @PathVariable ("orderId") String orderId,
                                      @RequestBody TrackOrderReq trackOrderReq) throws ShopServiceApiException {
         log.info("Tracking order {}",orderId);
         UUID userUUID = UUID.fromString(userId);
         UUID orderUUID = UUID.fromString(orderId);
 
-        GenericResponse response = orderService.trackOrder(userUUID,userRole, orderUUID, trackOrderReq);
+        GenericResponse response = orderService.trackOrder(userUUID, orderUUID, trackOrderReq);
         return ResponseEntity.ok(response);
     }
 

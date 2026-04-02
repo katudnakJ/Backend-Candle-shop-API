@@ -157,7 +157,7 @@ public class OrderService {
         return response;
     }
 
-    public GenericResponse confirmPayment(UUID userId, UUID orderId) throws  ShopServiceApiException {
+    public GenericResponse confirmPayment(String userRole,UUID userId, UUID orderId) throws  ShopServiceApiException {
 
         userCheckTemp.checkExistsUser(userId);
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);
@@ -180,7 +180,8 @@ public class OrderService {
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission.");
 
         //            Increase total sold of the product when confirm payment
-        List<ProductByOrderIdResp> productIds = productsRepo.getProductsByOrderId(orderId);
+        boolean isSeller = userRole.equalsIgnoreCase(Constants.ROLE_SELLER);
+        List<ProductByOrderIdResp> productIds = productsRepo.getProductsByOrderId(isSeller, orderId);
         List<ProductsEntity> productsEntities = new ArrayList<>();
         productIds.forEach(product -> {
             ProductsEntity productEntity = new ProductsEntity();
@@ -246,15 +247,11 @@ public class OrderService {
         return getGenericResponse(orderEntity, newStatus, timeNow, payment);
     }
 
-    public GenericResponse trackOrder(UUID userId,String userRole, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
+    public GenericResponse trackOrder(UUID userId, UUID orderId, TrackOrderReq trackOrderReq) throws ShopServiceApiException {
         userCheckTemp.checkExistsUser(userId);
 
         if (orderId == null || trackOrderReq.getTrackingNumber().isEmpty())
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "กรุณาใส่หมายเลขพัสดุอย่างน้อย 1 หมายเลข","Tracking number is required.");
-
-
-        if (!userRole.equalsIgnoreCase(Constants.ROLE_SELLER))
-            throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง", "User don't have permission.");
 
         Optional<OrdersEntity> order = ordersRepo.findById(orderId);
         if (order.isEmpty())
