@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Report Service API.")
-@RequestMapping("v1/report")
+@RequestMapping("v1/reports")
 public class ReportController {
 
     private final ReportService reportService;
