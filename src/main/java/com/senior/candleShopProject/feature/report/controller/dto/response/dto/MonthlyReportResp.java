@@ -1,6 +1,5 @@
 package com.senior.candleShopProject.feature.report.controller.dto.response.dto;
 
-import com.senior.candleShopProject.datasource.domain.orders.IReportTopSellingProductsResp;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,15 +11,18 @@ import java.util.List;
 public class MonthlyReportResp {
     private BigDecimal totalSalesThisMonth;
     private Long totalOrdersThisMonth;
-    private BigDecimal percentageChangeOrder;
+    private Long totalTSOrders;
+    private Long totalTROrders;
+    private Long totalCPOrders;
+    private BigDecimal ordersPercentageChange;
     private String orderTrend;
 
     private BigDecimal aovThisMonth;
-    private BigDecimal percentageChangeAOV;
+    private BigDecimal aovPercentageChange;
     private String aovTrend;
 
     private Long totalNewCustomersThisMonth;
-    private BigDecimal percentageNewCustomersThisMonth;
+    private BigDecimal newCustomersPercentageChange;
     private String newCustomerTrend;
 
     List<ReportTopSellingProductsResp> topSellingProductsThisMonth;

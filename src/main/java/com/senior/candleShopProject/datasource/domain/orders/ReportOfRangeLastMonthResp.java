@@ -11,10 +11,7 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReportOrderOfRangeResp {
+public class ReportOfRangeLastMonthResp {
     private BigDecimal totalSales;
     private Long totalOrderCount;
-    private Long totalTSOrders;
-    private Long totalTROrders;
-    private Long totalCPOrders;
 }
