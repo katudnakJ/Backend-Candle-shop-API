@@ -1,4 +1,4 @@
-package com.senior.candleShopProject.feature.order.generator;
+package com.senior.candleShopProject.feature.order.generator.PDF;
 
 import com.senior.candleShopProject.common.utils.Constants;
 import org.apache.pdfbox.pdmodel.PDDocument;

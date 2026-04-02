@@ -2,27 +2,38 @@ package com.senior.candleShopProject.feature.report.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
+import com.senior.candleShopProject.common.exception.ShopBadRequestException;
 import com.senior.candleShopProject.common.exception.ShopForbiddenException;
 import com.senior.candleShopProject.common.exception.ShopServiceApiException;
 import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.ReportUtils;
 import com.senior.candleShopProject.common.utils.dto.RangeOfMonthResp;
+import com.senior.candleShopProject.datasource.domain.orders.IOrdersReportDataResp;
 import com.senior.candleShopProject.datasource.domain.orders.IReportTopSellingProductsResp;
 import com.senior.candleShopProject.datasource.domain.orders.ReportOfRangeLastMonthResp;
 import com.senior.candleShopProject.datasource.domain.orders.ReportOrderOfRangeResp;
 import com.senior.candleShopProject.datasource.repo.OrdersRepo;
+import com.senior.candleShopProject.feature.order.generator.Excel.ExcelGenerators;
 import com.senior.candleShopProject.feature.report.controller.dto.response.dto.MonthlyReportResp;
 import com.senior.candleShopProject.feature.report.controller.dto.response.dto.ReportTopSellingProductsResp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -30,6 +41,7 @@ import java.util.List;
 public class ReportService {
 
     private final OrdersRepo ordersRepo;
+    private final ExcelGenerators excelGenerators;
 
     @Cacheable(
             value = "monthlyReportCache",
@@ -148,6 +160,50 @@ public class ReportService {
         response.setData(monthlyReportResp);
         response.setStatus(ResultCode.SUCCESS);
         return response;
+    }
+
+    public ResponseEntity<?> getOrderReportByRangeAndFormat(String format, int month, int year) throws ShopServiceApiException {
+
+        if ( !format.equalsIgnoreCase(Constants.REPORT_GENERATION_FORMAT_EXCEL) )
+            throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Unsupported report generation format. Supported format");
+
+        try {
+            RangeOfMonthResp rangeOfMonthResp = ReportUtils.getRangeOfMonthUTC(month, year);
+            List<IOrdersReportDataResp> ordersReportData = ordersRepo.findOrdersReportDataByRange(
+                    rangeOfMonthResp.getStartDate(),
+                    rangeOfMonthResp.getEndDate()
+            );
+
+            String monthInThai = ReportUtils.getMonthNameInThai(month);
+            String monthInEnglish = ReportUtils.getMonthNameInEnglish(month);
+            String yearInThai = ReportUtils.getYearInThai(year);
+            String fileName = Constants.REPORT_PREFIX_FILE_NAME + monthInEnglish + "_" + year + ".xlsx";
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            excelGenerators.generateSaleReport(
+                    baos,
+                    ordersReportData,
+                    monthInThai,
+                    yearInThai
+            );
+
+            byte[] fileBytes = baos.toByteArray();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .contentType(MediaType.parseMediaType(Constants.EXCEL_XLSX_TYPE))
+                    .contentLength(fileBytes.length)
+                    .body(fileBytes);
+        }catch (Exception e) {
+            log.error("Error generating report", e);
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "code", "REPORT_GENERATION_FAILED",
+                            "message", "ไม่สามารถสร้างรายงานได้"
+                    ));
+        }
     }
 
     private String determineTrend(BigDecimal percentageChange) {

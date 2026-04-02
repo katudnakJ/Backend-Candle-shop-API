@@ -24,7 +24,7 @@ import com.senior.candleShopProject.feature.order.controller.dto.response.dto.Or
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderDetailsResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.dto.OrderItemsListResp;
 import com.senior.candleShopProject.feature.order.controller.dto.response.OrderStatusChangeResp;
-import com.senior.candleShopProject.feature.order.generator.PDFGenerators;
+import com.senior.candleShopProject.feature.order.generator.PDF.PDFGenerators;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;

@@ -61,4 +61,10 @@ public class Constants {
     public static final String TREND_INCREASE = "INCREASE";
     public static final String TREND_DECREASE = "DECREASE";
     public static final String TREND_STABLE = "STABLE";
+
+//    Report generation
+    public static final String REPORT_GENERATION_FORMAT_EXCEL = "EXCEL";
+    public static final String REPORT_FILE_FORMAT_EXCEL = ".xlsx";
+    public static final String REPORT_PREFIX_FILE_NAME = "Sales_Report_";
+    public static final String EXCEL_XLSX_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 }
