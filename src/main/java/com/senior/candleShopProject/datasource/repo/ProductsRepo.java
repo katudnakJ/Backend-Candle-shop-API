@@ -21,7 +21,7 @@ public interface ProductsRepo extends JpaRepository<ProductsEntity, UUID> {
             description AS description,
             slug AS slug,
             is_active AS isActive,
-            is_featured AS isFeature,
+            is_featured AS isFeatured,
             product_created_date AS productCreateDate,
             product_updated_date AS productUpdatedDate,
             total_sold AS totalSold

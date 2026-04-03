@@ -162,4 +162,12 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<GenericResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.error("Illegal Argument Exception : {}", ex.getMessage(), ex);
+        GenericResponse response = new GenericResponse();
+        response.setStatus(ResultCode.INVALID_PARAMS);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
 }

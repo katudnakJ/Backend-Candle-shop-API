@@ -40,13 +40,13 @@ public class UpdateProductReq {
 
         @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
         @JsonProperty("primary_index")
-        private Integer primaryIndex;
+        private Integer primaryIndex = null;
 
         @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
         @JsonProperty("exist_into_primary")
-        private String existIntoPrimary;
+        private String existIntoPrimary = null;
 
-        @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED,example = "imageId1")
+        @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED)
         @JsonProperty("delete_image_ids")
         private List<String> deleteImageIds = new ArrayList<>();
 }
