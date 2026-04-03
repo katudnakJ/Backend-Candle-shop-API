@@ -1,5 +1,4 @@
 package com.senior.candleShopProject.datasource.repo;
-import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

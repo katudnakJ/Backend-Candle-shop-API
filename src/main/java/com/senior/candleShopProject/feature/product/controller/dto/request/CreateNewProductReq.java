@@ -32,7 +32,7 @@ public class CreateNewProductReq {
     @JsonProperty("active")
     private boolean active =true;
 
-    @Schema(example = "false", defaultValue = "false")
+    @Schema(example = "false", defaultValue = "false", required = false)
     @JsonProperty("featured")
     private boolean featured = false;
 }
