@@ -172,7 +172,7 @@ public class ProductServiceTest {
             mockedProcess.when(() -> ProcessImageUtil.processImageData(any(MultipartFile.class)))
                     .thenReturn(new byte[] { 1, 2, 3 });
 
-            GenericResponse resp = productService.createNewProduct(userId, req, images, primaryIndex);
+            GenericResponse resp = productService.createNewProduct(req, images, primaryIndex);
 
             assertNotNull(resp);
             assertNotNull(resp.getData());
@@ -188,7 +188,7 @@ public class ProductServiceTest {
         UUID userId = UUID.randomUUID();
 
         ShopBadRequestException ex = assertThrows(ShopBadRequestException.class, () -> {
-            productService.createNewProduct(userId, null, List.of(), -1);
+            productService.createNewProduct(null, List.of(), -1);
         });
 
         verifyNoInteractions(productsRepo);
@@ -233,7 +233,7 @@ public class ProductServiceTest {
             mockedProcess.when(() -> ProcessImageUtil.processImageData(any(MultipartFile.class)))
                     .thenReturn(new byte[] { 1, 2, 3 });
 
-            GenericResponse resp = productService.updateProduct(userId, productId, req, newImages);
+            GenericResponse resp = productService.updateProduct(productId, req, newImages);
 
             assertNotNull(resp);
 
@@ -272,7 +272,7 @@ public class ProductServiceTest {
         when(productImagesRepo.getProductImagesByProductId(productId)).thenReturn(Collections.emptyList());
 
         ShopDataNotFoundException ex = assertThrows(ShopDataNotFoundException.class, () -> {
-            productService.updateProduct(userId, productId, req, List.of(img1));
+            productService.updateProduct(productId, req, List.of(img1));
         });
 
         verify(productImagesRepo, never()).deleteProductImagesEntitiesByProductsEntity_ProductId(any());

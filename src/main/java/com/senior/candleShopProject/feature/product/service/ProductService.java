@@ -51,10 +51,10 @@ public class ProductService {
 
         IProductResp product = productsRepo.getProductById(productId);
 
-        ProductDetailDto productDetailDto = getProductDetailDto(product);
-
         if (product == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product not found.");
+
+        ProductDetailDto productDetailDto = getProductDetailDto(product);
 
         List<ProductImagesResp> images = productImagesRepo.getProductImagesByProductId(productId);
 
