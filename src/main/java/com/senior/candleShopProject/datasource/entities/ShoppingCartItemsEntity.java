@@ -31,7 +31,7 @@ public class ShoppingCartItemsEntity {
     @JoinColumn(name = "shopping_cart_id", nullable = false)
     private ShoppingCartEntity shoppingCartEntity;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private ProductsEntity productsEntity;
 }
