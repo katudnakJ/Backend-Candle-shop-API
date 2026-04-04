@@ -342,7 +342,7 @@ select p.payment_id as paymentId,
            p.price,
            oi.product_name_at_purchase,
            oi.price_per_unit_at_purchase
-        O   RDER BY p.product_id;
+        ORDER BY p.product_id;
 """, nativeQuery = true)
     List<IOrdersReportDataResp> findOrdersReportDataByRange(
             @Param("startOfMonthFirstDay") Instant startOfMonthFirstDay,
