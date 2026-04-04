@@ -56,8 +56,8 @@ public class ProductsEntity {
     @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImagesEntity> productImagesEntities = new ArrayList<>();
 
-    @OneToOne(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ShoppingCartItemsEntity shoppingCartItemsEntity;
+    @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ShoppingCartItemsEntity> shoppingCartItemsEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "productsEntity")
     private List<OrderItemsEntity> orderItemsEntities = new ArrayList<>();
