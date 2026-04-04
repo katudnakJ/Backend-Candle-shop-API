@@ -53,27 +53,23 @@ public class ProductController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create new product API.", description = "สร้างสินค้าใหม่โดยผู้ขาย")
-    @PreAuthorize("(hasAnyRole('SELLER'))")
-    public ResponseEntity<GenericResponse> createNewProduct(@RequestAttribute("userId") String userId,
-
-                                                            @ParameterObject
+    @PreAuthorize("(hasAnyRole('SELLER', 'DEVELOPER'))")
+    public ResponseEntity<GenericResponse> createNewProduct(@ParameterObject
                                                             @ModelAttribute CreateNewProductReq createNewProductReq,
 
                                                             @RequestPart("imagesData") List<MultipartFile> imagesReqList,
                                                             @RequestParam("primary_index") Integer primaryIndex
                                                             ) throws ShopServiceApiException, IOException {
         log.info("Create new product");
-        UUID userUUID = UUID.fromString(userId);
 
-        GenericResponse response = productService.createNewProduct(userUUID, createNewProductReq, imagesReqList,primaryIndex);
+        GenericResponse response = productService.createNewProduct( createNewProductReq, imagesReqList,primaryIndex);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update product API.", description = "อัพเดตข้อมูลสินค้าโดยผู้ขาย")
-    @PreAuthorize("(hasAnyRole('SELLER'))")
-    public ResponseEntity<GenericResponse> updateProduct(@RequestAttribute("userId") String userId,
-                                                            @PathVariable(name = "productId") String productId,
+    @PreAuthorize("(hasAnyRole('SELLER', 'DEVELOPER'    ))")
+    public ResponseEntity<GenericResponse> updateProduct(@PathVariable(name = "productId") String productId,
 
                                                             @ParameterObject
                                                              @ModelAttribute UpdateProductReq updateProductReq,
@@ -81,16 +77,15 @@ public class ProductController {
                                                             @RequestPart(value = "imagesData",required = false) List<MultipartFile> imagesReqList
     ) throws ShopServiceApiException {
         log.info("Update product with id {}", productId);
-        UUID userUUID = UUID.fromString(userId);
         UUID productUUID = UUID.fromString(productId);
 
-        GenericResponse response = productService.updateProduct(userUUID, productUUID, updateProductReq, imagesReqList);
+        GenericResponse response = productService.updateProduct(productUUID, updateProductReq, imagesReqList);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/{productId}")
     @Operation(summary = "Delete product API.", description = "ลบสินค้าโดยผู้ขาย")
-    @PreAuthorize("(hasAnyRole('SELLER'))")
+    @PreAuthorize("(hasAnyRole('SELLER', 'DEVELOPER'))")
     public ResponseEntity<GenericResponse> deleteProduct(@RequestAttribute("userId") String userId,
                                                             @PathVariable(name = "productId") String productId) throws ShopServiceApiException {
         log.info("Delete product with id {}", productId);
@@ -103,7 +98,7 @@ public class ProductController {
 
     @GetMapping("/search")
     @Operation(summary = "Search products API.", description = "ค้นหาสินค้าตามคำค้น")
-    @PreAuthorize("hasAnyRole('SELLER', 'CUST')")
+    @PreAuthorize("hasAnyRole('SELLER', 'CUST', 'DEVELOPER')")
     public ResponseEntity<GenericResponse> searchProducts(@RequestAttribute("userRole") String userRole,
                                                           @RequestParam("q") String searchQuery,
                                                           @RequestParam(value = "page",defaultValue = "0") int page,

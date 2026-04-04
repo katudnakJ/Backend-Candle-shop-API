@@ -1,5 +1,4 @@
 package com.senior.candleShopProject.datasource.repo;
-import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.datasource.domain.orders.*;
 import com.senior.candleShopProject.datasource.entities.OrdersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -309,26 +308,41 @@ select p.payment_id as paymentId,
 
 
     @Query(value = """
-    SELECT
-        COALESCE(oi.product_name_at_purchase, p.product_name) AS productName,
-        COALESCE(oi.price_per_unit_at_purchase, p.price) AS pricePerUnit,
-        COALESCE(SUM(oi.quantity), 0) AS totalSales,
-        COALESCE(SUM(oi.subtotal_at_purchase), 0) AS subtotal
-    FROM products p
-    LEFT JOIN order_items oi ON p.product_id = oi.product_id
-    LEFT JOIN orders o ON o.order_id = oi.order_id
-        AND o.created_at >= :startOfMonthFirstDay
-        AND o.created_at < :nextMonthFirstDay
-        AND o.order_status IN ('TS', 'TR', 'CP')
-    LEFT JOIN payments pm ON pm.order_id = o.order_id
-        AND pm.payment_status = 'AP'
-    GROUP BY
-        p.product_id,
-        p.product_name,
-        p.price,
-        oi.product_name_at_purchase,
-        oi.price_per_unit_at_purchase
-    ORDER BY p.product_id;
+        SELECT
+           COALESCE(oi.product_name_at_purchase, p.product_name) AS productName,
+           COALESCE(oi.price_per_unit_at_purchase, p.price) AS pricePerUnit,
+           COALESCE(SUM(
+               CASE
+                   WHEN o.order_id IS NOT NULL AND pm.order_id IS NOT NULL
+                   THEN oi.quantity
+                   ELSE 0
+               END
+           ), 0) AS totalSales,
+           COALESCE(SUM(
+               CASE
+                   WHEN o.order_id IS NOT NULL AND pm.order_id IS NOT NULL
+                   THEN oi.subtotal_at_purchase
+                   ELSE 0
+               END
+           ), 0) AS subtotal
+        FROM products p
+        LEFT JOIN order_items oi
+           ON p.product_id = oi.product_id
+        LEFT JOIN orders o
+           ON o.order_id = oi.order_id
+           AND o.created_at >= :startOfMonthFirstDay
+           AND o.created_at < :nextMonthFirstDay
+           AND o.order_status IN ('TS', 'TR', 'CP')
+        LEFT JOIN payments pm
+           ON pm.order_id = o.order_id
+           AND pm.payment_status = 'AP'
+        GROUP BY
+           p.product_id,
+           p.product_name,
+           p.price,
+           oi.product_name_at_purchase,
+           oi.price_per_unit_at_purchase
+        O   RDER BY p.product_id;
 """, nativeQuery = true)
     List<IOrdersReportDataResp> findOrdersReportDataByRange(
             @Param("startOfMonthFirstDay") Instant startOfMonthFirstDay,

@@ -20,9 +20,9 @@ import com.senior.candleShopProject.feature.product.controller.dto.request.Updat
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductDetailResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductImagesResp;
 import com.senior.candleShopProject.feature.product.controller.dto.response.ProductsBySearchResp;
+import com.senior.candleShopProject.feature.product.controller.dto.response.dto.ProductDetailDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +54,8 @@ public class ProductService {
         if (product == null)
             throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Product not found.");
 
+        ProductDetailDto productDetailDto = getProductDetailDto(product);
+
         List<ProductImagesResp> images = productImagesRepo.getProductImagesByProductId(productId);
 
         List<ProductImagesResp> productImages = images.stream().map(image -> {
@@ -76,7 +78,7 @@ public class ProductService {
         }).toList();
 
         ProductDetailResp productDetailResp = new ProductDetailResp();
-        productDetailResp.setProduct(product);
+        productDetailResp.setProduct(productDetailDto);
         productDetailResp.setProductImages(productImages);
 
         GenericResponse response = new GenericResponse();
@@ -118,7 +120,7 @@ public class ProductService {
 
             response.setData(productHomeListItemResp);
 
-        }else if (userRole.equalsIgnoreCase(Constants.ROLE_SELLER)){
+        }else if (userRole.equalsIgnoreCase(Constants.ROLE_SELLER) || userRole.equalsIgnoreCase(Constants.ROLE_DEVELOPER)){
 
             Long totalCounts = productsRepo.count();
 
@@ -142,8 +144,7 @@ public class ProductService {
     }
 
     @Transactional
-    public GenericResponse createNewProduct(
-            UUID userId,CreateNewProductReq createNewProductReq, List<MultipartFile> productImagesReq, int primaryIndex
+    public GenericResponse createNewProduct(CreateNewProductReq createNewProductReq, List<MultipartFile> productImagesReq, int primaryIndex
     ) throws ShopServiceApiException, IOException {
 
         if (createNewProductReq == null
@@ -178,7 +179,7 @@ public class ProductService {
     }
 
     @Transactional
-    public GenericResponse updateProduct(UUID userId,UUID productId,
+    public GenericResponse updateProduct(UUID productId,
                                          UpdateProductReq updateProductReq,
                                          List<MultipartFile> productImagesReq) throws ShopServiceApiException {
 
@@ -197,7 +198,7 @@ public class ProductService {
         if (updateProductReq.getExistIntoPrimary() != null) {
             if (!productImagesReq.isEmpty())
                 throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "the setting defaultExistingImageId and image is unrelated.");
-        } // Exist product image UUID from request
+        }
 
         if (primaryIndex != null && productImagesReq.isEmpty())
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "Primary index and image is unrelated.");
@@ -210,15 +211,15 @@ public class ProductService {
                 .findFirst()
                 .orElseThrow(() -> new ShopBadRequestException(ResultCode.BAD_REQUEST, "Product doesn't have primary image."));
 
-        for (String deleteImageId : deleteImageIds) {
-            if (existPrimaryImage.getProductImgId().toString().equals(deleteImageId))
-                throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "ไม่สามารถลบรูปหลักได้ กรุณาเปลี่ยนรูปหลักก่อนลบ","User can't delete primary image. Please set another image to primary before delete.");
-        }
-
         if ((productImagesReq.size() + allProductImages.size() - deleteImageIds.size()) > 5)
             throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "จำกัดจำนวนรูปภาพไม่เกิน 5 รูป","User can reupload up to 5 images.");
 
         if (!deleteImageIds.isEmpty()) {
+            for (String deleteImageId : deleteImageIds) {
+                if (existPrimaryImage.getProductImgId().toString().equals(deleteImageId))
+                    throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "ไม่สามารถลบรูปหลักได้ กรุณาเปลี่ยนรูปหลักก่อนลบ","User can't delete primary image. Please set another image to primary before delete.");
+            }
+
             List<UUID> deleteImageIdsUUID = deleteImageIds.stream()
                     .map(UUID::fromString)
                     .toList();
@@ -435,5 +436,19 @@ public class ProductService {
             }
 
         }
+    }
+
+    private ProductDetailDto getProductDetailDto (IProductResp product) {
+        ProductDetailDto productDetailDto = new ProductDetailDto();
+        productDetailDto.setProductId(product.getProductId());
+        productDetailDto.setProductName(product.getProductName());
+        productDetailDto.setDescription(product.getDescription());
+        productDetailDto.setWeight(product.getWeight());
+        productDetailDto.setPrice(product.getPrice());
+        productDetailDto.setSlug(product.getSlug());
+        productDetailDto.setActive(product.getIsActive());
+        productDetailDto.setFeatured(product.getIsFeatured());
+        productDetailDto.setTotalSold(product.getTotalSold());
+        return productDetailDto;
     }
 }

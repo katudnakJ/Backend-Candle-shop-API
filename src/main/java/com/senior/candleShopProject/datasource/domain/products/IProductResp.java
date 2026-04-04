@@ -10,7 +10,7 @@ public interface IProductResp {
     double getWeight();
     String getDescription();
     String getSlug();
-    Boolean getIsActive();
-    Boolean getIsFeatured();
+    boolean getIsActive();
+    boolean getIsFeatured();
     Integer getTotalSold();
 }

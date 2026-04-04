@@ -20,6 +20,8 @@ spring:
 # Server configuration
 server:
   port: 8443
+  tomcat:
+    max-part-count: 20
   ssl:
     enabled: true
     key-store: classpath:ssl/localhost.p12
