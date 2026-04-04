@@ -12,3 +12,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Server configuration
+server:
+  port:
+  tomcat:
+    max-part-count: 20
