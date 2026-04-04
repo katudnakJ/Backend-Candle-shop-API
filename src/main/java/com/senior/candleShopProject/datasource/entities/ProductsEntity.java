@@ -50,7 +50,7 @@ public class ProductsEntity {
     private Instant productUpdatedDate;
 
     @Column(name = "total_sold")
-    private Integer totalSold;
+    private int totalSold;
 
 //    Relationships
     @OneToMany(mappedBy = "productsEntity", cascade = CascadeType.ALL, orphanRemoval = true)
