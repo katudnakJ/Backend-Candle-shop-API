@@ -17,6 +17,7 @@ public interface OrderItemsRepo extends JpaRepository<OrderItemsEntity, UUID> {
     @Query(value = """
     select  oi.order_id as orderId,
             oi.order_item_id as orderItemId,
+            pi.product_id as productId,
             oi.product_name_at_purchase as productName,
             oi.quantity as quantity,
             oi.price_per_unit_at_purchase as pricePerUnit,

@@ -28,12 +28,12 @@ public class AccountController {
     @GetMapping("/address")
     @Operation(summary = "Get Account, address API.", description = "Get user address.")
     @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('DEVELOP')")
-    public ResponseEntity<GenericResponse> getUserAddresses(@RequestAttribute("userId") String userId) throws ShopServiceApiException {
+    public ResponseEntity<GenericResponse> getUserAddresses(@RequestAttribute("userRole") String userRole,@RequestAttribute("userId") String userId) throws ShopServiceApiException {
         log.info("Get user address by user id {}", userId);
 
         UUID userUUID = UUID.fromString(userId);
 
-        GenericResponse response = accountService.getUserAddresses(userUUID);
+        GenericResponse response = accountService.getUserAddresses(userRole, userUUID);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

@@ -216,7 +216,10 @@ public class ProductService {
 
         if (!deleteImageIds.isEmpty()) {
             for (String deleteImageId : deleteImageIds) {
-                if (existPrimaryImage.getProductImgId().toString().equals(deleteImageId))
+                if (existPrimaryImage.getProductImgId().toString().equals(deleteImageId)
+                        && updateProductReq.getExistIntoPrimary() != null
+                        && (primaryIndex != null || !productImagesReq.isEmpty())
+                )
                     throw new ShopBadRequestException(ResultCode.BAD_REQUEST, "ไม่สามารถลบรูปหลักได้ กรุณาเปลี่ยนรูปหลักก่อนลบ","User can't delete primary image. Please set another image to primary before delete.");
             }
 

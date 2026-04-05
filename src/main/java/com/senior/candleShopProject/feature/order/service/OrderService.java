@@ -467,13 +467,19 @@ public class OrderService {
 
     private List<OrderItemsListResp> mapToOrderItemsListResp(List<IOrderItemListResp> itemsMap) {
         return itemsMap.stream().map(item -> {
+            String productImagePath;
+            if (item.getProductImagePath() == null || item.getProductImagePath().isEmpty())
+                productImagePath = null;
+            else
+                productImagePath = supabaseStorageUtils.getProductImageUrl(item.getProductId(), item.getProductImagePath());
+
             OrderItemsListResp items = new OrderItemsListResp();
             items.setOrderItemId(item.getOrderItemId());
             items.setProductName(item.getProductName());
             items.setQuantity(item.getQuantity());
             items.setPricePerUnit(item.getPricePerUnit());
             items.setSubTotal(item.getSubTotal());
-            items.setProductImagePath(item.getProductImgPath());
+            items.setProductImagePath(productImagePath);
             return items;
         }).toList();
     }
