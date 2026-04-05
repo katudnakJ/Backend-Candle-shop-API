@@ -10,6 +10,7 @@ import java.util.UUID;
 @Setter
 public class OrderItemsListResp {
     private UUID orderItemId;
+    private UUID productId;
     private String productName;
     private Integer quantity;
     private BigDecimal pricePerUnit;

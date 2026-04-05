@@ -4,6 +4,7 @@ import com.senior.candleShopProject.common.GenericResponse;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.UserCheckTemp;
 import com.senior.candleShopProject.common.exception.*;
+import com.senior.candleShopProject.common.utils.Constants;
 import com.senior.candleShopProject.common.utils.CustomizeResponseUtil;
 import com.senior.candleShopProject.datasource.domain.address.IAddressResp;
 import com.senior.candleShopProject.datasource.domain.users.IUsersResp;
@@ -27,11 +28,15 @@ public class AccountService {
     private final AddressesRepo addressesRepo;
     private final UserCheckTemp userCheckTemp;
 
-    public GenericResponse getUserAddresses(UUID userId) throws ShopServiceApiException {
+    public GenericResponse getUserAddresses(String userRole, UUID userId) throws ShopServiceApiException {
 
         userCheckTemp.checkExistsUser(userId);
 
-        List<IAddressResp> addressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
+        List<IAddressResp> addressList;
+        if ( userRole.equalsIgnoreCase(Constants.ROLE_SELLER ))
+            addressList = addressesRepo.findAddressesEntitiesByIsDefaultTrueAndUsersEntity_UserId(userId);
+        else
+            addressList = addressesRepo.findAddressesEntitiesByUsersEntity_UserId(userId);
 
         GenericResponse response = new GenericResponse();
         response.setData(addressList.isEmpty() ? List.of() : addressList);
