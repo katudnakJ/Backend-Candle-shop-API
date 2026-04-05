@@ -105,7 +105,7 @@ public class OrderServiceTest {
         when(item.getQuantity()).thenReturn(1);
         when(item.getPricePerUnit()).thenReturn(BigDecimal.valueOf(100));
         when(item.getSubTotal()).thenReturn(BigDecimal.valueOf(100));
-        when(item.getProductImgPath()).thenReturn("/img.jpg");
+        when(item.getProductImagePath()).thenReturn("/img.jpg");
 
         when(orderItemsRepo.getOrderItemByOrderIds(eq(List.of(orderId))))
                 .thenReturn(List.of(item));
