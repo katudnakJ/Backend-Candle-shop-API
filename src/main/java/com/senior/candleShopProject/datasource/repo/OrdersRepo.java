@@ -294,6 +294,8 @@ select p.payment_id as paymentId,
             SUM(oi.quantity) as totalQuantitySales
         from orders o
         join order_items oi on o.order_id = oi.order_id
+        join payments p on o.order_id = p.order_id
+        and p.payment_status = 'AP'
         where o.created_at < :nextMonthFirstDay
         and o.created_at >= :startOfMonthFirstDay
         group by oi.product_id, oi.product_name_at_purchase

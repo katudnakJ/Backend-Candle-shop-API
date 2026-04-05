@@ -68,7 +68,7 @@ public class ProductController {
 
     @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update product API.", description = "อัพเดตข้อมูลสินค้าโดยผู้ขาย")
-    @PreAuthorize("(hasAnyRole('SELLER', 'DEVELOPER'    ))")
+    @PreAuthorize("(hasAnyRole('SELLER', 'DEVELOPER'))")
     public ResponseEntity<GenericResponse> updateProduct(@PathVariable(name = "productId") String productId,
 
                                                             @ParameterObject
