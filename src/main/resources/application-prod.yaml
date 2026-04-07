@@ -49,3 +49,9 @@ server:
   port: ${PORT:8080}
   tomcat:
     max-part-count: 20
+
+# line Configuration
+line:
+  channel:
+    secret: ${LINE_CHANNEL_SECRET}
+    access-token: ${LINE_CHANNEL_ACCESS_TOKEN}

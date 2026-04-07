@@ -29,4 +29,7 @@ public interface UsersRepo extends JpaRepository <UsersEntity, UUID> {
         """, nativeQuery = true)
     IUsersResp getUserProfileByLineId(@Param("lineId") String lineId);
 
+    UsersEntity findByUserId(UUID userId);
+
+    UsersEntity findByCustomersEntity_OrdersEntities_OrderId(UUID orderId);
 }

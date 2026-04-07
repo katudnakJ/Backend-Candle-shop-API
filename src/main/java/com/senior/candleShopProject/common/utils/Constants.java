@@ -3,6 +3,7 @@ package com.senior.candleShopProject.common.utils;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.net.URI;
 
 @Data
 public class Constants {
@@ -67,4 +68,5 @@ public class Constants {
     public static final String REPORT_FILE_FORMAT_EXCEL = ".xlsx";
     public static final String REPORT_PREFIX_FILE_NAME = "Sales_Report_";
     public static final String EXCEL_XLSX_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    public static final String LINE_PUSH_MESSAGE_URL = "https://api.line.me/v2/bot/message/push";
 }
