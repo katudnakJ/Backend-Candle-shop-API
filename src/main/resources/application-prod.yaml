@@ -49,5 +49,3 @@ server:
   port: ${PORT:8080}
   tomcat:
     max-part-count: 20
-  servlet:
-    context-path: /candle-shop-project-api
