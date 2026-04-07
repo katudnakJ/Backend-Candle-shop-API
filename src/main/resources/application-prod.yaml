@@ -7,14 +7,47 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
 
-# Server configuration
+
+# Logging configuration
+logging:
+  level:
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SXXX}|%level|${spring.application.name}|${PID}|%thread|%logger{40}|%message%n"
+
+# Supabase configuration
+supabase:
+  secret:
+    service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+  storage:
+    public-image-base-url: ${SUPABASE_PUBLIC_STORAGE_URL}
+    base-url: ${SUPABASE_STORAGE_BASE_URL}
+  expiration:
+    seller:
+      check-qr-payment: ${SUPABASE_SELLER_CHECK_QR_PAYMENT_EXP}
+      check-receipt: ${SUPABASE_SELLER_CHECK_RECEIPT_EXP}
+    customer:
+      check-qr-payment: ${SUPABASE_USER_CHECK_QR_PAYMENT_EXP}
+
+#      PDF generation configuration
+pdf:
+  getFile:
+    expiration: ${PDF_GET_FILE_EXPIRATION}
+
 server:
-  port:
+  port: ${PORT:8080}
   tomcat:
     max-part-count: 20
+  servlet:
+    context-path: /candle-shop-project-api
