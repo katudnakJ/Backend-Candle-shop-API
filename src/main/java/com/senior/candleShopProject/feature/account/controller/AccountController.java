@@ -1,0 +1,95 @@
+package com.senior.candleShopProject.feature.account.controller;
+
+import com.senior.candleShopProject.common.GenericResponse;
+import com.senior.candleShopProject.common.exception.ShopServiceApiException;
+import com.senior.candleShopProject.feature.account.controller.dto.request.AddUserAddressReq;
+import com.senior.candleShopProject.feature.account.service.AccountService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@Tag(name = "Account Service API.")
+@RequestMapping("v1/account")
+public class AccountController {
+
+    private final AccountService accountService;
+
+    @GetMapping("/address")
+    @Operation(summary = "Get Account, address API.", description = "Get user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('DEVELOP')")
+    public ResponseEntity<GenericResponse> getUserAddresses(@RequestAttribute("userRole") String userRole,@RequestAttribute("userId") String userId) throws ShopServiceApiException {
+        log.info("Get user address by user id {}", userId);
+
+        UUID userUUID = UUID.fromString(userId);
+
+        GenericResponse response = accountService.getUserAddresses(userRole, userUUID);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/address/{addressId}")
+    @Operation(summary = "Get Account, address API", description = "Get user address by address id.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
+    public ResponseEntity<GenericResponse> getUserAddressesByAddressId(@RequestAttribute("userId") String userId,
+                                                                       @PathVariable("addressId") String addressId) throws ShopServiceApiException {
+        log.info("Get user address by user address id {}", userId);
+
+        UUID userUUID = UUID.fromString(userId);
+        UUID addressUUID = UUID.fromString(addressId);
+
+        GenericResponse response = accountService.getUserAddressByAddressId(userUUID, addressUUID);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/address")
+    @Operation(summary = "Add user address API.", description = "Add new user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
+    public ResponseEntity<GenericResponse> addUserAddress(@RequestAttribute("userId") String userId,
+                                                          @Valid @RequestBody AddUserAddressReq addUserAddressReq) throws ShopServiceApiException {
+        log.info("Add user address by user id {}", userId);
+
+        UUID userUUID = UUID.fromString(userId);
+
+        GenericResponse response = accountService.addUserAddress(userUUID, addUserAddressReq);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PutMapping("/address/{addressId}")
+    @Operation(summary = "Sync user address API.", description = "Update user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('ADMIN')")
+    public ResponseEntity<GenericResponse> syncUserAddress(@RequestAttribute("userId") String userId,
+                                                          @RequestBody AddUserAddressReq syncUserAddressReq,
+                                                           @PathVariable("addressId") String addressId) throws ShopServiceApiException {
+        log.info("Sync user address by user id {}", userId);
+
+        UUID userUUID = UUID.fromString(userId);
+        UUID addressIdUUID = UUID.fromString(addressId);
+
+        GenericResponse response = accountService.syncUserAddress(userUUID, syncUserAddressReq,addressIdUUID);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @DeleteMapping  ("/address/{addressId}")
+    @Operation(summary = "Delete user address API.", description = "Delete user address.")
+    @PreAuthorize("hasRole('CUST') or hasRole('SELLER') or hasRole('DEVELOPER')")
+    public ResponseEntity<GenericResponse> deleteUserAddress(@RequestAttribute("userId") String userId,
+                                                           @PathVariable("addressId") String addressId) throws ShopServiceApiException {
+        log.info("Delete user address by user id {}", userId);
+
+        UUID userUUID = UUID.fromString(userId);
+        UUID addressUUID = UUID.fromString(addressId);
+
+        GenericResponse response = accountService.deleteAddress(userUUID, addressUUID);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+}
