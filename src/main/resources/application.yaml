@@ -1,7 +1,7 @@
 # Application configuration
 app:
-    cors:
-      allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
 
 spring:
   application:
