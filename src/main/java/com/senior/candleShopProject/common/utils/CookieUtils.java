@@ -30,6 +30,7 @@ public class CookieUtils {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(cookieExpirationTime);
+        cookie.setAttribute("SameSite", "None");
 
         response.addCookie(cookie);
     }
