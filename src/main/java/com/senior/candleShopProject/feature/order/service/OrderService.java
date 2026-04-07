@@ -1,6 +1,7 @@
 package com.senior.candleShopProject.feature.order.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
+import com.senior.candleShopProject.common.LineService.LineMessageService;
 import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.ResultCode;
 import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
@@ -45,12 +46,14 @@ public class OrderService {
     private final SupabaseStorageUtils supabaseStorageUtils;
     private final PDFGenerators pdfGenerators;
     private final PaginationUtil paginationUtil;
+    private final LineMessageService lineMessageService;
 
     private final OrdersRepo ordersRepo;
     private final CarriersRepo carriersRepo;
     private final OrderItemsRepo orderItemsRepo;
     private final PaymentsRepo paymentsRepo;
     private final ProductsRepo productsRepo;
+    private final UsersRepo usersRepo;
 
     //    Business logic for order management
     public GenericResponse getAllCarriers() {
@@ -253,6 +256,31 @@ public class OrderService {
         payment.setStatusChangedAt(timeNow);
         payment.setRejectionReason(rejectPaymentReq.getReason());
 
+        UsersEntity userProfile = usersRepo.findByCustomersEntity_OrdersEntities_OrderId(orderId);
+
+        if (userProfile == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
+
+        String lineUserId = userProfile.getLineId();
+
+        if (lineUserId == null || lineUserId.isEmpty())
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Line user ID not found for the user.");
+
+        String message = String.format("""
+        [แจ้งปัญหาการชำระเงิน] ⚠️
+        
+        ขออภัยคุณลูกค้าด้วยนะคะ 🙏
+        คำสั่งซื้อ: #%s
+        สาเหตุ: %s
+        
+        รบกวนคุณลูกค้าตรวจสอบข้อมูลและชำระเงินใหม่อีกครั้งนะคะ 🕯️✨
+        """, orderEntity.getOrderNumber(), rejectPaymentReq.getReason());
+
+        lineMessageService.pushMessage(
+                lineUserId,
+                message
+        );
+
         return getGenericResponse(orderEntity, newStatus, timeNow, payment);
     }
 
@@ -294,6 +322,31 @@ public class OrderService {
         OrdersEntity newOrder = ordersRepo.save(orderEntity);
 
         OrderStatusChangeResp orderStatusChangeResp = setOrderStatusChangeResp(newOrder, newStatus);
+
+        UsersEntity userProfile = usersRepo.findByCustomersEntity_OrdersEntities_OrderId(orderId);
+
+        if (userProfile == null)
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "User not found.");
+
+        String lineUserId = userProfile.getLineId();
+
+        if (lineUserId == null || lineUserId.isEmpty())
+            throw new ShopDataNotFoundException(ResultCode.DATA_NOT_FOUND, "Line user ID not found for the user.");
+
+        String message = String.format("""
+        [แจ้งสถานะการจัดส่ง] 📦🚚
+
+        คำสั่งซื้อ: #%s
+        ส่งออกเรียบร้อยแล้วค่ะ!
+        คุณลูกค้าสามารถตรวจสอบหมายเลขพัสดุในระบบได้เลยนะคะ ✨
+        
+        ขอบคุณที่อุดหนุนค่ะ 🙏
+        """, orderEntity.getOrderNumber());
+
+        lineMessageService.pushMessage(
+                lineUserId,
+                message
+        );
 
         GenericResponse response = new GenericResponse();
         response.setData(orderStatusChangeResp);
@@ -575,4 +628,5 @@ public class OrderService {
         response.setStatus(ResultCode.SUCCESS);
         return response;
     }
+
 }

@@ -45,3 +45,13 @@ supabase:
     customer:
       check-qr-payment: ${SUPABASE_USER_CHECK_QR_PAYMENT_EXP}
 
+# line Configuration
+line:
+    channel:
+        secret: ${LINE_CHANNEL_SECRET}
+        access-token: ${LINE_CHANNEL_ACCESS_TOKEN}
+
+pdf:
+  getFile:
+    expiration: ${PDF_GET_FILE_EXPIRATION}
+
