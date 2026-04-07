@@ -1,6 +1,7 @@
 package com.senior.candleShopProject.service;
 
 import com.senior.candleShopProject.common.GenericResponse;
+import com.senior.candleShopProject.common.LineService.LineMessageService;
 import com.senior.candleShopProject.common.OrderStatus;
 import com.senior.candleShopProject.common.SupabaseService.Dto.SignedFileUrlResp;
 import com.senior.candleShopProject.common.UserCheckTemp;
@@ -13,10 +14,7 @@ import com.senior.candleShopProject.datasource.domain.orders.IOrderByStatusResp;
 import com.senior.candleShopProject.datasource.domain.orders.IOrderItemListResp;
 import com.senior.candleShopProject.datasource.domain.orders.IReceiptInformationResp;
 import com.senior.candleShopProject.datasource.domain.products.ProductByOrderIdResp;
-import com.senior.candleShopProject.datasource.entities.CustomersEntity;
-import com.senior.candleShopProject.datasource.entities.OrdersEntity;
-import com.senior.candleShopProject.datasource.entities.PaymentsEntity;
-import com.senior.candleShopProject.datasource.entities.ShipmentEntity;
+import com.senior.candleShopProject.datasource.entities.*;
 import com.senior.candleShopProject.datasource.repo.*;
 import com.senior.candleShopProject.feature.order.controller.dto.request.TrackOrderReq;
 import com.senior.candleShopProject.feature.order.service.OrderService;
@@ -45,11 +43,13 @@ public class OrderServiceTest {
     @Mock private PaginationUtil paginationUtil;
     @Mock private UserCheckTemp userCheckTemp;
     @Mock private SupabaseStorageUtils supabaseStorageUtils;
+    @Mock private LineMessageService lineMessageService;
 
     @Mock private OrdersRepo ordersRepo;
     @Mock private OrderItemsRepo orderItemsRepo;
     @Mock private PaymentsRepo paymentsRepo;
     @Mock private ProductsRepo productsRepo;
+    @Mock private UsersRepo usersRepo;
 
 
     @BeforeEach
@@ -229,12 +229,16 @@ public class OrderServiceTest {
 
         when(ordersRepo.save(any(OrdersEntity.class))).thenAnswer(inv -> {
             OrdersEntity saved = inv.getArgument(0);
-
             ShipmentEntity sh = saved.getShipmentEntity();
             if (sh != null) sh.setOrdersEntity(saved);
             saved.setStatusChangedAt(Instant.now());
             return saved;
         });
+
+        UsersEntity user = mock(UsersEntity.class);
+        when(user.getLineId()).thenReturn("MOCK_LINE_ID_12345");
+
+        when(usersRepo.findByCustomersEntity_OrdersEntities_OrderId(orderId)).thenReturn(user);
 
         GenericResponse resp = orderService.trackOrder(userId, orderId, req);
 
