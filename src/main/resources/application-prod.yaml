@@ -1,20 +1,57 @@
-# Database configuration
+# Application configuration
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
 spring:
+  application:
+    name: candle-shop-project
   datasource:
-    url: ${SUPABASE_DATABASE_URL}
+    url : ${SUPABASE_DATABASE_URL}
     username: ${SUPABASE_DATABASE_USERNAME}
     password: ${SUPABASE_DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
+    generate-ddl: true
     hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: validate
+      naming.physical-strategy: 'org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl'
 
-# Server configuration
-server:
-  port:
-  tomcat:
-    max-part-count: 20
+
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SXXX}|%level|${spring.application.name}|${PID}|%thread|%logger{40}|%message%n"
+
+# Supabase configuration
+supabase:
+  secret:
+    service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+  storage:
+    public-image-base-url: ${SUPABASE_PUBLIC_STORAGE_URL}
+    base-url: ${SUPABASE_STORAGE_BASE_URL}
+  expiration:
+    seller:
+      check-qr-payment: ${SUPABASE_SELLER_CHECK_QR_PAYMENT_EXP}
+      check-receipt: ${SUPABASE_SELLER_CHECK_RECEIPT_EXP}
+    customer:
+      check-qr-payment: ${SUPABASE_USER_CHECK_QR_PAYMENT_EXP}
+
+#      PDF generation configuration
+pdf:
+  key-store:
+    path: ${PDF_KEYSTORE_PATH}
+    password: ${PDF_KEYSTORE_PASSWORD}
+  getFile:
+    expiration: ${PDF_GET_FILE_EXPIRATION}
+
+
+  server:
+    port: ${PORT:8080}
+    tomcat:
+      max-part-count: 20
+    servlet:
+      context-path: /candle-shop-project-api

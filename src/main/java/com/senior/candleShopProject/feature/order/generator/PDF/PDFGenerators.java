@@ -30,22 +30,11 @@ public class PDFGenerators {
     private static final int FIRST_PAGE_ITEMS = 15;
     private static final int SUBSEQUENT_PAGE_ITEMS = 20;
 
-    @Value("${pdf.key-store.path}")
-    private String keyStorePath;
-
-    @Value("${pdf.key-store.password}")
-    private String keyStorePassword;
-
-    private KeyStore cachedKeyStore;
     private byte[] fontRegBytes;
     private byte[] fontBoldBytes;
 
     @PostConstruct
     public void init() throws Exception {
-        cachedKeyStore = KeyStore.getInstance("PKCS12");
-        try (InputStream is = new FileInputStream(keyStorePath)) {
-            cachedKeyStore.load(is, keyStorePassword.toCharArray());
-        }
 
         try (InputStream regIs = getClass().getResourceAsStream("/fonts/Sarabun-Regular.ttf");
              InputStream boldIs = getClass().getResourceAsStream("/fonts/Sarabun-Bold.ttf")) {
@@ -236,7 +225,6 @@ public class PDFGenerators {
             throw new RuntimeException(e);
         }
 
-        PdfDigitalSigner signer = new PdfDigitalSigner(cachedKeyStore, keyStorePassword);
-        return signer.signPdf(pdfBytes);
+        return pdfBytes;
     }
 }
