@@ -52,7 +52,7 @@ public class ReportService {
 
 //        Total Sales for this month
         RangeOfMonthResp rangeOfMonthResp = ReportUtils.getRangeOfMonthUTC(month, year);
-        ReportOrderOfRangeResp reportByRangeThisMonth = ordersRepo.findReportByRange(
+            ReportOrderOfRangeResp reportByRangeThisMonth = ordersRepo.findReportByRange(
                 rangeOfMonthResp.getStartDate(),
                 rangeOfMonthResp.getEndDate()
         );
@@ -160,7 +160,8 @@ public class ReportService {
 
     private MonthlySalesSummaryDto getMonthlySalesSummary(ReportOrderOfRangeResp reportByRangeThisMonth, ReportOfRangeLastMonthResp reportByRangeLastMonth) {
         BigDecimal percentageChangeTotalSales;
-        if ( reportByRangeLastMonth.getTotalSales().compareTo(BigDecimal.ZERO) == 0 ) {
+        if ( reportByRangeLastMonth.getTotalSales() == null ||
+                reportByRangeLastMonth.getTotalSales().compareTo(BigDecimal.ZERO) == 0) {
             percentageChangeTotalSales = reportByRangeThisMonth.getTotalSales().compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO : BigDecimal.valueOf(100);
         } else {
             percentageChangeTotalSales = (reportByRangeThisMonth.getTotalSales().subtract(reportByRangeLastMonth.getTotalSales())
