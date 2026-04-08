@@ -187,26 +187,25 @@ public class OrderService {
         if ( sellerId == null )
             throw new ShopForbiddenException(ResultCode.FORBIDDEN, "คุณไม่มีสิทธิ์ในการเข้าถึง","User don't have permission.");
 
-        //            Increase total sold of the product when confirm payment
         boolean isSeller = userRole.equalsIgnoreCase(Constants.ROLE_SELLER);
         List<ProductByOrderIdResp> productIds = productsRepo.getProductsByOrderId(isSeller, orderId);
-        List<ProductsEntity> productsEntities = new ArrayList<>();
-        productIds.forEach(product -> {
-            ProductsEntity productEntity = new ProductsEntity();
-            productEntity.setProductId(product.getProductId());
-            productEntity.setProductName(product.getProductName());
-            productEntity.setPrice(product.getPrice());
-            productEntity.setWeight(product.getWeight());
-            productEntity.setDescription(product.getDescription());
-            productEntity.setSlug(product.getSlug());
-            productEntity.setActive(product.isActive());
-            productEntity.setFeatured(product.isFeatured());
-            productEntity.setProductCreatedDate(product.getProductCreatedDate());
-            productEntity.setProductUpdatedDate(product.getProductUpdatedDate());
-            productEntity.setTotalSold(product.getTotalSold() + product.getItemSoldQuantity());
-            productsEntities.add(productEntity);
+        Map<UUID, Integer> soldDeltaByProductId = productIds.stream()
+                .collect(Collectors.toMap(
+                        ProductByOrderIdResp::getProductId,
+                        ProductByOrderIdResp::getItemSoldQuantity,
+                        Integer::sum
+                ));
+
+        List<UUID> ids = new ArrayList<>(soldDeltaByProductId.keySet());
+        List<ProductsEntity> existing = productsRepo.findAllById(ids);
+
+        existing.forEach(p -> {
+            int delta = soldDeltaByProductId.getOrDefault(p.getProductId(), 0);
+            Integer current = p.getTotalSold();
+            p.setTotalSold((current == null ? 0 : current) + delta);
         });
-        productsRepo.saveAll(productsEntities);
+
+        productsRepo.saveAll(existing);
 
         Instant timeNow = Instant.now();
         SellerEntity seller = new SellerEntity();
